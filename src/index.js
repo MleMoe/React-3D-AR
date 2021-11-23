@@ -41,7 +41,12 @@ function init() {
   //
 
   document.body.appendChild(
-    ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] })
+    ARButton.createButton(renderer, {
+      requiredFeatures: ['hit-test', 'dom-overlay'],
+      domOverlay: {
+        root: document.getElementById('mediapipe_cavas'),
+      },
+    })
   );
 
   //

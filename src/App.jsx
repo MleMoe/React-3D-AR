@@ -1,30 +1,109 @@
-import { useState, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import './App.css';
-import { ARButton } from './utils/ARButton';
-import { DefaultXRControllers, ARCanvas, useHitTest } from '@react-three/xr';
+import './index.scss';
 
-function HitTestExample() {
-  const ref = useRef();
-
-  useHitTest((hit) => {
-    hit.decompose(
-      ref.current.position,
-      ref.current.rotation,
-      ref.current.scale
-    );
-  });
-
-  return null;
-}
+import { Camera, CameraOptions } from '@mediapipe/camera_utils';
+import {
+  FaceMesh,
+  FACEMESH_TESSELATION,
+  FACEMESH_RIGHT_EYE,
+  FACEMESH_LEFT_EYE,
+  FACEMESH_RIGHT_EYEBROW,
+  FACEMESH_LEFT_EYEBROW,
+  FACEMESH_FACE_OVAL,
+  FACEMESH_LIPS,
+} from '@mediapipe/face_mesh';
+import { drawConnectors } from '@mediapipe/drawing_utils';
+import { useWindowSize } from './utils/hooks/useWindowSize';
 
 function App() {
+  const videoRef = useRef();
+  const canvasRef = useRef();
+  const windowSize = useWindowSize();
+  const { width, height } = windowSize;
+
+  let canvasCtx;
+  let camera;
+
+  useEffect(() => {
+    console.log(windowSize);
+    if (!windowSize) {
+      return;
+    }
+
+    const faceMesh = new FaceMesh({
+      locateFile: (file) => {
+        return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+      },
+    });
+    faceMesh.setOptions({
+      selfieMode: true,
+      maxNumFaces: 1,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5,
+    });
+    faceMesh.onResults(onResults);
+
+    canvasCtx = canvasRef.current.getContext('2d');
+
+    if (typeof videoRef.current !== 'undefined' && videoRef.current !== null) {
+      camera = new Camera(videoRef.current, {
+        onFrame: async () => {
+          await faceMesh.send({ image: videoRef.current });
+        },
+        width: width,
+        height: height,
+      });
+      camera.start();
+    }
+  }, [windowSize]);
+
+  function onResults(results) {
+    // console.log('results:', results);
+    canvasCtx.save();
+    canvasCtx.clearRect(0, 0, width, height);
+    // canvasCtx.drawImage(results.image, 0, 0, width, height);
+
+    if (results.multiFaceLandmarks) {
+      for (const landmarks of results.multiFaceLandmarks) {
+        drawConnectors(canvasCtx, landmarks, FACEMESH_TESSELATION, {
+          color: '#C0C0C070',
+          lineWidth: 1,
+        });
+        // drawConnectors(canvasCtx, landmarks, FACEMESH_RIGHT_EYE, {
+        //   color: '#FF3030',
+        // });
+        // drawConnectors(canvasCtx, landmarks, FACEMESH_RIGHT_EYEBROW, {
+        //   color: '#FF3030',
+        // });
+        // drawConnectors(canvasCtx, landmarks, FACEMESH_LEFT_EYE, {
+        //   color: '#30FF30',
+        // });
+        // drawConnectors(canvasCtx, landmarks, FACEMESH_LEFT_EYEBROW, {
+        //   color: '#30FF30',
+        // });
+        drawConnectors(canvasCtx, landmarks, FACEMESH_FACE_OVAL, {
+          color: '#E0E0E0',
+        });
+        // drawConnectors(canvasCtx, landmarks, FACEMESH_LIPS, {
+        //   color: '#E0E0E0',
+        // });
+      }
+    }
+    canvasCtx.restore();
+  }
+
   return (
-    <ARCanvas sessionInit={{ requiredFeatures: ['hit-test'] }}>
-      <ambientLight />
-      <pointLight position={[10, 10, 10]} />
-      <HitTestExample />
-      <DefaultXRControllers />
-    </ARCanvas>
+    <div className='container'>
+      <video ref={videoRef} className='input_video'></video>
+      <canvas
+        ref={canvasRef}
+        id=''
+        className='output_canvas'
+        width={width}
+        height={height}
+      ></canvas>
+    </div>
   );
 }
 
