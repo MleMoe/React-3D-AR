@@ -20,11 +20,15 @@ import 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js';
 // import { drawConnectors } from '/@mediapipe/drawing_utils';
 import { useWindowSize } from './utils/hooks/useWindowSize';
 
+const WIDTH = 1280;
+const HEIGHT = 720;
+
 function App() {
   const videoRef = useRef();
   const canvasRef = useRef();
   const windowSize = useWindowSize();
-  const { width, height } = windowSize;
+  const { height } = windowSize;
+  const width = (height / HEIGHT) * WIDTH;
 
   let canvasCtx;
   let camera;
@@ -56,8 +60,8 @@ function App() {
           await faceMesh.send({ image: videoRef.current });
         },
         facingMode: 'environment',
-        width: width,
-        height: height,
+        width: WIDTH,
+        height: HEIGHT,
       });
       camera.start();
     }
@@ -66,7 +70,7 @@ function App() {
     //   camera.stop();
     //   faceMesh.close();
     // };
-  }, [windowSize]);
+  }, [height]);
 
   function onResults(results) {
     // console.log('results:', results);
@@ -108,7 +112,7 @@ function App() {
       <video ref={videoRef} className='input_video'></video>
       <canvas
         ref={canvasRef}
-        id=''
+        id='mediapipe_canvas'
         className='output_canvas'
         width={width}
         height={height}

@@ -44,7 +44,7 @@ function init() {
     ARButton.createButton(renderer, {
       requiredFeatures: ['hit-test', 'dom-overlay'],
       domOverlay: {
-        root: document.getElementById('mediapipe_cavas'),
+        root: document.getElementById('mediapipe_canvas'),
       },
     })
   );
