@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 function useWindowSize() {
   const getWindowSize = () => ({
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: document.body.clientWidth, //window.innerWidth,
+    height: document.body.clientHeight, //window.innerHeight,
   });
   const [windowSize, setWindowSize] = useState(getWindowSize());
   const handleResize = () => {
