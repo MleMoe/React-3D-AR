@@ -1,13 +1,12 @@
 import { useState, useRef } from 'react';
 import logo from './logo.svg';
 import './App.css';
-// import * as THREE from 'three';
 import { ARButton } from 'three/examples/jsm/webxr/ARButton';
 import { DefaultXRControllers, ARCanvas, useHitTest } from '@react-three/xr';
 import { Box } from '@react-three/drei';
 
 function HitTestExample() {
-  const ref = useRef(null!);
+  const ref = useRef();
 
   useHitTest((hit) => {
     hit.decompose(
