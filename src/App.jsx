@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import './App.css';
 import './index.scss';
 
-import { Camera, CameraOptions } from '@mediapipe/camera_utils';
+import { Camera } from '@mediapipe/camera_utils';
 import {
   FaceMesh,
   FACEMESH_TESSELATION,
