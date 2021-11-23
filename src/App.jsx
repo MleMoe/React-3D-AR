@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import './App.css';
 import './index.scss';
 
-// import { Camera } from '/@mediapipe/camera_utils';
+// import { Camera } from '@mediapipe/camera_utils';
 // import {
 //   FaceMesh,
 //   FACEMESH_TESSELATION,
@@ -12,7 +12,7 @@ import './index.scss';
 //   FACEMESH_LEFT_EYEBROW,
 //   FACEMESH_FACE_OVAL,
 //   FACEMESH_LIPS,
-// } from '/@mediapipe/face_mesh';
+// } from '@mediapipe/face_mesh';
 import 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js';
 import 'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js';
 import 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js';
@@ -55,11 +55,17 @@ function App() {
         onFrame: async () => {
           await faceMesh.send({ image: videoRef.current });
         },
+        facingMode: 'environment',
         width: width,
         height: height,
       });
       camera.start();
     }
+
+    // return () => {
+    //   camera.stop();
+    //   faceMesh.close();
+    // };
   }, [windowSize]);
 
   function onResults(results) {
