@@ -86,7 +86,7 @@ function App() {
       const canvasWidth = (videoWidth / videoHeight) * height;
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-      // canvasCtx.drawImage(results.image, 0, 0, canvasWidth, canvasHeight);
+      canvasCtx.drawImage(results.image, 0, 0, canvasWidth, canvasHeight);
 
       if (results.multiFaceLandmarks) {
         for (const landmarks of results.multiFaceLandmarks) {
