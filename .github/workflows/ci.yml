@@ -33,10 +33,9 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      # 如果缓存没有命中，安装依赖
+      # yarn to always run but use cached downloads
       - name: Install dependencies
-        if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: yarn --frozen-lockfile
+        run: yarn --prefer-offline
 
       # 运行构建脚本
       - name: Build site
