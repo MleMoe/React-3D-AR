@@ -1,9 +1,7 @@
 import { useState, useRef } from 'react';
-import logo from './logo.svg';
 import './App.css';
-import { ARButton } from 'three/examples/jsm/webxr/ARButton';
+import { ARButton } from './utils/ARButton';
 import { DefaultXRControllers, ARCanvas, useHitTest } from '@react-three/xr';
-import { Box } from '@react-three/drei';
 
 function HitTestExample() {
   const ref = useRef();
@@ -16,7 +14,7 @@ function HitTestExample() {
     );
   });
 
-  return <Box ref={ref} args={[0.1, 0.1, 0.1]} />;
+  return null;
 }
 
 function App() {
