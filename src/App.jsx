@@ -2,18 +2,22 @@ import React, { useEffect, useRef } from 'react';
 import './App.css';
 import './index.scss';
 
-import { Camera } from '@mediapipe/camera_utils';
-import {
-  FaceMesh,
-  FACEMESH_TESSELATION,
-  FACEMESH_RIGHT_EYE,
-  FACEMESH_LEFT_EYE,
-  FACEMESH_RIGHT_EYEBROW,
-  FACEMESH_LEFT_EYEBROW,
-  FACEMESH_FACE_OVAL,
-  FACEMESH_LIPS,
-} from '@mediapipe/face_mesh';
-import { drawConnectors } from '@mediapipe/drawing_utils';
+// import { Camera } from '/@mediapipe/camera_utils';
+// import {
+//   FaceMesh,
+//   FACEMESH_TESSELATION,
+//   FACEMESH_RIGHT_EYE,
+//   FACEMESH_LEFT_EYE,
+//   FACEMESH_RIGHT_EYEBROW,
+//   FACEMESH_LEFT_EYEBROW,
+//   FACEMESH_FACE_OVAL,
+//   FACEMESH_LIPS,
+// } from '/@mediapipe/face_mesh';
+import 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js';
+import 'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js';
+import 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js';
+
+// import { drawConnectors } from '/@mediapipe/drawing_utils';
 import { useWindowSize } from './utils/hooks/useWindowSize';
 
 function App() {
@@ -62,7 +66,7 @@ function App() {
     // console.log('results:', results);
     canvasCtx.save();
     canvasCtx.clearRect(0, 0, width, height);
-    // canvasCtx.drawImage(results.image, 0, 0, width, height);
+    canvasCtx.drawImage(results.image, 0, 0, width, height);
 
     if (results.multiFaceLandmarks) {
       for (const landmarks of results.multiFaceLandmarks) {
