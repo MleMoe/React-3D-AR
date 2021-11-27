@@ -1,8 +1,19 @@
 class ARButton {
+  /**
+   * 新建一个 AR 控制按钮
+   * @param {*} renderer three.js 渲染器
+   * @param {*} sessionInit webxr session 初始 options
+   * @returns
+   */
   static createButton(renderer, sessionInit = {}) {
+    // 新建 btn 元素
     const button = document.createElement('button');
 
+    /**
+     * 开启 AR
+     */
     function showStartAR(/*device*/) {
+      // 初始化 domOverlay
       if (sessionInit.domOverlay === undefined) {
         var overlay = document.createElement('div');
         overlay.style.display = 'none';
