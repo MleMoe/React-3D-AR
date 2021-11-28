@@ -5,7 +5,7 @@ import FaceMesh from './face-mesh';
 const routes = [
   {
     path: '/',
-    component: FaceMesh,
+    component: Index,
   },
   {
     path: '/about',
