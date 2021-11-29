@@ -10,6 +10,7 @@
 
 /* eslint react/jsx-no-undef:0 */
 import React, { useState, useEffect } from 'react';
+import * as Tag from '../../core/tag-types';
 
 const width = 300;
 const height = 300;

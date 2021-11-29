@@ -36,7 +36,7 @@ let reconciler = Reconciler({
   supportsMutation: true,
 
   createInstance(
-    type,
+    type: string,
     props: any,
     rootContainerInstance,
     hostContext,
