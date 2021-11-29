@@ -9,12 +9,16 @@ specifiers:
   '@react-three/xr': ^3.2.0
   '@types/react': ^17.0.0
   '@types/react-dom': ^17.0.0
+  '@types/react-reconciler': ^0.26.4
   '@types/three': ^0.134.0
+  '@types/webxr': ^0.2.3
   '@vitejs/plugin-react': ^1.0.0
   device-detector-js: ^3.0.0
   react: ^17.0.0
   react-dom: ^17.0.0
+  react-reconciler: ^0.26.2
   react-router-dom: ^6.0.2
+  react-use-measure: ^2.1.1
   react-webcam: ^6.0.0
   sass: ^1.43.4
   three: ^0.134.0
@@ -31,14 +35,18 @@ dependencies:
   device-detector-js: 3.0.0
   react: 17.0.2
   react-dom: 17.0.2_react@17.0.2
+  react-reconciler: 0.26.2_react@17.0.2
   react-router-dom: 6.0.2_react-dom@17.0.2+react@17.0.2
+  react-use-measure: 2.1.1_react-dom@17.0.2+react@17.0.2
   react-webcam: 6.0.0_react-dom@17.0.2+react@17.0.2
   three: 0.134.0
 
 devDependencies:
   '@types/react': 17.0.36
   '@types/react-dom': 17.0.11
+  '@types/react-reconciler': 0.26.4
   '@types/three': 0.134.0
+  '@types/webxr': 0.2.3
   '@vitejs/plugin-react': 1.1.0
   sass: 1.43.4
   typescript: 4.5.2
@@ -399,7 +407,7 @@ packages:
       react-merge-refs: 1.1.0
       react-reconciler: 0.26.2_react@17.0.2
       react-three-fiber: 0.0.0-deprecated
-      react-use-measure: 2.0.4_react-dom@17.0.2+react@17.0.2
+      react-use-measure: 2.1.1_react-dom@17.0.2+react@17.0.2
       resize-observer-polyfill: 1.5.1
       scheduler: 0.20.2
       three: 0.134.0
@@ -440,6 +448,12 @@ packages:
       '@types/react': 17.0.36
     dev: true
 
+  /@types/react-reconciler/0.26.4:
+    resolution: {integrity: sha512-bdx4aIBkQRDAnzc23JBFeZmVpmfLJHfHikmQukEt9qs4bQtq9f+PDbNwhR9u74FkIUyIDz1I1qJ8OF6RwadKpw==}
+    dependencies:
+      '@types/react': 17.0.36
+    dev: true
+
   /@types/react/17.0.36:
     resolution: {integrity: sha512-CUFUp01OdfbpN/76v4koqgcpcRGT3sYOq3U3N6q0ZVGcyeP40NUdVU+EWe3hs34RNaTefiYyBzOpxBBidCc5zw==}
     dependencies:
@@ -454,6 +468,10 @@ packages:
 
   /@types/three/0.134.0:
     resolution: {integrity: sha512-4YB+99Rgqq27EjiYTItEoZtdjLnTh8W9LxowgpC9eWsjaQJIL4Kn/ZcUKAnW3gB/jS4hqGN8iqmid+RcUZDzpA==}
+    dev: true
+
+  /@types/webxr/0.2.3:
+    resolution: {integrity: sha512-MCxbyG4KIcx8+g1RwX9uRYsEfRncWLKtGhzSFh+j8fNOgnuzuBAabGJZz45iU4JvPeqaKaLRqQt6o92NMprmwQ==}
     dev: true
 
   /@vitejs/plugin-react/1.1.0:
@@ -1067,8 +1085,8 @@ packages:
     resolution: {integrity: sha512-EblIqTAsIpkYeM8bZtC4lcpTE0A2zCEGipFB52RgcQq/q+0oryrk7Sxt+sqhIjUu6xMNEVywV8dr74lz5yWO6A==}
     dev: false
 
-  /react-use-measure/2.0.4_react-dom@17.0.2+react@17.0.2:
-    resolution: {integrity: sha512-7K2HIGaPMl3Q9ZQiEVjen3tRXl4UDda8LiTPy/QxP8dP2rl5gPBhf7mMH6MVjjRNv3loU7sNzey/ycPNnHVTxQ==}
+  /react-use-measure/2.1.1_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-nocZhN26cproIiIduswYpV5y5lQpSQS1y/4KuvUCjSKmw7ZWIS/+g3aFnX3WdBkyuGUtTLif3UTqnLLhbDoQig==}
     peerDependencies:
       react: '>=16.13'
       react-dom: '>=16.13'

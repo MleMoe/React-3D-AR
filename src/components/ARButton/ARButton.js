@@ -172,4 +172,4 @@ class ARButton {
   }
 }
 
-export { ARButton };
+// export { ARButton };
