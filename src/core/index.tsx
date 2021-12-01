@@ -19,21 +19,14 @@ export function render(
     roots.set(canvas, { store });
   }
   const { glRenderer } = store.getState();
+  glRenderer.setSize(canvas.width, canvas.height);
 
-  // const state = store.getState();
-  // console.log(state);
-  // const fiber = reconciler.createContainer(store, 0, false, null);
   let container = reconciler.createContainer(store, 0, false, null);
   // reconciler.updateContainer(element, container, null, null);
-  // console.log(element);
   reconciler.updateContainer(
     <Provider store={store} element={element} />,
     container,
     null,
     () => undefined
   );
-
-  // const { glRenderer, scene, camera } = store.getState();
-  // console.log(scene);
-  // glRenderer.render(scene, camera);
 }
