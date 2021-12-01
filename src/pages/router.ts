@@ -1,12 +1,12 @@
 import Index from './index';
 import About from './about';
 import FaceMesh from './face-mesh';
-import { ThreeApp } from './three';
+import ThreeApp from './three';
 
 const routes = [
   {
     path: '/',
-    component: Index,
+    component: ThreeApp,
   },
   {
     path: '/about',

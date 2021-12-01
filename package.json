@@ -20,7 +20,8 @@
     "react-router-dom": "^6.0.2",
     "react-use-measure": "^2.1.1",
     "react-webcam": "^6.0.0",
-    "three": "^0.134.0"
+    "three": "^0.134.0",
+    "zustand": "^3.6.5"
   },
   "devDependencies": {
     "@types/react": "^17.0.0",

@@ -7,3 +7,7 @@ a {
   color: deepskyblue;
   font-weight: 600;
 }
+
+#root {
+  height: 100vh;
+}

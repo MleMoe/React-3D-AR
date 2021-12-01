@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ARButton } from '../../components/ARButton/ARButton';
+import { ARButton } from '../../core/ARButton/ARButton';
 
 let container;
 let camera, scene, renderer;

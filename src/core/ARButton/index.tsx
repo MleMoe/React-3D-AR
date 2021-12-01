@@ -1,13 +1,11 @@
 import React, { FC, useState, useLayoutEffect, useCallback } from 'react';
-import { WebGLRenderer } from 'three';
+import { WebGLRenderer, XRSessionInit } from 'three';
 import type { XRSystem, XRSession } from 'webxr';
 import './index.scss';
 
 type ARButtonProps = {
   renderer: WebGLRenderer;
-  sessionInit?: {
-    requiredFeatures?: any[];
-    optionalFeatures?: any[];
+  sessionInit?: XRSessionInit & {
     domOverlay?: HTMLElement;
   };
 };

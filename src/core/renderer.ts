@@ -1,16 +1,42 @@
 import Reconciler from 'react-reconciler';
+import { UseBoundStore } from 'zustand';
 
-import {
-  BoxGeometry,
-  MeshBasicMaterial,
-  Mesh,
-  Scene,
-  PerspectiveCamera,
-  WebGLRenderer,
-} from 'three';
+import { EventHandlers } from './events';
+import { RootState } from './store';
+
+import * as THREE from 'three';
+
+export type LocalState = {
+  root: UseBoundStore<RootState>;
+  // objects and parent are used when children are added with `attach` instead of being added to the Object3D scene graph
+  objects: Instance[];
+  parent?: Instance | null;
+  primitive?: boolean;
+  eventCount?: number;
+  handlers?: Partial<EventHandlers>;
+  memoizedProps?: {
+    [key: string]: any;
+  };
+};
+
+export type Instance = THREE.Object3D & {
+  _local: LocalState;
+  [key: string]: any;
+};
+
+export type InstanceProps = {
+  [key: string]: unknown;
+} & {
+  args?: any[];
+};
+
+export type Root = {
+  // fiber: Reconciler.FiberRoot;
+  store: UseBoundStore<RootState>;
+};
 
 const logConfig = {
-  createInstance: true,
+  createInstance: false,
   appendChildToContainer: true,
   appendChild: true,
   appendInitialChild: true,
@@ -18,8 +44,9 @@ const logConfig = {
   removeChild: true,
   insertInContainerBefore: true,
   insertBefore: true,
-  prepareUpdate: false,
-  commitUpdate: false,
+  prepareUpdate: true,
+  commitUpdate: true,
+  finalizeInitialChildren: false,
 };
 
 function log(type: keyof typeof logConfig, args: any) {
@@ -29,81 +56,61 @@ function log(type: keyof typeof logConfig, args: any) {
   }
 }
 
-let reconciler = Reconciler({
+export let reconciler = Reconciler({
   /* configuration for how to talk to the host environment */
   /* aka "host config" */
 
+  /**
+   * mode mutation
+   */
   supportsMutation: true,
 
+  /**
+   *  创建实例
+   * in the render phase
+   * @param type
+   * @param props
+   * @param rootContainerInstance
+   * @param hostContext
+   * @param internalInstanceHandle
+   * @returns
+   */
   createInstance(
     type: string,
-    props: any,
-    rootContainerInstance,
+    props: InstanceProps,
+    rootContainerInstance: UseBoundStore<RootState>,
     hostContext,
     internalInstanceHandle
   ) {
     log('createInstance', arguments);
-    switch (type) {
-      case 'threeBoxGeometry': {
-        const { width, height, depth } = props;
-        return new BoxGeometry(width, height, depth);
-      }
-      case 'threeMeshBasicMaterial': {
-        const { parameters } = props;
-        return new MeshBasicMaterial(parameters);
-      }
-      case 'threeMesh': {
-        const {
-          rotation: { x, y },
-        } = props;
-        const mesh = new Mesh();
-        if (x !== undefined) {
-          mesh.rotation.x = x;
+
+    const { args = [], children, ...rest } = props;
+
+    let name = `${type[0].toUpperCase()}${type.slice(1)}`;
+    let instance: Instance = new (THREE as any)[name](...args);
+    instance._local = { root: rootContainerInstance, objects: [] };
+
+    for (const attr in rest) {
+      if (typeof rest[attr] === 'object') {
+        for (const key in rest[attr] as any) {
+          instance[attr][key] = (rest[attr] as any)[key];
         }
-        if (y !== undefined) {
-          mesh.rotation.y = y;
-        }
-        return mesh;
+      } else {
+        instance[attr] = rest[attr];
       }
-      case 'threeScene': {
-        return new Scene();
-      }
-      case 'threePerspectiveCamera': {
-        const {
-          fov,
-          aspect,
-          near,
-          far,
-          position: { x, y, z },
-        } = props;
-        const camera = new PerspectiveCamera(fov, aspect, near, far);
-        if (x !== undefined) {
-          camera.position.x = x;
-        }
-        if (y !== undefined) {
-          camera.position.y = y;
-        }
-        if (z !== undefined) {
-          camera.position.z = z;
-        }
-        return camera;
-      }
-      case 'threeWebGLRenderer': {
-        const { width, height, antialias } = props;
-        const renderer = new WebGLRenderer({
-          antialias,
-        });
-        renderer.setSize(width, height);
-        return {
-          renderer,
-          scene: null,
-          camera: null,
-        };
-      }
-      default:
-        return null;
     }
+    return instance;
   },
+
+  /**
+   * 创建文本实例
+   * 若不需支持文本节点，可不处理
+   * @param text
+   * @param rootContainerInstance
+   * @param hostContext
+   * @param internalInstanceHandle
+   * @returns
+   */
   createTextInstance(
     text,
     rootContainerInstance,
@@ -113,64 +120,91 @@ let reconciler = Reconciler({
     return null;
   },
 
-  appendChildToContainer(container: any, child: any) {
-    log('appendChildToContainer', arguments);
-    container.appendChild(child.renderer.domElement);
+  /**
+   * 初次添加子节点，改变 parent/child 节点
+   * in the render phase
+   * @param parent
+   * @param child
+   */
+  appendInitialChild(parent: Instance, child: Instance) {
+    log('appendInitialChild', arguments);
+    if (parent.type.endsWith('Mesh')) {
+      if (child.type.endsWith('eometry')) {
+        parent.geometry = child;
+        return;
+      } else {
+        if (child.type.endsWith('aterial')) {
+          parent.material = child;
+          return;
+        }
+      }
+    }
+    parent.add(child);
   },
+
+  /**
+   *
+   * @param container
+   * @param child
+   */
+  appendChildToContainer(container: UseBoundStore<RootState>, child: any) {
+    log('appendChildToContainer', arguments);
+
+    container.getState().scene.add(child);
+
+    const state = container.getState();
+    const { glRenderer, camera, scene } = state;
+    console.log(glRenderer.getSize(new THREE.Vector2()));
+    glRenderer.render(scene, camera);
+    // console.log(container.getState().scene);
+    // container.appendChild(child.renderer.domElement);
+  },
+
+  /**
+   * in the commit phase
+   * @param parent
+   * @param child
+   */
   appendChild(parent, child) {
     log('appendChild', arguments);
   },
-  appendInitialChild(parent: any, child: any) {
-    log('appendInitialChild', arguments);
-    if (parent.renderer instanceof WebGLRenderer) {
-      switch (child.type) {
-        case 'Scene':
-          parent.scene = child;
-          break;
-        case 'PerspectiveCamera':
-          parent.camera = child;
-          break;
-        default:
-      }
-      if (parent.scene !== null && parent.camera !== null) {
-        parent.renderer.render(parent.scene, parent.camera);
-      }
-    }
-    switch (parent.type) {
-      case 'Mesh': {
-        switch (child.type) {
-          case 'BoxGeometry':
-            parent.geometry = child;
-            break;
-          case 'MeshBasicMaterial':
-            parent.material = child;
-            break;
-          default:
-        }
-        break;
-      }
-      case 'Scene': {
-        parent.add(child);
-        break;
-      }
-      default:
-    }
+
+  /**
+   * 在某 child 节点前插入新 child 节点
+   * @param parentInstance
+   * @param child
+   * @param beforeChild
+   */
+  insertBefore(parentInstance, child, beforeChild) {
+    log('insertBefore', arguments);
   },
 
-  removeChildFromContainer(container: any, child: any) {
+  insertInContainerBefore(container, child, before) {
+    log('insertInContainerBefore', arguments);
+  },
+
+  removeChildFromContainer(
+    container: UseBoundStore<RootState>,
+    child: Instance
+  ) {
     log('removeChildFromContainer', arguments);
-    container.removeChild(child.renderer.domElement);
+    container.getState().scene.remove(child);
   },
   removeChild(parent, child) {
     log('removeChild', arguments);
   },
-  insertInContainerBefore(container, child, before) {
-    log('insertInContainerBefore', arguments);
-  },
-  insertBefore(parent, child, before) {
-    log('insertBefore', arguments);
-  },
 
+  /**
+   * 比较新旧参数，提供数据给 commitUpdate 更新
+   * in the render phase
+   * @param instance
+   * @param type
+   * @param oldProps
+   * @param newProps
+   * @param rootContainerInstance
+   * @param currentHostContext
+   * @returns
+   */
   prepareUpdate(
     instance,
     type,
@@ -184,7 +218,7 @@ let reconciler = Reconciler({
       case 'threeWebGLRenderer': {
         return true;
       }
-      case 'threeMesh':
+      case 'Mesh':
         const {
           rotation: { x: ox, y: oy },
         } = oldProps;
@@ -200,8 +234,18 @@ let reconciler = Reconciler({
       default:
     }
   },
+
+  /**
+   *
+   * @param instance
+   * @param updatePayload 为 prepareUpdate return 的数据
+   * @param type
+   * @param oldProps
+   * @param newProps
+   * @param finishedWork
+   */
   commitUpdate(
-    instance: any,
+    instance: Instance,
     updatePayload: any,
     type,
     oldProps,
@@ -209,41 +253,61 @@ let reconciler = Reconciler({
     finishedWork
   ) {
     log('commitUpdate', arguments);
-    switch (type) {
-      case 'threeWebGLRenderer': {
-        if (updatePayload === true) {
-          const { renderer, scene, camera } = instance;
-          if (scene !== null && camera !== null) {
-            renderer.render(scene, camera);
-          }
-        }
-        break;
-      }
-      case 'threeMesh':
-        if (updatePayload.rotation !== undefined) {
-          const {
-            rotation: { x, y },
-          } = updatePayload;
-          if (x !== undefined) {
-            instance.rotation.x = x;
-          }
-          if (y !== undefined) {
-            instance.rotation.y = y;
-          }
-        }
-        break;
-      default:
-    }
+
+    const { glRenderer, scene, camera } = instance._local.root.getState();
+    glRenderer.render(scene, camera);
+    // switch (type) {
+    //   case 'threeWebGLRenderer': {
+    //     if (updatePayload === true) {
+    //       const { renderer, scene, camera } = instance;
+    //       if (scene !== null && camera !== null) {
+    //         renderer.render(scene, camera);
+    //       }
+    //     }
+    //     break;
+    //   }
+    //   case 'threeMesh':
+    //     if (updatePayload.rotation !== undefined) {
+    //       const {
+    //         rotation: { x, y },
+    //       } = updatePayload;
+    //       if (x !== undefined) {
+    //         instance.rotation.x = x;
+    //       }
+    //       if (y !== undefined) {
+    //         instance.rotation.y = y;
+    //       }
+    //     }
+    //     break;
+    //   default:
+    // }
   },
 
-  finalizeInitialChildren() {
+  /**
+   * 当 child 被加入
+   * in the render phase
+   * @returns return true, the instance will receive a commitMount call later
+   */
+  finalizeInitialChildren(instance, type, props, rootContainer, hostContext) {
+    log('finalizeInitialChildren', arguments);
+
     return true;
   },
   getChildHostContext() {},
-  getPublicInstance() {},
-  getRootHostContext() {},
+
+  /**
+   * ref 暴露的数据
+   * @param instance
+   * @returns
+   */
+  getPublicInstance(instance) {
+    return instance;
+  },
+  getRootHostContext(rootContainer) {
+    return null;
+  },
   // @ts-ignore
-  prepareForCommit() {},
+  prepareForCommit(containerInfo) {},
   resetAfterCommit() {},
   shouldSetTextContent() {
     return false;
@@ -251,15 +315,8 @@ let reconciler = Reconciler({
   clearContainer() {
     return false;
   },
+  // 放置 event
   commitMount() {
     // noop
   },
 });
-
-export default {
-  render(whatToRender: any, div: any) {
-    // @ts-ignore
-    let container = reconciler.createContainer(div, false, false);
-    reconciler.updateContainer(whatToRender, container, null, null);
-  },
-};
