@@ -46,9 +46,7 @@ export const ARScene: FC<ARSceneProps> = ({
     if (width > 0 && height > 0) {
       render(
         <React.Suspense fallback={null}>{children}</React.Suspense>,
-        canvasRef.current,
-        width,
-        height
+        canvasRef.current
       );
     }
     return () => {};

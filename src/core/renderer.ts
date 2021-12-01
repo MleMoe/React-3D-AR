@@ -31,14 +31,17 @@ export type InstanceProps = {
 };
 
 export type Root = {
-  // fiber: Reconciler.FiberRoot;
+  container: Reconciler.FiberRoot;
   store: UseBoundStore<RootState>;
 };
 
 const logConfig = {
-  createInstance: false,
+  // 新建实例
+  createInstance: true,
+  // child 加入容器
   appendChildToContainer: true,
   appendChild: true,
+  // 初次 append child
   appendInitialChild: true,
   removeChildFromContainer: true,
   removeChild: true,
@@ -151,13 +154,11 @@ export let reconciler = Reconciler({
     log('appendChildToContainer', arguments);
 
     container.getState().scene.add(child);
-
     const state = container.getState();
+
     const { glRenderer, camera, scene } = state;
-    console.log(glRenderer.getSize(new THREE.Vector2()));
+    // 渲染
     glRenderer.render(scene, camera);
-    // console.log(container.getState().scene);
-    // container.appendChild(child.renderer.domElement);
   },
 
   /**
