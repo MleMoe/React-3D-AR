@@ -1,7 +1,6 @@
 import Reconciler from 'react-reconciler';
 import { UseBoundStore } from 'zustand';
 
-import { EventHandlers } from './events';
 import { RootState } from './store';
 
 import * as THREE from 'three';
@@ -11,7 +10,7 @@ export type LocalState = {
   root: UseBoundStore<RootState>;
   // objects and parent are used when children are added with `attach` instead of being added to the Object3D scene graph
   objects: Instance[];
-  parent?: Instance | null;
+  parent: Instance | THREE.Scene | null;
 };
 
 export type Instance = THREE.Object3D & {
@@ -103,7 +102,7 @@ function glRender(container: UseBoundStore<RootState>) {
  * 为节点添加或更新属性
  * @param instance
  * @param props
- * @returns
+ * @returns 节点
  */
 function applyProps(instance: Instance, props: InstanceCustomProps) {
   for (const attr in props) {
@@ -126,14 +125,14 @@ function applyProps(instance: Instance, props: InstanceCustomProps) {
  * @param rootContainerInstance
  * @param hostContext
  * @param internalInstanceHandle
- * @returns
+ * @returns 节点
  */
 function createInstance(
   type: string,
   props: InstanceProps,
   rootContainerInstance: UseBoundStore<RootState>,
-  hostContext: any,
-  internalInstanceHandle: any
+  hostContext?: any,
+  internalInstanceHandle?: any
 ) {
   log('createInstance', arguments);
 
@@ -141,12 +140,54 @@ function createInstance(
 
   let name = `${type[0].toUpperCase()}${type.slice(1)}`;
   let instance: Instance = new (THREE as any)[name](...args);
-  instance._local = { root: rootContainerInstance, objects: [] };
+
+  instance._local = { root: rootContainerInstance, objects: [], parent: null };
   if (Object.keys(rest).length) {
     instance = applyProps(instance, rest);
   }
 
   return instance;
+}
+
+function appendChild(parent: Instance, child: Instance) {
+  log('appendChild', arguments);
+  child._local.parent = parent;
+  if (parent.type.endsWith('Mesh')) {
+    if (child.type.endsWith('eometry')) {
+      parent.geometry = child;
+      return;
+    } else {
+      if (child.type.endsWith('aterial')) {
+        parent.material = child;
+        return;
+      }
+    }
+  }
+  parent.add(child);
+}
+
+function removeChild(parentInstance: Instance, child: Instance) {
+  child._local.parent = null;
+}
+
+function switchInstance(
+  instance: Instance,
+  type: string,
+  nextProps: InstanceProps
+) {
+  const parent = instance._local.parent;
+  const newInstance = createInstance(type, nextProps, instance._local.root);
+
+  // 更新 children
+  if (instance.children) {
+    (instance.children as Instance[]).forEach((child) =>
+      appendChild(newInstance, child)
+    );
+    instance.children = [];
+  }
+  // removeChild(parent, instance);
+  // appendChild(parent, newInstance);
+  return newInstance;
 }
 
 export let reconciler = Reconciler({
@@ -158,44 +199,12 @@ export let reconciler = Reconciler({
   createInstance,
 
   /**
-   * 创建文本实例
-   * 若不需支持文本节点，可不处理
-   * @param text
-   * @param rootContainerInstance
-   * @param hostContext
-   * @param internalInstanceHandle
-   * @returns
-   */
-  createTextInstance(
-    text,
-    rootContainerInstance,
-    hostContext,
-    internalInstanceHandle
-  ) {
-    return null;
-  },
-
-  /**
    * 初次添加子节点，改变 parent/child 节点
    * in the render phase
-   * @param parent
-   * @param child
    */
   appendInitialChild(parent: Instance, child: Instance) {
     log('appendInitialChild', arguments);
-    child._local.parent = parent;
-    if (parent.type.endsWith('Mesh')) {
-      if (child.type.endsWith('eometry')) {
-        parent.geometry = child;
-        return;
-      } else {
-        if (child.type.endsWith('aterial')) {
-          parent.material = child;
-          return;
-        }
-      }
-    }
-    parent.add(child);
+    appendChild(parent, child);
   },
 
   /**
@@ -203,9 +212,11 @@ export let reconciler = Reconciler({
    * @param container
    * @param child
    */
-  appendChildToContainer(container: UseBoundStore<RootState>, child: any) {
+  appendChildToContainer(container: UseBoundStore<RootState>, child: Instance) {
     log('appendChildToContainer', arguments);
 
+    // 最上层节点的 parent 是 scene
+    child._local.parent = container.getState().scene;
     container.getState().scene.add(child);
     glRender(container);
   },
@@ -215,9 +226,7 @@ export let reconciler = Reconciler({
    * @param parent
    * @param child
    */
-  appendChild(parent, child) {
-    log('appendChild', arguments);
-  },
+  appendChild,
 
   /**
    * 在某 child 节点前插入新 child 节点
@@ -298,15 +307,16 @@ export let reconciler = Reconciler({
     instance: Instance,
     updatePayload: DiffPropsData,
     type,
-    oldProps: InstanceProps,
-    newProps: InstanceProps,
-    finishedWork
+    prevProps: InstanceProps,
+    nextProps: InstanceProps,
+    internalHandle
   ) {
     log('commitUpdate', arguments);
 
     const { reconstruct, changes } = updatePayload;
     if (reconstruct) {
       console.log('需重建节点');
+      switchInstance(instance, type, nextProps);
       return;
     }
 
@@ -344,14 +354,26 @@ export let reconciler = Reconciler({
   // @ts-ignore
   prepareForCommit(containerInfo) {},
   resetAfterCommit() {},
-  shouldSetTextContent() {
-    return false;
-  },
+
   clearContainer() {
     return false;
   },
   // 放置 event
   commitMount() {
     // noop
+  },
+
+  /**
+   * 文本相关
+   */
+  // createTextInstance(
+  //   text,
+  //   rootContainerInstance,
+  //   hostContext,
+  //   internalInstanceHandle
+  // ) {
+  // },
+  shouldSetTextContent() {
+    return false;
   },
 });
