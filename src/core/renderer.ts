@@ -12,12 +12,6 @@ export type LocalState = {
   // objects and parent are used when children are added with `attach` instead of being added to the Object3D scene graph
   objects: Instance[];
   parent?: Instance | null;
-  primitive?: boolean;
-  eventCount?: number;
-  handlers?: Partial<EventHandlers>;
-  memoizedProps?: {
-    [key: string]: any;
-  };
 };
 
 export type Instance = THREE.Object3D & {
@@ -93,6 +87,24 @@ function log(type: keyof typeof logConfig, args: any) {
   }
 }
 
+/**
+ * 渲染场景
+ * @param container root 信息
+ */
+function glRender(container: UseBoundStore<RootState>) {
+  const state = container.getState();
+
+  const { glRenderer, camera, scene } = state;
+  // 渲染
+  glRenderer.render(scene, camera);
+}
+
+/**
+ * 为节点添加或更新属性
+ * @param instance
+ * @param props
+ * @returns
+ */
 function applyProps(instance: Instance, props: InstanceCustomProps) {
   for (const attr in props) {
     if (typeof props[attr] === 'object') {
@@ -107,7 +119,7 @@ function applyProps(instance: Instance, props: InstanceCustomProps) {
 }
 
 /**
- *  创建实例
+ *  创建节点
  * in the render phase
  * @param type
  * @param props
@@ -130,14 +142,14 @@ function createInstance(
   let name = `${type[0].toUpperCase()}${type.slice(1)}`;
   let instance: Instance = new (THREE as any)[name](...args);
   instance._local = { root: rootContainerInstance, objects: [] };
+  if (Object.keys(rest).length) {
+    instance = applyProps(instance, rest);
+  }
 
-  return applyProps(instance, rest);
+  return instance;
 }
 
 export let reconciler = Reconciler({
-  /* configuration for how to talk to the host environment */
-  /* aka "host config" */
-
   /**
    * mode mutation
    */
@@ -195,11 +207,7 @@ export let reconciler = Reconciler({
     log('appendChildToContainer', arguments);
 
     container.getState().scene.add(child);
-    const state = container.getState();
-
-    const { glRenderer, camera, scene } = state;
-    // 渲染
-    glRenderer.render(scene, camera);
+    glRender(container);
   },
 
   /**
@@ -255,58 +263,26 @@ export let reconciler = Reconciler({
     rootContainerInstance,
     currentHostContext
   ): DiffPropsData | null {
-    let isChanged = false;
-    let result: DiffPropsData | null = null;
-
     const { args: argsNew = [], children: childrenNew, ...restNew } = newProps;
     const { args: argsOld = [], children: childrenOld, ...restOld } = oldProps;
 
     // 判断构造函数参数
     if (!isEqual(argsOld, argsNew)) {
-      // console.log('构造参数改变');
-      // console.log(argsOld, argsNew);
-      isChanged = true;
-      result = {
+      return {
         reconstruct: true,
       };
-    } else {
-      // 判断其它 props，暂时不判断 children
-      const changes = diffProps(restOld, restNew);
-      if (changes.isChanged) {
-        // console.log('props 改变', changes);
-        isChanged = true;
-        result = {
-          reconstruct: false,
-          changes,
-        };
-      }
-    }
-    if (isChanged) {
-      log('prepareUpdate', arguments);
-      console.log(result);
     }
 
-    // console.log('没有变化');
+    // 判断其它 props，暂时不判断 children
+    const changes = diffProps(restOld, restNew);
+    if (changes.isChanged) {
+      return {
+        reconstruct: false,
+        changes,
+      };
+    }
 
-    // Otherwise do not touch the instance
-    return result;
-
-    // switch (type) {
-    //   case 'Mesh':
-    //     const {
-    //       rotation: { x: ox, y: oy },
-    //     } = oldProps;
-    //     const {
-    //       rotation: { x: nx, y: ny },
-    //     } = newProps;
-    //     if (ox !== nx || oy !== ny) {
-    //       return {
-    //         rotation: newProps.rotation,
-    //       };
-    //     }
-    //     break;
-    //   default:
-    // }
+    return null;
   },
 
   /**
@@ -339,36 +315,7 @@ export let reconciler = Reconciler({
       applyProps(instance, nowProps);
     }
 
-    const { glRenderer, scene, camera } = instance._local.root.getState();
-    glRenderer.render(scene, camera);
-
-    // const { glRenderer, scene, camera } = instance._local.root.getState();
-    // glRenderer.render(scene, camera);
-    // switch (type) {
-    //   case 'threeWebGLRenderer': {
-    //     if (updatePayload === true) {
-    //       const { renderer, scene, camera } = instance;
-    //       if (scene !== null && camera !== null) {
-    //         renderer.render(scene, camera);
-    //       }
-    //     }
-    //     break;
-    //   }
-    //   case 'threeMesh':
-    //     if (updatePayload.rotation !== undefined) {
-    //       const {
-    //         rotation: { x, y },
-    //       } = updatePayload;
-    //       if (x !== undefined) {
-    //         instance.rotation.x = x;
-    //       }
-    //       if (y !== undefined) {
-    //         instance.rotation.y = y;
-    //       }
-    //     }
-    //     break;
-    //   default:
-    // }
+    glRender(instance._local.root);
   },
 
   /**
