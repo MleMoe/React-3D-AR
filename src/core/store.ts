@@ -65,8 +65,13 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
     const glRenderer = createRendererInstance(canvas);
     // Create default camera
     const camera = orthographic
-      ? new THREE.OrthographicCamera(0, 0, 0, 0, 0.1, 1000)
-      : new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+      ? new THREE.OrthographicCamera(0, 0, 0, 0, 0.1, 1000) // 参数待更新
+      : new THREE.PerspectiveCamera(
+          75,
+          canvas.width && canvas.height ? canvas.width / canvas.height : 1,
+          0.1,
+          1000
+        );
     camera.lookAt(0, 0, 0);
     camera.position.set(0, 1, 10);
 
