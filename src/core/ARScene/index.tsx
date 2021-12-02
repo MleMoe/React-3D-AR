@@ -2,19 +2,10 @@ import React, { FC, useRef, useEffect, useState, useLayoutEffect } from 'react';
 import useMeasure, { Options as ResizeOptions } from 'react-use-measure';
 import type { XRSystem, XRSession } from 'webxr';
 import '../tag-types';
-import { render } from '..';
-
-import {
-  Scene,
-  PerspectiveCamera,
-  WebGLRenderer,
-  HemisphereLight,
-  CylinderGeometry,
-  MeshPhongMaterial,
-  Mesh,
-  RingGeometry,
-  MeshBasicMaterial,
-} from 'three';
+import { reconciler, Root } from '../renderer';
+import { Provider } from '../provider';
+import { createStore } from '../store';
+import * as THREE from 'three';
 
 type ARSceneProps = Partial<{
   className: string;
@@ -25,8 +16,38 @@ type ARSceneProps = Partial<{
   };
 }>;
 
-// const width = 300;
-// const height = 300;
+const roots = new Map<Element, Root>();
+
+function render(element: React.ReactNode, canvas: HTMLCanvasElement) {
+  let root = roots.get(canvas);
+  let store = root?.store;
+  let container = root?.container;
+  if (!store) {
+    console.log('重建');
+    console.log('roots: ', roots);
+    store = createStore({
+      canvas,
+    });
+    container = reconciler.createContainer(store, 0, false, null);
+
+    roots.set(canvas, { store, container });
+  }
+
+  // resize renderer
+  const { glRenderer } = store.getState();
+  const size = glRenderer.getSize(new THREE.Vector2());
+  if (canvas.width !== size.x || canvas.height !== size.y) {
+    glRenderer.setSize(canvas.width, canvas.height);
+  }
+
+  // reconciler.updateContainer(element, container, null, null);
+  reconciler.updateContainer(
+    <Provider store={store} element={element} />,
+    container,
+    null,
+    () => undefined
+  );
+}
 
 export const ARScene: FC<ARSceneProps> = ({
   className,
@@ -50,7 +71,7 @@ export const ARScene: FC<ARSceneProps> = ({
       );
     }
     return () => {};
-  }, [width, height]); // 需放上 children，解决了 gl 的唯一性问题， 解决 child 元素的 diff 问题。
+  }, [width, height, children]); // 需放上 children，解决了 gl 的唯一性问题， 解决 child 元素的 diff 问题。
   // console.log(width, height);
 
   return (

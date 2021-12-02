@@ -68,7 +68,7 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
       ? new THREE.OrthographicCamera(0, 0, 0, 0, 0.1, 1000)
       : new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
     camera.lookAt(0, 0, 0);
-    camera.position.set(0, 0, 10);
+    camera.position.set(0, 1, 10);
 
     const scene = new THREE.Scene();
 

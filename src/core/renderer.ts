@@ -5,6 +5,7 @@ import { EventHandlers } from './events';
 import { RootState } from './store';
 
 import * as THREE from 'three';
+import { isEqual } from './utils';
 
 export type LocalState = {
   root: UseBoundStore<RootState>;
@@ -24,9 +25,11 @@ export type Instance = THREE.Object3D & {
   [key: string]: any;
 };
 
-export type InstanceProps = {
-  [key: string]: unknown;
-} & {
+type InstanceCustomProps = {
+  [key: string]: any;
+};
+
+export type InstanceProps = InstanceCustomProps & {
   args?: any[];
 };
 
@@ -34,6 +37,37 @@ export type Root = {
   container: Reconciler.FiberRoot;
   store: UseBoundStore<RootState>;
 };
+
+type ChangeInfo = {
+  isChanged: boolean;
+  removeKeys: string[];
+  nowProps: {
+    [key in string]: any;
+  };
+};
+export type DiffPropsData = {
+  reconstruct: boolean;
+  changes?: ChangeInfo;
+};
+
+function diffProps(
+  oldProps: { [key in string]: any },
+  newProps: { [key in string]: any }
+): ChangeInfo {
+  const oldKeys = Object.keys(oldProps);
+  const newKeys = Object.keys(newProps);
+
+  const removeKeys = oldKeys.filter((key) => !newKeys.includes(key));
+
+  const isChanged = newKeys.reduce((result, key) => {
+    if (!isEqual(oldProps[key], newProps[key])) {
+      return true;
+    }
+    return result;
+  }, false);
+
+  return { isChanged, removeKeys, nowProps: newProps };
+}
 
 const logConfig = {
   // 新建实例
@@ -59,6 +93,47 @@ function log(type: keyof typeof logConfig, args: any) {
   }
 }
 
+function applyProps(instance: Instance, props: InstanceCustomProps) {
+  for (const attr in props) {
+    if (typeof props[attr] === 'object') {
+      for (const key in props[attr] as any) {
+        instance[attr][key] = (props[attr] as any)[key];
+      }
+    } else {
+      instance[attr] = props[attr];
+    }
+  }
+  return instance;
+}
+
+/**
+ *  创建实例
+ * in the render phase
+ * @param type
+ * @param props
+ * @param rootContainerInstance
+ * @param hostContext
+ * @param internalInstanceHandle
+ * @returns
+ */
+function createInstance(
+  type: string,
+  props: InstanceProps,
+  rootContainerInstance: UseBoundStore<RootState>,
+  hostContext: any,
+  internalInstanceHandle: any
+) {
+  log('createInstance', arguments);
+
+  const { args = [], children, ...rest } = props;
+
+  let name = `${type[0].toUpperCase()}${type.slice(1)}`;
+  let instance: Instance = new (THREE as any)[name](...args);
+  instance._local = { root: rootContainerInstance, objects: [] };
+
+  return applyProps(instance, rest);
+}
+
 export let reconciler = Reconciler({
   /* configuration for how to talk to the host environment */
   /* aka "host config" */
@@ -67,43 +142,8 @@ export let reconciler = Reconciler({
    * mode mutation
    */
   supportsMutation: true,
-
-  /**
-   *  创建实例
-   * in the render phase
-   * @param type
-   * @param props
-   * @param rootContainerInstance
-   * @param hostContext
-   * @param internalInstanceHandle
-   * @returns
-   */
-  createInstance(
-    type: string,
-    props: InstanceProps,
-    rootContainerInstance: UseBoundStore<RootState>,
-    hostContext,
-    internalInstanceHandle
-  ) {
-    log('createInstance', arguments);
-
-    const { args = [], children, ...rest } = props;
-
-    let name = `${type[0].toUpperCase()}${type.slice(1)}`;
-    let instance: Instance = new (THREE as any)[name](...args);
-    instance._local = { root: rootContainerInstance, objects: [] };
-
-    for (const attr in rest) {
-      if (typeof rest[attr] === 'object') {
-        for (const key in rest[attr] as any) {
-          instance[attr][key] = (rest[attr] as any)[key];
-        }
-      } else {
-        instance[attr] = rest[attr];
-      }
-    }
-    return instance;
-  },
+  isPrimaryRenderer: false,
+  createInstance,
 
   /**
    * 创建文本实例
@@ -131,6 +171,7 @@ export let reconciler = Reconciler({
    */
   appendInitialChild(parent: Instance, child: Instance) {
     log('appendInitialChild', arguments);
+    child._local.parent = parent;
     if (parent.type.endsWith('Mesh')) {
       if (child.type.endsWith('eometry')) {
         parent.geometry = child;
@@ -207,33 +248,65 @@ export let reconciler = Reconciler({
    * @returns
    */
   prepareUpdate(
-    instance,
-    type,
-    oldProps: any,
-    newProps: any,
+    instance: Instance,
+    type: string,
+    oldProps: InstanceProps,
+    newProps: InstanceProps,
     rootContainerInstance,
     currentHostContext
-  ) {
-    log('prepareUpdate', arguments);
-    switch (type) {
-      case 'threeWebGLRenderer': {
-        return true;
+  ): DiffPropsData | null {
+    let isChanged = false;
+    let result: DiffPropsData | null = null;
+
+    const { args: argsNew = [], children: childrenNew, ...restNew } = newProps;
+    const { args: argsOld = [], children: childrenOld, ...restOld } = oldProps;
+
+    // 判断构造函数参数
+    if (!isEqual(argsOld, argsNew)) {
+      // console.log('构造参数改变');
+      // console.log(argsOld, argsNew);
+      isChanged = true;
+      result = {
+        reconstruct: true,
+      };
+    } else {
+      // 判断其它 props，暂时不判断 children
+      const changes = diffProps(restOld, restNew);
+      if (changes.isChanged) {
+        // console.log('props 改变', changes);
+        isChanged = true;
+        result = {
+          reconstruct: false,
+          changes,
+        };
       }
-      case 'Mesh':
-        const {
-          rotation: { x: ox, y: oy },
-        } = oldProps;
-        const {
-          rotation: { x: nx, y: ny },
-        } = newProps;
-        if (ox !== nx || oy !== ny) {
-          return {
-            rotation: newProps.rotation,
-          };
-        }
-        break;
-      default:
     }
+    if (isChanged) {
+      log('prepareUpdate', arguments);
+      console.log(result);
+    }
+
+    // console.log('没有变化');
+
+    // Otherwise do not touch the instance
+    return result;
+
+    // switch (type) {
+    //   case 'Mesh':
+    //     const {
+    //       rotation: { x: ox, y: oy },
+    //     } = oldProps;
+    //     const {
+    //       rotation: { x: nx, y: ny },
+    //     } = newProps;
+    //     if (ox !== nx || oy !== ny) {
+    //       return {
+    //         rotation: newProps.rotation,
+    //       };
+    //     }
+    //     break;
+    //   default:
+    // }
   },
 
   /**
@@ -247,16 +320,30 @@ export let reconciler = Reconciler({
    */
   commitUpdate(
     instance: Instance,
-    updatePayload: any,
+    updatePayload: DiffPropsData,
     type,
-    oldProps,
-    newProps,
+    oldProps: InstanceProps,
+    newProps: InstanceProps,
     finishedWork
   ) {
     log('commitUpdate', arguments);
 
+    const { reconstruct, changes } = updatePayload;
+    if (reconstruct) {
+      console.log('需重建节点');
+      return;
+    }
+
+    if (changes) {
+      const { removeKeys, nowProps } = changes;
+      applyProps(instance, nowProps);
+    }
+
     const { glRenderer, scene, camera } = instance._local.root.getState();
     glRenderer.render(scene, camera);
+
+    // const { glRenderer, scene, camera } = instance._local.root.getState();
+    // glRenderer.render(scene, camera);
     // switch (type) {
     //   case 'threeWebGLRenderer': {
     //     if (updatePayload === true) {

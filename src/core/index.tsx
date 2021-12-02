@@ -10,6 +10,8 @@ export function render(element: React.ReactNode, canvas: HTMLCanvasElement) {
   let store = root?.store;
   let container = root?.container;
   if (!store) {
+    console.log('重建');
+    console.log('roots: ', roots);
     store = createStore({
       canvas,
     });
