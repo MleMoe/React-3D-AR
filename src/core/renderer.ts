@@ -76,7 +76,7 @@ const logConfig = {
   insertBefore: true,
   prepareUpdate: true,
   commitUpdate: true,
-  finalizeInitialChildren: false,
+  finalizeInitialChildren: true,
 };
 
 function log(type: keyof typeof logConfig, args: any) {
@@ -95,7 +95,7 @@ function glRender(container: UseBoundStore<RootState>) {
 
   const { glRenderer, camera, scene } = state;
   // 渲染
-  glRenderer.render(scene, camera);
+  camera && glRenderer.render(scene, camera);
 }
 
 /**
@@ -152,17 +152,7 @@ function createInstance(
 function appendChild(parent: Instance, child: Instance) {
   log('appendChild', arguments);
   child._local.parent = parent;
-  if (parent.type.endsWith('Mesh')) {
-    if (child.type.endsWith('eometry')) {
-      parent.geometry = child;
-      return;
-    } else {
-      if (child.type.endsWith('aterial')) {
-        parent.material = child;
-        return;
-      }
-    }
-  }
+
   parent.add(child);
 }
 
@@ -335,6 +325,9 @@ export let reconciler = Reconciler({
    */
   finalizeInitialChildren(instance, type, props, rootContainer, hostContext) {
     log('finalizeInitialChildren', arguments);
+
+    const { scene } = rootContainer.getState();
+    console.log(scene);
 
     return true;
   },

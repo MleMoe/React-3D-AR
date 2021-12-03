@@ -60,35 +60,58 @@ export type Object3DNode<T, P> = Overwrite<
   }
 >;
 
-export type BufferGeometryNode<T extends THREE.BufferGeometry, P> = Overwrite<
-  Node<T, P>,
-  {}
->;
-export type MaterialNode<T extends THREE.Material, P> = Overwrite<
-  Node<T, P>,
-  { color?: Color }
->;
 export type LightNode<T extends THREE.Light, P> = Overwrite<
   Object3DNode<T, P>,
   { color?: Color }
 >;
 
-export type MeshProps = Object3DNode<THREE.Mesh, typeof THREE.Mesh>;
-export type BoxGeometryProps = BufferGeometryNode<
-  THREE.BoxGeometry,
-  typeof THREE.BoxGeometry
+/**
+ * Camera
+ */
+export type CameraProps = Object3DNode<THREE.Camera, typeof THREE.Camera>;
+export type PerspectiveCameraProps = Object3DNode<
+  THREE.PerspectiveCamera,
+  typeof THREE.PerspectiveCamera
 >;
-export type MeshBasicMaterialProps = MaterialNode<
-  THREE.MeshBasicMaterial,
-  typeof THREE.MeshBasicMaterial
+export type OrthographicCameraProps = Object3DNode<
+  THREE.OrthographicCamera,
+  typeof THREE.OrthographicCamera
+>;
+export type CubeCameraProps = Object3DNode<
+  THREE.CubeCamera,
+  typeof THREE.CubeCamera
+>;
+export type ArrayCameraProps = Object3DNode<
+  THREE.ArrayCamera,
+  typeof THREE.ArrayCamera
+>;
+
+/**
+ * Mesh
+ */
+export type MeshProps = Object3DNode<THREE.Mesh, typeof THREE.Mesh>;
+
+/**
+ * Light
+ */
+export type LightProps = LightNode<THREE.Light, typeof THREE.Light>;
+export type DirectionalLightProps = LightNode<
+  THREE.DirectionalLight,
+  typeof THREE.DirectionalLight
+>;
+export type AmbientLightProps = LightNode<
+  THREE.AmbientLight,
+  typeof THREE.AmbientLight
 >;
 
 declare global {
   namespace JSX {
     interface IntrinsicElements {
+      perspectiveCamera: PerspectiveCameraProps;
+      orthographicCamera: OrthographicCameraProps;
       mesh: MeshProps;
-      meshBasicMaterial: MeshBasicMaterialProps;
-      boxGeometry: BoxGeometryProps;
+      ambientLight: AmbientLightProps;
+      directionalLight: DirectionalLightProps;
     }
   }
 }

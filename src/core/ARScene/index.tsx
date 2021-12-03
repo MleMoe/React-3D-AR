@@ -1,4 +1,11 @@
-import React, { FC, useRef, useEffect, useState, useLayoutEffect } from 'react';
+import React, {
+  FC,
+  useRef,
+  useEffect,
+  useState,
+  useLayoutEffect,
+  useMemo,
+} from 'react';
 import useMeasure, { Options as ResizeOptions } from 'react-use-measure';
 import type { XRSystem, XRSession } from 'webxr';
 import '../tag-types';
@@ -10,38 +17,20 @@ import * as THREE from 'three';
 type ARSceneProps = Partial<{
   className: string;
   style: React.CSSProperties;
+  camera: THREE.Camera | THREE.PerspectiveCamera | THREE.OrthographicCamera;
   ar: {
     active: boolean;
     session: XRSession;
   };
 }>;
 
-const roots = new Map<Element, Root>();
-
-function render(element: React.ReactNode, canvas: HTMLCanvasElement) {
-  let root = roots.get(canvas);
-  let store = root?.store;
-  let container = root?.container;
-  if (!store) {
-    store = createStore({
-      canvas,
-    });
-    container = reconciler.createContainer(store, 0, false, null);
-
-    roots.set(canvas, { store, container });
-  }
-
-  // resize renderer
-  const { glRenderer } = store.getState();
-  const size = glRenderer.getSize(new THREE.Vector2());
-  if (canvas.width !== size.x || canvas.height !== size.y) {
-    glRenderer.setSize(canvas.width, canvas.height);
-  }
-
-  // reconciler.updateContainer(element, container, null, null);
+/**
+ * 渲染
+ */
+function render(root: Root, element: React.ReactNode) {
   reconciler.updateContainer(
-    <Provider store={store} element={element} />,
-    container,
+    <Provider store={root.store} element={element} />,
+    root.container,
     null,
     () => undefined
   );
@@ -50,6 +39,7 @@ function render(element: React.ReactNode, canvas: HTMLCanvasElement) {
 export const ARScene: FC<ARSceneProps> = ({
   className,
   style,
+  camera,
   ar,
   children,
 }) => {
@@ -57,20 +47,37 @@ export const ARScene: FC<ARSceneProps> = ({
     scroll: true,
     debounce: { scroll: 50, resize: 0 },
   });
-  // const containerRef = useRef<HTMLDivElement>(null!);
   const canvasRef = React.useRef<HTMLCanvasElement>(null!);
+  const [root, setRoot] = useState<Root>();
 
   useLayoutEffect(() => {
-    // console.log('children: ', children);
-    if (width > 0 && height > 0) {
-      render(
-        <React.Suspense fallback={null}>{children}</React.Suspense>,
-        canvasRef.current
-      );
+    if (canvasRef.current) {
+      const store = createStore({
+        canvas: canvasRef.current,
+        camera,
+      });
+      const container = reconciler.createContainer(store, 0, false, null);
+
+      setRoot({ store, container });
     }
-    return () => {};
-  }, [width, height, children]); // 需放上 children，解决了 gl 的唯一性问题， 解决 child 元素的 diff 问题。
-  // console.log(width, height);
+  }, [canvasRef.current]);
+
+  useLayoutEffect(() => {
+    if (root) {
+      // resize renderer
+      const { glRenderer } = root.store.getState();
+      const size = glRenderer.getSize(new THREE.Vector2());
+      if (width !== size.x || height !== size.y) {
+        glRenderer.setSize(width, height);
+      }
+    }
+  }, [width, height]); // 可不写 root
+
+  useLayoutEffect(() => {
+    if (root && width > 0 && height > 0) {
+      render(root, <React.Suspense fallback={null}>{children}</React.Suspense>);
+    }
+  }, [width, height, children, root]); // 需放上 children，解决了 gl 的唯一性问题， 解决 child 元素的 diff 问题。
 
   return (
     <div
