@@ -73,7 +73,7 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
           1000
         );
     camera.lookAt(0, 0, 0);
-    camera.position.set(0, 1, 10);
+    camera.position.set(0, 10, 100);
 
     const scene = new THREE.Scene();
 

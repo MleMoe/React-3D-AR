@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ARScene } from '../../core/ARScene';
-import '../../core/tag-types';
+import { Euler } from '../../core/tag-types';
 
 function App() {
-  const [rotation, setRotation] = useState({
-    // x: 3,
+  const [rotation, setRotation] = useState<Euler>(() => ({
+    x: 0,
     y: 10,
-  });
+    z: 0,
+  }));
 
   const [size, setSize] = useState(() => [5, 5, 5]);
 
@@ -25,8 +26,7 @@ function App() {
       // console.log(rotation);
 
       setRotation((prev) => ({
-        // x: prev.x + 0.01,
-        y: prev.y + 0.01,
+        y: (prev.y ?? 0) + 0.01,
       }));
     }
     // animate();
@@ -40,8 +40,37 @@ function App() {
 
   return (
     <ARScene>
-      <mesh rotation={rotation}>
-        <boxGeometry args={size} />
+      <mesh
+        rotation={rotation}
+        position={{
+          x: -20,
+          y: 0,
+          z: 0,
+        }}
+        scale={{
+          x: 2,
+          y: 2,
+          z: 2,
+        }}
+      >
+        <boxGeometry args={[15, 15, 15]} />
+        <meshBasicMaterial
+          args={[
+            {
+              color: 0xff0000,
+            },
+          ]}
+        />
+      </mesh>
+      <mesh
+        rotation={rotation}
+        position={{
+          x: 50,
+          y: 0,
+          z: 0,
+        }}
+      >
+        <boxGeometry args={[20, 20, 20]} />
         <meshBasicMaterial
           args={[
             {
