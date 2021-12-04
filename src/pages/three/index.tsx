@@ -44,7 +44,7 @@ function App() {
 
   return (
     <ARScene>
-      <perspectiveCamera args={[75, 1, 0.1, 1000]} />
+      {/* <perspectiveCamera args={[75, 1, 0.1, 1000]} /> */}
       <ambientLight args={[0xaaaaaa]} />
       <directionalLight
         args={[0xaaaaaa]}

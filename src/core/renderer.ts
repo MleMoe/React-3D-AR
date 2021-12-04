@@ -8,13 +8,20 @@ import { isEqual } from './utils';
 
 export type LocalState = {
   root: UseBoundStore<RootState>;
-  // objects and parent are used when children are added with `attach` instead of being added to the Object3D scene graph
-  objects: Instance[];
-  parent: Instance | THREE.Scene | null;
 };
 
-export type Instance = THREE.Object3D & {
+export type Instance = Omit<THREE.Object3D, 'parent' | 'children'> & {
   _local: LocalState;
+  /**
+   * Object's parent in the scene graph.
+   * @default null
+   */
+  parent: Instance | null;
+  /**
+   * Array with object's children.
+   * @default []
+   */
+  children: Instance[];
   [key: string]: any;
 };
 
@@ -141,7 +148,7 @@ function createInstance(
   let name = `${type[0].toUpperCase()}${type.slice(1)}`;
   let instance: Instance = new (THREE as any)[name](...args);
 
-  instance._local = { root: rootContainerInstance, objects: [], parent: null };
+  instance._local = { root: rootContainerInstance };
   if (Object.keys(rest).length) {
     instance = applyProps(instance, rest);
   }
@@ -151,13 +158,14 @@ function createInstance(
 
 function appendChild(parent: Instance, child: Instance) {
   log('appendChild', arguments);
-  child._local.parent = parent;
+  // child._local.parent = parent;
 
   parent.add(child);
 }
 
 function removeChild(parentInstance: Instance, child: Instance) {
-  child._local.parent = null;
+  // child._local.parent = null;
+  child.removeFromParent();
 }
 
 function switchInstance(
@@ -165,7 +173,6 @@ function switchInstance(
   type: string,
   nextProps: InstanceProps
 ) {
-  const parent = instance._local.parent;
   const newInstance = createInstance(type, nextProps, instance._local.root);
 
   // 更新 children
@@ -175,8 +182,14 @@ function switchInstance(
     );
     instance.children = [];
   }
-  // removeChild(parent, instance);
-  // appendChild(parent, newInstance);
+
+  // 更新 parent
+  const parent = instance.parent;
+  if (parent) {
+    appendChild(parent, newInstance);
+    removeChild(parent, instance);
+  }
+
   return newInstance;
 }
 
@@ -206,7 +219,7 @@ export let reconciler = Reconciler({
     log('appendChildToContainer', arguments);
 
     // 最上层节点的 parent 是 scene
-    child._local.parent = container.getState().scene;
+    // child._local.parent = container.getState().scene;
     container.getState().scene.add(child);
     glRender(container);
   },
@@ -239,20 +252,12 @@ export let reconciler = Reconciler({
     log('removeChildFromContainer', arguments);
     container.getState().scene.remove(child);
   },
-  removeChild(parent, child) {
-    log('removeChild', arguments);
-  },
+  removeChild,
 
   /**
    * 比较新旧参数，提供数据给 commitUpdate 更新
    * in the render phase
-   * @param instance
-   * @param type
-   * @param oldProps
-   * @param newProps
-   * @param rootContainerInstance
-   * @param currentHostContext
-   * @returns
+   * @returns 更新数据
    */
   prepareUpdate(
     instance: Instance,
@@ -285,13 +290,8 @@ export let reconciler = Reconciler({
   },
 
   /**
-   *
-   * @param instance
+   * 应用更新
    * @param updatePayload 为 prepareUpdate return 的数据
-   * @param type
-   * @param oldProps
-   * @param newProps
-   * @param finishedWork
    */
   commitUpdate(
     instance: Instance,
@@ -325,10 +325,6 @@ export let reconciler = Reconciler({
    */
   finalizeInitialChildren(instance, type, props, rootContainer, hostContext) {
     log('finalizeInitialChildren', arguments);
-
-    const { scene } = rootContainer.getState();
-    console.log(scene);
-
     return true;
   },
   getChildHostContext() {},
