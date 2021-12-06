@@ -1,5 +1,6 @@
 import React from 'react';
 import * as THREE from 'three';
+import { EventHandlers } from './events';
 
 type Parameters<T extends (...args: any) => any> = T extends (
   ...args: infer P
@@ -58,7 +59,8 @@ export type Object3DNode<T, P> = Overwrite<
     // layers?: Layers;
     // dispose?: (() => void) | null;
   }
->;
+> &
+  EventHandlers;
 
 export type LightNode<T extends THREE.Light, P> = Overwrite<
   Object3DNode<T, P>,

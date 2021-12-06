@@ -1,7 +1,8 @@
 import * as THREE from 'three';
-import * as React from 'react';
+import { createContext } from 'react';
 
 import create, { GetState, SetState, UseBoundStore } from 'zustand';
+import { InteractionManager, InteractiveObject } from './events';
 
 // import { XRSession } from 'three';
 
@@ -16,9 +17,9 @@ export type Viewport = Size;
 export type RootState = {
   glRenderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
-  camera: THREE.Camera | THREE.PerspectiveCamera | THREE.OrthographicCamera;
+  camera: Camera;
 
-  controls: THREE.EventDispatcher | null;
+  interactionManager: InteractionManager;
 
   ar: boolean;
   arSession?: THREE.XRSession;
@@ -28,7 +29,7 @@ export type RootState = {
   get: GetState<RootState>;
 };
 
-const context = React.createContext<UseBoundStore<RootState>>(null!);
+const context = createContext<UseBoundStore<RootState>>(null!);
 
 // 返回一个 WebGLRenderer
 const createRendererInstance = (
@@ -52,7 +53,7 @@ const createRendererInstance = (
 
 export type StoreProps = {
   canvas: HTMLCanvasElement;
-  camera?: THREE.Camera | THREE.PerspectiveCamera | THREE.OrthographicCamera;
+  camera?: Camera;
 
   ar?: boolean;
   arSessinInit?: THREE.XRSessionInit;
@@ -76,6 +77,8 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
       camera.position.set(0, 10, 100);
     }
 
+    const interactionManager = new InteractionManager(canvas, camera);
+
     const scene = new THREE.Scene();
 
     return {
@@ -83,8 +86,7 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
       scene,
       camera,
 
-      controls: null,
-      mouse: new THREE.Vector2(),
+      interactionManager,
 
       set,
       get,
@@ -99,6 +101,9 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
       },
     };
   });
+
+  const { interactionManager } = rootState.getState();
+  interactionManager.setContainer(rootState);
 
   return rootState;
 };

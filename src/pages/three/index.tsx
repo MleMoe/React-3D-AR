@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ARScene } from '../../core/ARScene';
 import { Euler } from '../../core/tag-types';
 import * as THREE from 'three';
+import { Instance } from '../../core/renderer';
 
 function App() {
   const [rotation, setRotation] = useState<Euler>(() => ({
@@ -44,7 +45,7 @@ function App() {
 
   return (
     <ARScene>
-      {/* <perspectiveCamera args={[75, 1, 0.1, 1000]} /> */}
+      <perspectiveCamera args={[75, 1, 0.1, 1000]} />
       <ambientLight args={[0xaaaaaa]} />
       <directionalLight
         args={[0xaaaaaa]}
@@ -83,6 +84,13 @@ function App() {
             color: 0x00ff00,
           })
         }
+        onClick={(event) => {
+          const instance = event.target as Instance;
+          console.log('触发单击事件！');
+          console.log(event);
+          const { x, y, z } = instance.scale;
+          instance.scale.set(x + 1.0, y + 1.0, z + 1.0);
+        }}
       ></mesh>
     </ARScene>
   );

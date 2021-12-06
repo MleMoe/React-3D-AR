@@ -5,8 +5,10 @@ import { RootState } from './store';
 
 import * as THREE from 'three';
 import { isEqual } from './utils';
+import { EventHandlers } from './events';
 
 export type LocalState = {
+  eventListeners: Partial<EventHandlers>;
   root: UseBoundStore<RootState>;
 };
 
@@ -45,6 +47,7 @@ type ChangeInfo = {
     [key in string]: any;
   };
 };
+
 export type DiffPropsData = {
   reconstruct: boolean;
   changes?: ChangeInfo;
@@ -59,12 +62,13 @@ function diffProps(
 
   const removeKeys = oldKeys.filter((key) => !newKeys.includes(key));
 
-  const isChanged = newKeys.reduce((result, key) => {
+  let isChanged = false;
+  for (const key of newKeys) {
     if (!isEqual(oldProps[key], newProps[key])) {
-      return true;
+      isChanged = true;
+      break;
     }
-    return result;
-  }, false);
+  }
 
   return { isChanged, removeKeys, nowProps: newProps };
 }
@@ -73,8 +77,8 @@ const logConfig = {
   // 新建实例
   createInstance: true,
   // child 加入容器
-  appendChildToContainer: true,
-  appendChild: true,
+  appendChildToContainer: false,
+  appendChild: false,
   // 初次 append child
   appendInitialChild: true,
   removeChildFromContainer: true,
@@ -83,7 +87,7 @@ const logConfig = {
   insertBefore: true,
   prepareUpdate: true,
   commitUpdate: true,
-  finalizeInitialChildren: true,
+  finalizeInitialChildren: false,
 };
 
 function log(type: keyof typeof logConfig, args: any) {
@@ -97,7 +101,7 @@ function log(type: keyof typeof logConfig, args: any) {
  * 渲染场景
  * @param container root 信息
  */
-function glRender(container: UseBoundStore<RootState>) {
+export function glRender(container: UseBoundStore<RootState>) {
   const state = container.getState();
 
   const { glRenderer, camera, scene } = state;
@@ -113,6 +117,24 @@ function glRender(container: UseBoundStore<RootState>) {
  */
 function applyProps(instance: Instance, props: InstanceCustomProps) {
   for (const attr in props) {
+    if (/^on(Click|DoubleClick)/.test(attr)) {
+      const type = attr as keyof EventHandlers;
+      const { _local } = instance;
+      const { eventListeners } = _local;
+      const eventListener = eventListeners[type];
+
+      const { interactionManager } = _local.root.getState();
+
+      if (eventListener != undefined) {
+        instance.removeEventListener(type, eventListener);
+      } else {
+        interactionManager.add(instance);
+      }
+      instance.addEventListener(attr, props[type]);
+      eventListeners[type] = props[type];
+      continue;
+    }
+
     if (typeof props[attr] === 'object') {
       for (const key in props[attr] as any) {
         instance[attr][key] = (props[attr] as any)[key];
@@ -121,6 +143,10 @@ function applyProps(instance: Instance, props: InstanceCustomProps) {
       instance[attr] = props[attr];
     }
   }
+
+  console.log(
+    instance._local.root.getState().interactionManager.interactiveObjects
+  );
   return instance;
 }
 
@@ -148,10 +174,11 @@ function createInstance(
   let name = `${type[0].toUpperCase()}${type.slice(1)}`;
   let instance: Instance = new (THREE as any)[name](...args);
 
-  instance._local = { root: rootContainerInstance };
+  instance._local = { root: rootContainerInstance, eventListeners: {} };
   if (Object.keys(rest).length) {
     instance = applyProps(instance, rest);
   }
+  console.log(instance);
 
   return instance;
 }

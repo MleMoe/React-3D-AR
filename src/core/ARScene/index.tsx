@@ -11,13 +11,13 @@ import type { XRSystem, XRSession } from 'webxr';
 import '../tag-types';
 import { reconciler, Root } from '../renderer';
 import { Provider } from '../provider';
-import { createStore } from '../store';
+import { createStore, Camera } from '../store';
 import * as THREE from 'three';
 
 type ARSceneProps = Partial<{
   className: string;
   style: React.CSSProperties;
-  camera: THREE.Camera | THREE.PerspectiveCamera | THREE.OrthographicCamera;
+  camera: Camera;
   ar: {
     active: boolean;
     session: XRSession;
@@ -51,7 +51,7 @@ export const ARScene: FC<ARSceneProps> = ({
   const [root, setRoot] = useState<Root>();
 
   useLayoutEffect(() => {
-    if (canvasRef.current) {
+    if (canvasRef.current && width && height) {
       const store = createStore({
         canvas: canvasRef.current,
         camera,
@@ -60,7 +60,7 @@ export const ARScene: FC<ARSceneProps> = ({
 
       setRoot({ store, container });
     }
-  }, [canvasRef.current]);
+  }, [canvasRef.current, width, height]);
 
   useLayoutEffect(() => {
     if (root) {
