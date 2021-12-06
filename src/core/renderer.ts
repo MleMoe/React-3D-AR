@@ -123,6 +123,11 @@ function applyProps(instance: Instance, props: InstanceCustomProps) {
       continue;
     }
 
+    if (attr === 'ref') {
+      props[attr].current = getPublicInstance(instance);
+      continue;
+    }
+
     if (typeof props[attr] === 'object') {
       for (const key in props[attr] as any) {
         instance[attr][key] = (props[attr] as any)[key];
@@ -132,9 +137,15 @@ function applyProps(instance: Instance, props: InstanceCustomProps) {
     }
   }
 
-  console.log(
-    instance._local.root.getState().interactionManager.interactiveObjects
-  );
+  return instance;
+}
+
+/**
+ * ref 暴露的数据
+ * @param instance
+ * @returns
+ */
+function getPublicInstance(instance: Instance) {
   return instance;
 }
 
@@ -166,7 +177,6 @@ function createInstance(
   if (Object.keys(rest).length) {
     instance = applyProps(instance, rest);
   }
-  console.log(instance);
 
   return instance;
 }
@@ -340,15 +350,8 @@ export let reconciler = Reconciler({
     return true;
   },
   getChildHostContext() {},
+  getPublicInstance,
 
-  /**
-   * ref 暴露的数据
-   * @param instance
-   * @returns
-   */
-  getPublicInstance(instance) {
-    return instance;
-  },
   getRootHostContext(rootContainer) {
     return null;
   },

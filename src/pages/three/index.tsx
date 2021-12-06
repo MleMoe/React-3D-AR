@@ -1,10 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { ARScene } from '../../core/ARScene';
 import { Euler } from '../../core/tag-types';
 import * as THREE from 'three';
 import { Instance } from '../../core/renderer';
+import { useStore } from '../../core/hooks';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+
+const Controls = () => {
+  // const store = useStore();
+  // console.log(store);
+
+  return (
+    <></>
+    // <orbitControls ref={ref} enableDamping args={[camera, gl.domElement]} />
+  );
+};
 
 function App() {
+  const meshRef = useRef<Instance>();
   const [rotation, setRotation] = useState<Euler>(() => ({
     x: 0,
     y: 10,
@@ -43,6 +56,10 @@ function App() {
   }, []);
   // console.log(rotation);
 
+  useEffect(() => {
+    console.log('meshRef.current: ', meshRef.current);
+  }, [meshRef]);
+
   return (
     <ARScene>
       <perspectiveCamera args={[75, 1, 0.1, 1000]} />
@@ -53,6 +70,7 @@ function App() {
       />
 
       <mesh
+        ref={meshRef}
         rotation={rotation}
         position={{
           x: 20,
@@ -75,6 +93,8 @@ function App() {
           console.log('触发单击事件！');
           console.log(event);
           instance.material.color.set(0x0000ff);
+
+          console.log(meshRef.current);
         }}
       ></mesh>
       <mesh

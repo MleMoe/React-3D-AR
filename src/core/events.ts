@@ -91,11 +91,8 @@ export class InteractionManager {
     const { width, height } = this.size;
     console.log(offsetX, offsetY, width, height);
 
-    // this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    // this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     this.mouse.set((offsetX / width) * 2 - 1, -(offsetY / height) * 2 + 1);
 
-    console.log('mouse: ', this.mouse);
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
     this.interactiveObjects.forEach((object) => {
@@ -105,8 +102,6 @@ export class InteractionManager {
     this.interactiveObjects.sort(function (a, b) {
       return a.distance - b.distance;
     });
-
-    console.log(this.interactiveObjects);
   };
 
   checkIntersection = (object: InteractiveObject) => {

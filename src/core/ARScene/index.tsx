@@ -14,11 +14,13 @@ import { Provider } from '../provider';
 import { createStore, Camera } from '../store';
 import * as THREE from 'three';
 import { animateLoop } from '../loop';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 type ARSceneProps = Partial<{
   className: string;
   style: React.CSSProperties;
   camera: Camera;
+  controls: OrbitControls;
   ar: {
     active: boolean;
     session: XRSession;
@@ -42,6 +44,7 @@ export const ARScene: FC<ARSceneProps> = ({
   style,
   camera,
   ar,
+  controls,
   children,
 }) => {
   const [containerRef, { width, height }] = useMeasure({
