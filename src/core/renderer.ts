@@ -98,18 +98,6 @@ function log(type: keyof typeof logConfig, args: any) {
 }
 
 /**
- * 渲染场景
- * @param container root 信息
- */
-export function glRender(container: UseBoundStore<RootState>) {
-  const state = container.getState();
-
-  const { glRenderer, camera, scene } = state;
-  // 渲染
-  camera && glRenderer.render(scene, camera);
-}
-
-/**
  * 为节点添加或更新属性
  * @param instance
  * @param props
@@ -248,7 +236,6 @@ export let reconciler = Reconciler({
     // 最上层节点的 parent 是 scene
     // child._local.parent = container.getState().scene;
     container.getState().scene.add(child);
-    glRender(container);
   },
 
   /**
@@ -341,8 +328,6 @@ export let reconciler = Reconciler({
       const { removeKeys, nowProps } = changes;
       applyProps(instance, nowProps);
     }
-
-    glRender(instance._local.root);
   },
 
   /**

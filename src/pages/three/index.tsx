@@ -70,6 +70,12 @@ function App() {
             color: 0xff0000,
           })
         }
+        onClick={(event) => {
+          const instance = event.target as Instance;
+          console.log('触发单击事件！');
+          console.log(event);
+          instance.material.color.set(0x0000ff);
+        }}
       ></mesh>
       <mesh
         rotation={rotation}

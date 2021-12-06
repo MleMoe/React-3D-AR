@@ -13,6 +13,7 @@ import { reconciler, Root } from '../renderer';
 import { Provider } from '../provider';
 import { createStore, Camera } from '../store';
 import * as THREE from 'three';
+import { animateLoop } from '../loop';
 
 type ARSceneProps = Partial<{
   className: string;
@@ -51,7 +52,7 @@ export const ARScene: FC<ARSceneProps> = ({
   const [root, setRoot] = useState<Root>();
 
   useLayoutEffect(() => {
-    if (canvasRef.current && width && height) {
+    if (canvasRef.current && width && height && !root) {
       const store = createStore({
         canvas: canvasRef.current,
         camera,
@@ -59,6 +60,8 @@ export const ARScene: FC<ARSceneProps> = ({
       const container = reconciler.createContainer(store, 0, false, null);
 
       setRoot({ store, container });
+      // 启动绘制循环
+      animateLoop(store);
     }
   }, [canvasRef.current, width, height]);
 
