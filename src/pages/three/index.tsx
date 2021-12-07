@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ThreeRefObj, Scene } from '../../core/Scene';
 import { Euler } from '../../core/tag-types';
 import * as THREE from 'three';
 import { Instance } from '../../core/renderer';
+import { XRSession } from 'three';
+import { useAR } from '../../core/hooks';
 // import { ARButton } from '../../core/ARButton';
 
 function App() {
@@ -17,6 +19,17 @@ function App() {
   }));
 
   const [width, setWidth] = useState(5);
+  const [color, setColor] = useState(0xff0000);
+
+  const { support, arSession, startAR } = useAR();
+  console.log('support, arSession: ', support, arSession);
+
+  const onSessionStarted = useCallback(async (session: XRSession) => {
+    if (threeRef.current?.glRenderer) {
+      threeRef.current.glRenderer.xr.setReferenceSpaceType('local');
+      await threeRef.current.glRenderer.xr.setSession(session);
+    }
+  }, []);
 
   useEffect(() => {
     let id = -1;
@@ -54,10 +67,8 @@ function App() {
     <>
       <Scene
         threeRef={threeRef}
-        ar={{
-          active: true,
-        }}
-        camera={new THREE.PerspectiveCamera(75, 1, 0.1, 1000)}
+        ar={true}
+        camera={new THREE.PerspectiveCamera(75)}
       >
         <ambientLight args={[0xaaaaaa]} />
         <directionalLight
@@ -80,19 +91,24 @@ function App() {
           geometry={new THREE.BoxGeometry(width, width, width)}
           material={
             new THREE.MeshBasicMaterial({
-              color: 0xff0000,
+              color,
             })
           }
           onClick={(event) => {
             const instance = event.target as Instance;
             console.log('触发单击事件！');
-            console.log(event);
-            instance.material.color.set(0x0000ff);
-            const { x, y, z } = instance.scale;
-            instance.scale.set(x + 1.0, y + 1.0, z + 1.0);
+            startAR({ requiredFeatures: ['hit-test'] }, onSessionStarted);
+
+            // console.log(event);
+            // setWidth((prev) => prev + 1); // ?? setWidth 顺序在 color.set 后，color.set 会失效
+            // // instance.material.color.set(0x0000ff);
+            // setColor(0x0000ff);
+
+            // const { x, y, z } = instance.scale;
+            // instance.scale.set(x + 1.0, y + 1.0, z + 1.0);
 
             // console.log(meshRef.current);
-            console.log('threeRef: ', threeRef.current);
+            // console.log('threeRef: ', threeRef.current);
           }}
         ></mesh>
         {/* <mesh

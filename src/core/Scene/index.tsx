@@ -30,12 +30,8 @@ type ARSceneProps = Partial<{
   className: string;
   style: React.CSSProperties;
   camera: Camera;
-}> & {
-  ar: {
-    active: boolean;
-    session?: XRSession;
-  };
-};
+  ar: boolean;
+}>;
 
 /**
  * 渲染
@@ -54,7 +50,7 @@ export const Scene: FC<ARSceneProps> = ({
   className,
   style,
   camera,
-  ar,
+  ar = false,
   children,
 }) => {
   const [divRef, { width, height }] = useMeasure({
@@ -71,6 +67,10 @@ export const Scene: FC<ARSceneProps> = ({
         camera,
       });
       const { glRenderer, scene } = store.getState();
+
+      if (ar) {
+        glRenderer.xr.enabled = true;
+      }
       if (threeRef) {
         threeRef.current = {
           canvas: canvasRef.current,
