@@ -9,7 +9,7 @@ import { EventHandlers } from './events';
 
 export type LocalState = {
   eventListeners: Partial<EventHandlers>;
-  root: UseBoundStore<RootState>;
+  containerInfo: UseBoundStore<RootState>;
 };
 
 export type Instance = Omit<THREE.Object3D, 'parent' | 'children'> & {
@@ -111,7 +111,7 @@ function applyProps(instance: Instance, props: InstanceCustomProps) {
       const { eventListeners } = _local;
       const eventListener = eventListeners[type];
 
-      const { interactionManager } = _local.root.getState();
+      const { interactionManager } = _local.containerInfo.getState();
 
       if (eventListener != undefined) {
         instance.removeEventListener(type, eventListener);
@@ -173,7 +173,10 @@ function createInstance(
   let name = `${type[0].toUpperCase()}${type.slice(1)}`;
   let instance: Instance = new (THREE as any)[name](...args);
 
-  instance._local = { root: rootContainerInstance, eventListeners: {} };
+  instance._local = {
+    containerInfo: rootContainerInstance,
+    eventListeners: {},
+  };
   if (Object.keys(rest).length) {
     instance = applyProps(instance, rest);
   }
@@ -187,7 +190,7 @@ function appendChild(parent: Instance, child: Instance) {
 }
 
 function removeChild(parent: Instance, child: Instance) {
-  child._local.root.getState().interactionManager.remove(child);
+  child._local.containerInfo.getState().interactionManager.remove(child);
   child.removeFromParent();
 }
 
@@ -196,7 +199,11 @@ function switchInstance(
   type: string,
   nextProps: InstanceProps
 ) {
-  const newInstance = createInstance(type, nextProps, instance._local.root);
+  const newInstance = createInstance(
+    type,
+    nextProps,
+    instance._local.containerInfo
+  );
 
   // 更新 children
   if (instance.children) {

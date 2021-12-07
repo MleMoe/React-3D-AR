@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { createContext } from 'react';
 
 import create, { GetState, SetState, UseBoundStore } from 'zustand';
-import { InteractionManager, InteractiveObject } from './events';
+import { InteractionManager } from './events';
 
 // import { XRSession } from 'three';
 
@@ -29,28 +29,6 @@ export type RootState = {
   get: GetState<RootState>;
 };
 
-const context = createContext<UseBoundStore<RootState>>(null!);
-
-// 返回一个 WebGLRenderer
-const createRendererInstance = (
-  canvas: HTMLCanvasElement
-): THREE.WebGLRenderer => {
-  const renderer = new THREE.WebGLRenderer({
-    powerPreference: 'high-performance',
-    canvas,
-    antialias: true,
-    alpha: true,
-  });
-
-  renderer.setSize(canvas.width, canvas.height);
-
-  renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.setClearColor('#ecd9bd');
-
-  return renderer;
-};
-
 export type StoreProps = {
   canvas: HTMLCanvasElement;
   camera?: Camera;
@@ -59,12 +37,23 @@ export type StoreProps = {
   arSessinInit?: THREE.XRSessionInit;
 };
 
+const context = createContext<UseBoundStore<RootState>>(null!);
+
 const createStore = (props: StoreProps): UseBoundStore<RootState> => {
   const { canvas, ar = false, arSessinInit = {}, camera: cameraProps } = props;
   let camera = cameraProps;
 
   const rootState = create<RootState>((set, get) => {
-    const glRenderer = createRendererInstance(canvas);
+    const glRenderer = new THREE.WebGLRenderer({
+      powerPreference: 'high-performance',
+      canvas,
+      antialias: true,
+      alpha: true,
+    });
+    glRenderer.setSize(canvas.width, canvas.height);
+    glRenderer.outputEncoding = THREE.sRGBEncoding;
+    glRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+
     if (!camera) {
       // Create default camera
       camera = new THREE.PerspectiveCamera(

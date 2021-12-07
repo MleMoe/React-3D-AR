@@ -26,8 +26,6 @@ function App() {
 
   const [width, setWidth] = useState(5);
 
-  const [size, setSize] = useState(() => [15, 15, 15]);
-
   useEffect(() => {
     let id = -1;
     // const timer = setInterval(() => {
@@ -61,7 +59,11 @@ function App() {
   }, [meshRef]);
 
   return (
-    <ARScene>
+    <ARScene
+      ar={{
+        active: true,
+      }}
+    >
       <perspectiveCamera args={[75, 1, 0.1, 1000]} />
       <ambientLight args={[0xaaaaaa]} />
       <directionalLight
@@ -97,7 +99,7 @@ function App() {
           console.log(meshRef.current);
         }}
       ></mesh>
-      <mesh
+      {/* <mesh
         rotation={rotation}
         position={{
           x: 0,
@@ -117,7 +119,7 @@ function App() {
           const { x, y, z } = instance.scale;
           instance.scale.set(x + 1.0, y + 1.0, z + 1.0);
         }}
-      ></mesh>
+      ></mesh> */}
     </ARScene>
   );
 }

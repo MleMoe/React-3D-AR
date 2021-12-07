@@ -129,7 +129,6 @@ export class InteractionManager {
       if (obj.instance._local.eventListeners['onClick']) {
         if (obj.intersected) {
           this.dispatch(obj, { type: 'onClick', target: obj.instance });
-          // this.container && glRender(this.container);
           break;
         } else {
           console.log('没有射线击中的对象, ', this.interactiveObjects);
