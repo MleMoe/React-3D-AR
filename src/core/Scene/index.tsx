@@ -17,7 +17,16 @@ import { animateLoop } from '../loop';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Vector2 } from 'three';
 
+export type ThreeRefObj = {
+  canvas: HTMLCanvasElement;
+  scene: THREE.Scene;
+  glRenderer: THREE.WebGLRenderer;
+};
+
 type ARSceneProps = Partial<{
+  threeRef: {
+    current: ThreeRefObj | undefined;
+  };
   className: string;
   style: React.CSSProperties;
   camera: Camera;
@@ -41,13 +50,14 @@ function render(root: Root, element: React.ReactNode) {
 }
 
 export const Scene: FC<ARSceneProps> = ({
+  threeRef,
   className,
   style,
   camera,
   ar,
   children,
 }) => {
-  const [containerRef, { width, height }] = useMeasure({
+  const [divRef, { width, height }] = useMeasure({
     scroll: true,
     debounce: { scroll: 50, resize: 0 },
   });
@@ -60,6 +70,15 @@ export const Scene: FC<ARSceneProps> = ({
         canvas: canvasRef.current,
         camera,
       });
+      const { glRenderer, scene } = store.getState();
+      if (threeRef) {
+        threeRef.current = {
+          canvas: canvasRef.current,
+          glRenderer,
+          scene,
+        };
+      }
+
       const container = reconciler.createContainer(store, 0, false, null);
 
       setRoot({ store, container });
@@ -91,7 +110,7 @@ export const Scene: FC<ARSceneProps> = ({
 
   return (
     <div
-      ref={containerRef}
+      ref={divRef}
       className={className}
       style={{
         position: 'relative',
