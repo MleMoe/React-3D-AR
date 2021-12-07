@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Scene } from '../../core/Scene';
+import { ThreeRefObj, Scene } from '../../core/Scene';
 import { Euler } from '../../core/tag-types';
 import * as THREE from 'three';
 import { Instance } from '../../core/renderer';
-import { ARButton } from '../../core/ARButton';
+// import { ARButton } from '../../core/ARButton';
 
 function App() {
+  const [threeRef] = useState<{ current: ThreeRefObj | undefined }>(() => ({
+    current: undefined,
+  }));
   const meshRef = useRef<Instance>();
   const [rotation, setRotation] = useState<Euler>(() => ({
     x: 0,
@@ -50,11 +53,12 @@ function App() {
   return (
     <>
       <Scene
+        threeRef={threeRef}
         ar={{
           active: true,
         }}
+        camera={new THREE.PerspectiveCamera(75, 1, 0.1, 1000)}
       >
-        <perspectiveCamera args={[75, 1, 0.1, 1000]} />
         <ambientLight args={[0xaaaaaa]} />
         <directionalLight
           args={[0xaaaaaa]}
@@ -66,7 +70,7 @@ function App() {
           position={{
             x: 0,
             y: 0,
-            z: 0,
+            z: -100,
           }}
           scale={{
             x: 3,
@@ -88,6 +92,7 @@ function App() {
             instance.scale.set(x + 1.0, y + 1.0, z + 1.0);
 
             // console.log(meshRef.current);
+            console.log('threeRef: ', threeRef.current);
           }}
         ></mesh>
         {/* <mesh
