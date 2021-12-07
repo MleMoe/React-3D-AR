@@ -15,17 +15,18 @@ import { createStore, Camera } from '../store';
 import * as THREE from 'three';
 import { animateLoop } from '../loop';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { Vector2 } from 'three';
 
 type ARSceneProps = Partial<{
   className: string;
   style: React.CSSProperties;
   camera: Camera;
-  controls: OrbitControls;
+}> & {
   ar: {
     active: boolean;
-    session: XRSession;
+    session?: XRSession;
   };
-}>;
+};
 
 /**
  * 渲染
@@ -44,7 +45,6 @@ export const ARScene: FC<ARSceneProps> = ({
   style,
   camera,
   ar,
-  controls,
   children,
 }) => {
   const [containerRef, { width, height }] = useMeasure({
@@ -70,11 +70,15 @@ export const ARScene: FC<ARSceneProps> = ({
 
   useLayoutEffect(() => {
     if (root) {
-      // resize renderer
-      const { glRenderer } = root.store.getState();
+      // resize renderer and camera
+      const { glRenderer, camera } = root.store.getState();
       const size = glRenderer.getSize(new THREE.Vector2());
       if (width !== size.x || height !== size.y) {
         glRenderer.setSize(width, height);
+        if ('aspect' in camera) {
+          camera.aspect = width / height;
+          camera.updateProjectionMatrix();
+        }
       }
     }
   }, [width, height]); // 可不写 root
