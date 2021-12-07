@@ -183,13 +183,11 @@ function createInstance(
 
 function appendChild(parent: Instance, child: Instance) {
   log('appendChild', arguments);
-  // child._local.parent = parent;
-
   parent.add(child);
 }
 
-function removeChild(parentInstance: Instance, child: Instance) {
-  // child._local.parent = null;
+function removeChild(parent: Instance, child: Instance) {
+  child._local.root.getState().interactionManager.remove(child);
   child.removeFromParent();
 }
 
