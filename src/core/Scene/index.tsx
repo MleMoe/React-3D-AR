@@ -40,7 +40,7 @@ function render(root: Root, element: React.ReactNode) {
   );
 }
 
-export const ARScene: FC<ARSceneProps> = ({
+export const Scene: FC<ARSceneProps> = ({
   className,
   style,
   camera,

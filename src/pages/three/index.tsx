@@ -1,20 +1,9 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import { ARScene } from '../../core/ARScene';
+import React, { useState, useEffect, useRef } from 'react';
+import { Scene } from '../../core/Scene';
 import { Euler } from '../../core/tag-types';
 import * as THREE from 'three';
 import { Instance } from '../../core/renderer';
-import { useStore } from '../../core/hooks';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-
-const Controls = () => {
-  // const store = useStore();
-  // console.log(store);
-
-  return (
-    <></>
-    // <orbitControls ref={ref} enableDamping args={[camera, gl.domElement]} />
-  );
-};
+import { ARButton } from '../../core/ARButton';
 
 function App() {
   const meshRef = useRef<Instance>();
@@ -59,47 +48,49 @@ function App() {
   }, [meshRef]);
 
   return (
-    <ARScene
-      ar={{
-        active: true,
-      }}
-    >
-      <perspectiveCamera args={[75, 1, 0.1, 1000]} />
-      <ambientLight args={[0xaaaaaa]} />
-      <directionalLight
-        args={[0xaaaaaa]}
-        position={{ x: -100, y: -100, z: -100 }}
-      />
+    <>
+      <Scene
+        ar={{
+          active: true,
+        }}
+      >
+        <perspectiveCamera args={[75, 1, 0.1, 1000]} />
+        <ambientLight args={[0xaaaaaa]} />
+        <directionalLight
+          args={[0xaaaaaa]}
+          position={{ x: -100, y: -100, z: -100 }}
+        />
+        <mesh
+          ref={meshRef}
+          rotation={rotation}
+          position={{
+            x: 0,
+            y: 0,
+            z: 0,
+          }}
+          scale={{
+            x: 3,
+            y: 3,
+            z: 3,
+          }}
+          geometry={new THREE.BoxGeometry(width, width, width)}
+          material={
+            new THREE.MeshBasicMaterial({
+              color: 0xff0000,
+            })
+          }
+          onClick={(event) => {
+            const instance = event.target as Instance;
+            console.log('触发单击事件！');
+            console.log(event);
+            instance.material.color.set(0x0000ff);
+            const { x, y, z } = instance.scale;
+            instance.scale.set(x + 1.0, y + 1.0, z + 1.0);
 
-      <mesh
-        ref={meshRef}
-        rotation={rotation}
-        position={{
-          x: 20,
-          y: 0,
-          z: 0,
-        }}
-        scale={{
-          x: 3,
-          y: 3,
-          z: 3,
-        }}
-        geometry={new THREE.BoxGeometry(width, width, width)}
-        material={
-          new THREE.MeshBasicMaterial({
-            color: 0xff0000,
-          })
-        }
-        onClick={(event) => {
-          const instance = event.target as Instance;
-          console.log('触发单击事件！');
-          console.log(event);
-          instance.material.color.set(0x0000ff);
-
-          console.log(meshRef.current);
-        }}
-      ></mesh>
-      {/* <mesh
+            // console.log(meshRef.current);
+          }}
+        ></mesh>
+        {/* <mesh
         rotation={rotation}
         position={{
           x: 0,
@@ -120,7 +111,8 @@ function App() {
           instance.scale.set(x + 1.0, y + 1.0, z + 1.0);
         }}
       ></mesh> */}
-    </ARScene>
+      </Scene>
+    </>
   );
 }
 
