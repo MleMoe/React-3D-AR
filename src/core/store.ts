@@ -6,7 +6,7 @@ import { InteractionManager } from './events';
 
 // import { XRSession } from 'three';
 
-export type Camera = THREE.OrthographicCamera | THREE.PerspectiveCamera;
+export type Camera = THREE.PerspectiveCamera;
 export type Raycaster = THREE.Raycaster & {
   enabled: boolean;
 };
@@ -21,10 +21,6 @@ export type RootState = {
 
   interactionManager: InteractionManager;
 
-  ar: boolean;
-  arSession?: THREE.XRSession;
-  setArSession: (session: THREE.XRSession) => void;
-
   set: SetState<RootState>;
   get: GetState<RootState>;
 };
@@ -34,13 +30,12 @@ export type StoreProps = {
   camera?: Camera;
 
   ar?: boolean;
-  arSessinInit?: THREE.XRSessionInit;
 };
 
 const context = createContext<UseBoundStore<RootState>>(null!);
 
 const createStore = (props: StoreProps): UseBoundStore<RootState> => {
-  const { canvas, ar = false, arSessinInit = {}, camera: cameraProps } = props;
+  const { canvas, camera: cameraProps } = props;
   let camera = cameraProps;
 
   const rootState = create<RootState>((set, get) => {
@@ -62,8 +57,9 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
         0.1,
         1000
       );
-      camera.lookAt(0, 0, 0);
-      camera.position.set(0, 10, 100);
+    } else {
+      camera.aspect = canvas.width / canvas.height;
+      camera.updateProjectionMatrix();
     }
 
     const interactionManager = new InteractionManager(canvas, camera);
@@ -79,15 +75,6 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
 
       set,
       get,
-
-      ar,
-      arSessinInit,
-      setArSession: (arSession: THREE.XRSession) => {
-        set(() => ({
-          ar: true,
-          arSession: arSession,
-        }));
-      },
     };
   });
 
