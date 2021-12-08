@@ -18,8 +18,11 @@ export function animateLoop(container: UseBoundStore<RootState>) {
   function animate() {
     requestAnimationFrame(animate);
     const { glRenderer, camera, scene } = container.getState();
+
     // 渲染
     camera && glRenderer.render(scene, camera);
   }
+  // ？？用 renderer.setAnimationLoop(animate)，click 事件失效
+
   animate();
 }

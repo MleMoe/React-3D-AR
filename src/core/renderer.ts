@@ -86,7 +86,7 @@ const logConfig = {
   insertInContainerBefore: true,
   insertBefore: true,
   prepareUpdate: true,
-  commitUpdate: true,
+  commitUpdate: false,
   finalizeInitialChildren: false,
 };
 
