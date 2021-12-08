@@ -1,26 +1,19 @@
-import React, {
-  FC,
-  useRef,
-  useEffect,
-  useState,
-  useLayoutEffect,
-  useMemo,
-} from 'react';
-import useMeasure, { Options as ResizeOptions } from 'react-use-measure';
-import type { XRSystem, XRSession } from 'webxr';
+import React, { FC, useState, useLayoutEffect } from 'react';
+import useMeasure from 'react-use-measure';
 import '../tag-types';
 import { reconciler, Root } from '../renderer';
 import { Provider } from '../provider';
 import { createStore, Camera } from '../store';
 import * as THREE from 'three';
 import { animateLoop } from '../loop';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { Vector2 } from 'three';
+import { InteractionManager } from '../events';
 
 export type ThreeRefObj = {
   canvas: HTMLCanvasElement;
   scene: THREE.Scene;
+  camera: Camera;
   glRenderer: THREE.WebGLRenderer;
+  interactionManager: InteractionManager;
 };
 
 type ARSceneProps = Partial<{
@@ -66,7 +59,12 @@ export const Scene: FC<ARSceneProps> = ({
         canvas: canvasRef.current,
         camera,
       });
-      const { glRenderer, scene } = store.getState();
+      const {
+        glRenderer,
+        scene,
+        interactionManager,
+        camera: cameraStore,
+      } = store.getState();
 
       if (ar) {
         glRenderer.xr.enabled = true;
@@ -76,6 +74,8 @@ export const Scene: FC<ARSceneProps> = ({
           canvas: canvasRef.current,
           glRenderer,
           scene,
+          camera: cameraStore,
+          interactionManager,
         };
       }
 
@@ -90,7 +90,7 @@ export const Scene: FC<ARSceneProps> = ({
   useLayoutEffect(() => {
     if (root) {
       // resize renderer and camera
-      const { glRenderer, camera } = root.store.getState();
+      const { glRenderer, camera, interactionManager } = root.store.getState();
       const size = glRenderer.getSize(new THREE.Vector2());
       if (width !== size.x || height !== size.y) {
         glRenderer.setSize(width, height);
@@ -99,6 +99,8 @@ export const Scene: FC<ARSceneProps> = ({
           camera.updateProjectionMatrix();
         }
       }
+      const { raycaster, mouse } = interactionManager;
+      raycaster.setFromCamera(mouse, camera);
     }
   }, [width, height]); // 可不写 root
 
@@ -117,6 +119,7 @@ export const Scene: FC<ARSceneProps> = ({
         width: '100%',
         height: '100%',
         overflow: 'hidden',
+        zIndex: 10000,
         ...style,
       }}
     >
