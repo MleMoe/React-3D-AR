@@ -29,6 +29,7 @@ export type InteractiveObject = {
 };
 
 export class InteractionManager {
+  responseDom: HTMLElement | null;
   canvas: HTMLCanvasElement;
   camera: Camera;
   mouse: Vector2;
@@ -39,7 +40,12 @@ export class InteractionManager {
     width: number;
     height: number;
   };
-  constructor(canvas: HTMLCanvasElement, camera: Camera) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    camera: Camera,
+    responseDom?: HTMLElement
+  ) {
+    this.responseDom = responseDom || canvas.parentElement;
     this.camera = camera;
     this.canvas = canvas;
     this.size = {
@@ -53,17 +59,22 @@ export class InteractionManager {
 
     this.raycaster = new Raycaster();
 
-    canvas.addEventListener('click', this.onMouseClick);
-    canvas.addEventListener('dblclick', this.onMouseDblClick);
+    this.responseDom?.addEventListener('click', this.onMouseClick);
+    this.responseDom?.addEventListener('dblclick', this.onMouseDblClick);
   }
 
   setContainer = (container: UseBoundStore<RootState>) => {
     this.container = container;
   };
 
+  setresponseDom = (responseDom: HTMLElement) => {
+    this.dispose();
+    this.responseDom = responseDom;
+  };
+
   dispose = () => {
-    this.canvas.removeEventListener('click', this.onMouseClick);
-    this.canvas.removeEventListener('dbclick', this.onMouseDblClick);
+    this.responseDom?.removeEventListener('click', this.onMouseClick);
+    this.responseDom?.removeEventListener('dbclick', this.onMouseDblClick);
   };
 
   add = (instance: Instance) => {
