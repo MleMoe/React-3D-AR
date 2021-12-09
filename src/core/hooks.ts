@@ -11,9 +11,18 @@ export interface XRSystem extends EventTarget {
 }
 
 export function useStore() {
-  const store = useContext(context);
-  if (!store) throw `请在 scene 的 child 组件使用`;
+  const store = useContext(context).getState();
+  if (!store)
+    throw `请在 scene 的 child 组件使用，若不是，请使用 Scene 的 storeRef`;
   return store;
+}
+
+export function useFrame(callback: () => void) {
+  const store = useContext(context).getState();
+  useLayoutEffect(() => {
+    const { frameCallbacks } = store;
+    frameCallbacks.push(callback);
+  }, []);
 }
 
 export function useAR() {
