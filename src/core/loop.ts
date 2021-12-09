@@ -15,14 +15,12 @@ export function glRender(container: UseBoundStore<RootState>) {
 }
 
 export function animateLoop(container: UseBoundStore<RootState>) {
+  const { glRenderer, camera, scene } = container.getState();
+
   function animate() {
-    requestAnimationFrame(animate);
-    const { glRenderer, camera, scene } = container.getState();
-
     // 渲染
-    camera && glRenderer.render(scene, camera);
+    glRenderer.render(scene, camera);
   }
-  // ？？用 renderer.setAnimationLoop(animate)，click 事件失效
-
+  glRenderer.setAnimationLoop(animate);
   animate();
 }
