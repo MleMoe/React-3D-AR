@@ -25,7 +25,9 @@ const Reticle: FC<ReticleProps> = ({
   position: positionProp = { x: 0, y: 0, z: 0 },
   dataRef,
 }) => {
-  const visible = visibleProp ?? dataRef.current.visible;
+  const [visible, setVisible] = useState(
+    visibleProp ?? dataRef.current.visible
+  );
   const [position, setPosition] = useState(
     positionProp ?? dataRef.current.position
   );
@@ -42,6 +44,7 @@ const Reticle: FC<ReticleProps> = ({
       if (dataRef.current.visible && dataRef.current.position) {
         setPosition(dataRef.current.position);
       }
+      setVisible(dataRef.current.visible);
     });
     return () => {
       clearInterval(timer);
