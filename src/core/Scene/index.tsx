@@ -3,22 +3,22 @@ import useMeasure from 'react-use-measure';
 import '../tag-types';
 import { reconciler, Root } from '../renderer';
 import { Provider } from '../provider';
-import { createStore, Camera } from '../store';
+import { createStore, Camera, RootState } from '../store';
 import * as THREE from 'three';
-import { animateLoop } from '../loop';
+import { createLoop } from '../loop';
 import { InteractionManager } from '../events';
 
-export type ThreeRefObj = {
-  canvas: HTMLCanvasElement;
-  scene: THREE.Scene;
-  camera: Camera;
-  glRenderer: THREE.WebGLRenderer;
-  interactionManager: InteractionManager;
-};
+// export type ThreeRefObj = {
+//   canvas: HTMLCanvasElement;
+//   scene: THREE.Scene;
+//   camera: Camera;
+//   glRenderer: THREE.WebGLRenderer;
+//   interactionManager: InteractionManager;
+// };
 
 type ARSceneProps = Partial<{
-  threeRef: {
-    current: ThreeRefObj | undefined;
+  storeRef: {
+    current: RootState | undefined;
   };
   className: string;
   style: React.CSSProperties;
@@ -39,7 +39,7 @@ function render(root: Root, element: React.ReactNode) {
 }
 
 export const Scene: FC<ARSceneProps> = ({
-  threeRef,
+  storeRef,
   className,
   style,
   camera,
@@ -69,21 +69,15 @@ export const Scene: FC<ARSceneProps> = ({
       if (ar) {
         glRenderer.xr.enabled = true;
       }
-      if (threeRef) {
-        threeRef.current = {
-          canvas: canvasRef.current,
-          glRenderer,
-          scene,
-          camera: cameraStore,
-          interactionManager,
-        };
+      if (storeRef) {
+        storeRef.current = store.getState();
       }
 
       const container = reconciler.createContainer(store, 0, false, null);
 
       setRoot({ store, container });
       // 启动绘制循环
-      animateLoop(store);
+      createLoop(store.getState());
     }
   }, [canvasRef.current, width, height]);
 

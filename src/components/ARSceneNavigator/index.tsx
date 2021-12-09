@@ -3,11 +3,12 @@ import * as THREE from 'three';
 import { ARButton } from '../../core/ARButton';
 import { useAR } from '../../core/hooks';
 import { Instance } from '../../core/renderer';
-import { Scene, ThreeRefObj } from '../../core/Scene';
+import { Scene } from '../../core/Scene';
+import { RootState } from '../../core/store';
 import { Euler } from '../../core/tag-types';
 
 export const ARSceneNavigator: FC = () => {
-  const [threeRef] = useState<{ current: ThreeRefObj | undefined }>(() => ({
+  const [storeRef] = useState<{ current: RootState | undefined }>(() => ({
     current: undefined,
   }));
 
@@ -23,50 +24,21 @@ export const ARSceneNavigator: FC = () => {
   const { support, arSession, startAR } = useAR();
 
   const onSessionStarted = useCallback(async (session: THREE.XRSession) => {
-    if (threeRef.current) {
-      const { glRenderer, scene, camera } = threeRef.current;
+    if (storeRef.current) {
+      const { glRenderer, scene, camera, frameCallbacks } = storeRef.current;
 
-      threeRef.current.glRenderer.xr.setReferenceSpaceType('local');
-      await threeRef.current.glRenderer.xr.setSession(session);
-      // const outerEle = threeRef.current.glRenderer.domElement.parentElement;
-      // if (outerEle) {
-      //   threeRef.current.interactionManager.setOuterElement(outerEle);
-      // }
-      // console.log('outer: ', outerEle);
+      storeRef.current.glRenderer.xr.setReferenceSpaceType('local');
+      await storeRef.current.glRenderer.xr.setSession(session);
+
       function animate() {
-        // console.log('test: ');
-        // id = requestAnimationFrame(animate);
-        // console.log(rotation);
-        glRenderer.render(scene, camera);
-
         setRotation((prev) => ({
           y: (prev.y ?? 0) + 0.01,
         }));
         // setWidth((prev) => (prev + 1) % 20);
       }
-      // animate();
-      console.log('设置循环');
-
-      glRenderer.setAnimationLoop(animate);
+      frameCallbacks.push(animate);
     }
   }, []);
-
-  // useEffect(() => {
-  //   // let id = -1;
-  //   // const timer = setInterval(() => {
-  //   //   setRotation((prev) => ({
-  //   //     x: prev.x + 0.1,
-  //   //     y: prev.y + 0.1,
-  //   //   }));
-  //   // }, 10000);
-  //   if (threeRef.current) {
-  //   }
-
-  //   return () => {
-  //     // cancelAnimationFrame(id);
-  //     // clearInterval(timer);
-  //   };
-  // }, []);
 
   return (
     <>
@@ -76,7 +48,7 @@ export const ARSceneNavigator: FC = () => {
         }}
       ></ARButton>
       <Scene
-        threeRef={threeRef}
+        storeRef={storeRef}
         ar={true}
         camera={new THREE.PerspectiveCamera(75)}
       >

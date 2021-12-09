@@ -19,6 +19,7 @@ export type RootState = {
   scene: THREE.Scene;
   camera: Camera;
 
+  frameCallbacks: (() => void)[];
   interactionManager: InteractionManager;
 
   set: SetState<RootState>;
@@ -36,7 +37,7 @@ const context = createContext<UseBoundStore<RootState>>(null!);
 
 const createStore = (props: StoreProps): UseBoundStore<RootState> => {
   const { canvas, camera: cameraProps } = props;
-  let camera = cameraProps;
+  let camera: Camera;
 
   const rootState = create<RootState>((set, get) => {
     const glRenderer = new THREE.WebGLRenderer({
@@ -49,7 +50,7 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
     glRenderer.outputEncoding = THREE.sRGBEncoding;
     glRenderer.toneMapping = THREE.ACESFilmicToneMapping;
 
-    if (!camera) {
+    if (!cameraProps) {
       // Create default camera
       camera = new THREE.PerspectiveCamera(
         75,
@@ -58,6 +59,7 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
         1000
       );
     } else {
+      camera = cameraProps;
       camera.aspect = canvas.width / canvas.height;
       camera.updateProjectionMatrix();
     }
@@ -66,11 +68,16 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
 
     const scene = new THREE.Scene();
 
+    const glRender = () => {
+      glRenderer.render(scene, camera);
+    };
+    const frameCallbacks = [glRender];
+
     return {
       glRenderer,
       scene,
       camera,
-
+      frameCallbacks,
       interactionManager,
 
       set,
