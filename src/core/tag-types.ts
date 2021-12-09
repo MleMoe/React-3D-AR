@@ -93,6 +93,8 @@ export type ArrayCameraProps = Object3DNode<
  */
 export type MeshProps = Object3DNode<THREE.Mesh, typeof THREE.Mesh>;
 
+export type GroupProps = Object3DNode<THREE.Group, typeof THREE.Group>;
+
 /**
  * Light
  */
@@ -114,6 +116,7 @@ declare global {
       mesh: MeshProps;
       ambientLight: AmbientLightProps;
       directionalLight: DirectionalLightProps;
+      group: GroupProps;
     }
   }
 }

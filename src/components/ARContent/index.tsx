@@ -1,6 +1,7 @@
 import { FC, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '../../core/hooks';
+import { FrameCallback } from '../../core/loop';
 import { Euler } from '../../core/tag-types';
 
 export const ARContent: FC = () => {
@@ -13,7 +14,7 @@ export const ARContent: FC = () => {
   const [width, setWidth] = useState(10);
   const [color, setColor] = useState(0xff0000);
 
-  const animate = useCallback(() => {
+  const animate: FrameCallback = useCallback(() => {
     setRotation((prev) => ({
       y: (prev.y ?? 0) + 0.01,
     }));

@@ -5,6 +5,7 @@ import { useAR } from '../../core/hooks';
 import { Scene } from '../../core/Scene';
 import { RootState } from '../../core/store';
 import { ARContent } from '../ARContent';
+import { ARHitTest } from '../ARHitTest';
 
 export const ARSceneNavigator: FC = () => {
   const [storeRef] = useState<{ current: RootState | undefined }>(() => ({
@@ -15,8 +16,6 @@ export const ARSceneNavigator: FC = () => {
 
   const onSessionStarted = useCallback(async (session: THREE.XRSession) => {
     if (storeRef.current) {
-      const { glRenderer, scene, camera, frameCallbacks } = storeRef.current;
-
       storeRef.current.glRenderer.xr.setReferenceSpaceType('local');
       await storeRef.current.glRenderer.xr.setSession(session);
     }
@@ -39,7 +38,8 @@ export const ARSceneNavigator: FC = () => {
           args={[0xaaaaaa]}
           position={{ x: -100, y: -100, z: -100 }}
         />
-        <ARContent />
+        {/* <ARContent /> */}
+        <ARHitTest />
       </Scene>
     </>
   );

@@ -1,6 +1,7 @@
 import { useContext, useState, useLayoutEffect, useCallback } from 'react';
 import { context } from './store';
 import { XRSessionInit, WebGLRenderer, XRSession, XRSessionMode } from 'three';
+import { FrameCallback } from './loop';
 
 export interface XRSystem extends EventTarget {
   isSessionSupported: (sessionMode: XRSessionMode) => Promise<boolean>;
@@ -17,7 +18,7 @@ export function useStore() {
   return store;
 }
 
-export function useFrame(callback: () => void) {
+export function useFrame(callback: FrameCallback) {
   const store = useContext(context).getState();
   useLayoutEffect(() => {
     const { frameCallbacks } = store;

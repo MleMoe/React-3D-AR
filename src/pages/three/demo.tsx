@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ThreeRefObj, Scene } from '../../core/Scene';
+import { Scene } from '../../core/Scene';
 import { Euler } from '../../core/tag-types';
 import * as THREE from 'three';
 import { Instance } from '../../core/renderer';
 import { XRSession } from 'three';
 import { useAR } from '../../core/hooks';
+import { RootState } from '../../core/store';
 // import { ARButton } from '../../core/ARButton';
 
 function App() {
-  const [threeRef] = useState<{ current: ThreeRefObj | undefined }>(() => ({
+  const [threeRef] = useState<{ current: RootState | undefined }>(() => ({
     current: undefined,
   }));
   const meshRef = useRef<Instance>();
@@ -66,7 +67,7 @@ function App() {
   return (
     <>
       <Scene
-        threeRef={threeRef}
+        storeRef={threeRef}
         ar={true}
         camera={new THREE.PerspectiveCamera(75)}
       >
