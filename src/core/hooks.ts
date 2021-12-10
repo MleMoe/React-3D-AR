@@ -10,13 +10,13 @@ import {
   Vector3,
   Matrix4,
   XRSessionInit,
-  WebGLRenderer,
   XRSession,
   XRSessionMode,
   XRHitTestSource,
   XRHitTestResult,
   XRReferenceSpace,
   XRFrame,
+  XRPose,
 } from 'three';
 import { FrameCallback } from './loop';
 
@@ -181,4 +181,41 @@ export function useARHitTest() {
   }, []);
   useFrame(render);
   return { hitRef };
+}
+
+export function useARImageTracking() {
+  const imgPoseRef = useRef<XRPose>();
+
+  const { glRenderer } = useStore();
+  const [webXRManager] = useState(() => glRenderer.xr);
+
+  const render = useCallback((time?: number, frame?: XRFrame) => {
+    if (!frame) {
+      return;
+    }
+    // @ts-ignore
+    const results = frame.getImageTrackingResults();
+    for (const result of results) {
+      // The result's index is the image's position in the trackedImages array specified at session creation
+      const imageIndex = result.index;
+      const referenceSpace = webXRManager.getReferenceSpace();
+
+      // Get the pose of the image relative to a reference space.
+      // @ts-ignore
+      const pose = frame?.getPose(result.imageSpace, referenceSpace);
+
+      const state = result.trackingState;
+
+      if (state == 'tracked') {
+        imgPoseRef.current = pose;
+        // HighlightImage(imageIndex, pose);
+      } else if (state == 'emulated') {
+        console.log(state, imageIndex, pose);
+        // FadeImage(imageIndex, pose);
+      }
+    }
+  }, []);
+
+  useFrame(render);
+  return { imgPoseRef };
 }
