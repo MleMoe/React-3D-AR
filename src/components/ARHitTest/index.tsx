@@ -41,9 +41,7 @@ const Reticle: FC<ReticleProps> = ({
 
   useLayoutEffect(() => {
     const timer = setInterval(() => {
-      if (dataRef.current.visible && dataRef.current.position) {
-        setPosition(dataRef.current.position);
-      }
+      setPosition(dataRef.current.position);
       setVisible(dataRef.current.visible);
     });
     return () => {
