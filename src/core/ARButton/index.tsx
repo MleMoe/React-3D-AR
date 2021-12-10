@@ -6,13 +6,25 @@ import './index.scss';
 
 type ARButtonProps = Partial<{
   onStartAR: () => void;
+  onEndAR: () => void;
 }>;
 
-export const ARButton: FC<ARButtonProps> = ({ onStartAR }) => {
+export const ARButton: FC<ARButtonProps> = ({ onStartAR, onEndAR }) => {
+  const [inProgress, setInProgress] = useState(false);
   return (
     <>
-      <button className='AR-button' onClick={onStartAR}>
-        START AR
+      <button
+        className='AR-button'
+        onClick={() => {
+          if (inProgress) {
+            onEndAR?.();
+          } else {
+            onStartAR?.();
+          }
+          setInProgress((prev) => !prev);
+        }}
+      >
+        {inProgress ? 'END AR' : 'START AR'}
       </button>
     </>
   );
