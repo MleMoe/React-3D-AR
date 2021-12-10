@@ -18,6 +18,17 @@ export function useStore() {
   return store;
 }
 
+export function useThree() {
+  const store = useContext(context).getState();
+  if (!store)
+    throw `请在 scene 的 child 组件使用，若不是，请使用 Scene 的 storeRef`;
+  const [three] = useState(() => {
+    const { glRenderer, scene, camera } = store;
+    return { glRenderer, scene, camera };
+  });
+  return three;
+}
+
 export function useFrame(callback: FrameCallback) {
   const store = useContext(context).getState();
   useLayoutEffect(() => {

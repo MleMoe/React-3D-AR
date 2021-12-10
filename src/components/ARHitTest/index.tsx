@@ -10,7 +10,7 @@ import {
   XRHitTestSource,
   XRReferenceSpace,
 } from 'three';
-import { useFrame, useStore } from '../../core/hooks';
+import { useFrame, useStore, useThree } from '../../core/hooks';
 
 type ReticleData = {
   visible: boolean;
@@ -73,7 +73,7 @@ const Placement: FC<PlacementProps> = ({
 };
 
 export const ARHitTest = () => {
-  const { glRenderer, scene } = useStore();
+  const { glRenderer, scene } = useThree();
 
   const [webXRManager] = useState(() => glRenderer.xr);
   const [controller] = useState(() => webXRManager.getController(0));
