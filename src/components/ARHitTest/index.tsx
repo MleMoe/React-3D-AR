@@ -1,24 +1,16 @@
-import { FC, useState, useRef, useCallback, useLayoutEffect } from 'react';
+import { FC, useState, useCallback, useLayoutEffect } from 'react';
 import {
   RingGeometry,
   MeshBasicMaterial,
   CylinderGeometry,
   MeshPhongMaterial,
-  Matrix4,
   Vector3,
-  XRFrame,
-  XRHitTestSource,
-  XRReferenceSpace,
 } from 'three';
-import { useARHitTest, useFrame, useStore, useThree } from '../../core/hooks';
+import { HitState, useARHitTest, useThree } from '../../core/hooks';
 
-type ReticleData = {
-  visible: boolean;
-  position: Vector3;
-};
 type ReticleProps = {
-  dataRef: React.MutableRefObject<ReticleData>;
-} & Partial<ReticleData>;
+  dataRef: React.MutableRefObject<HitState>;
+} & Partial<HitState>;
 const Reticle: FC<ReticleProps> = ({
   children: childrenNode,
   visible: visibleProp = false,
@@ -73,7 +65,7 @@ const Placement: FC<PlacementProps> = ({
 };
 
 export const ARHitTest = () => {
-  const reticleRef = useARHitTest();
+  const hitRef = useARHitTest();
 
   const { glRenderer, scene } = useThree();
   const [controller] = useState(() => glRenderer.xr.getController(0));
@@ -81,9 +73,9 @@ export const ARHitTest = () => {
   const [placementData, setPlacementData] = useState<PlacementProps[]>([]);
 
   const onSelect = useCallback(() => {
-    console.log('触发 select 事件!', reticleRef);
-    if (reticleRef.current.visible) {
-      const position = reticleRef.current.position;
+    console.log('触发 select 事件!');
+    if (hitRef.current.visible) {
+      const position = hitRef.current.position;
       if (position) {
         setPlacementData((prev) => {
           return [...prev, { position: position }];
@@ -101,9 +93,9 @@ export const ARHitTest = () => {
   return (
     <group>
       <Reticle
-        dataRef={reticleRef}
-        visible={reticleRef.current.visible}
-        position={reticleRef.current.position}
+        dataRef={hitRef}
+        visible={hitRef.current.visible}
+        position={hitRef.current.position}
       />
       {placementData.map((item, index) => (
         <Placement key={index} position={item.position}></Placement>

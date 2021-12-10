@@ -89,7 +89,7 @@ export function useAR() {
   };
 }
 
-type ReticleData = {
+export type HitState = {
   visible: boolean;
   position: Vector3;
 };
@@ -98,7 +98,7 @@ export function useARHitTest() {
   const { glRenderer } = useThree();
   const [webXRManager] = useState(() => glRenderer.xr);
 
-  const hitRef = useRef<ReticleData>({
+  const hitRef = useRef<HitState>({
     visible: false,
     position: new Vector3(0, 0, 0),
   });
