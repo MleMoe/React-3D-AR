@@ -59,17 +59,26 @@ export class InteractionManager {
 
     this.raycaster = new Raycaster();
 
-    this.responseDom?.addEventListener('click', this.onMouseClick);
-    this.responseDom?.addEventListener('dblclick', this.onMouseDblClick);
+    this.setEventListener();
   }
 
   setContainer = (container: UseBoundStore<RootState>) => {
     this.container = container;
   };
 
-  setresponseDom = (responseDom: HTMLElement) => {
+  setCamera = (camera: Camera) => {
+    this.camera = camera;
+  };
+
+  setResponseDom = (responseDom: HTMLElement) => {
     this.dispose();
     this.responseDom = responseDom;
+    this.setEventListener();
+  };
+
+  setEventListener = () => {
+    this.responseDom?.addEventListener('click', this.onMouseClick);
+    this.responseDom?.addEventListener('dblclick', this.onMouseDblClick);
   };
 
   dispose = () => {
@@ -79,7 +88,6 @@ export class InteractionManager {
 
   add = (instance: Instance) => {
     if (instance) {
-      // const interactiveObject = new InteractiveObject(object, object.name);
       this.interactiveObjects.push({
         instance,
         distance: Infinity,
@@ -134,6 +142,7 @@ export class InteractionManager {
   };
 
   onMouseClick = (event: MouseEvent) => {
+    console.log('点击！');
     this.update(event);
     // const event = new InteractiveEvent('click', mouseEvent);
     for (const obj of this.interactiveObjects) {

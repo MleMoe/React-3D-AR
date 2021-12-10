@@ -1,4 +1,4 @@
-import { FC, useState, useCallback } from 'react';
+import { FC, useState, useCallback, useRef } from 'react';
 import * as THREE from 'three';
 import { ARButton } from '../../core/ARButton';
 import { useAR } from '../../core/hooks';
@@ -11,23 +11,42 @@ export const ARSceneNavigator: FC = () => {
   const [storeRef] = useState<{ current: RootState | undefined }>(() => ({
     current: undefined,
   }));
+  const overlayRef = useRef<HTMLDivElement>(null!);
 
-  const { support, arSession, startAR } = useAR();
+  const { support, arSession, startAR, endAR } = useAR();
 
   const onSessionStarted = useCallback(async (session: THREE.XRSession) => {
     if (storeRef.current) {
       storeRef.current.glRenderer.xr.setReferenceSpaceType('local');
       await storeRef.current.glRenderer.xr.setSession(session);
+
+      const { interactionManager, glRenderer } = storeRef.current;
+      const { setCamera, setResponseDom } = interactionManager;
+      setCamera(
+        glRenderer.xr.getCamera(new THREE.Camera()) as THREE.PerspectiveCamera
+      );
+      setResponseDom(overlayRef.current);
     }
   }, []);
 
   return (
     <>
-      <ARButton
-        onStartAR={() => {
-          startAR({ requiredFeatures: ['hit-test'] }, onSessionStarted);
-        }}
-      ></ARButton>
+      <div ref={overlayRef} id='overlay'>
+        <ARButton
+          onStartAR={() => {
+            startAR(
+              {
+                requiredFeatures: ['hit-test'],
+                optionalFeatures: ['dom-overlay'],
+                // @ts-ignore
+                domOverlay: { root: overlayRef.current },
+              },
+              onSessionStarted
+            );
+          }}
+          onEndAR={endAR}
+        ></ARButton>
+      </div>
       <Scene
         storeRef={storeRef}
         ar={true}
@@ -38,7 +57,7 @@ export const ARSceneNavigator: FC = () => {
           args={[0xaaaaaa]}
           position={{ x: -100, y: -100, z: -100 }}
         />
-        {/* <ARContent /> */}
+        <ARContent />
         <ARHitTest />
       </Scene>
     </>
