@@ -14,6 +14,7 @@ import {
   XRSession,
   XRSessionMode,
   XRHitTestSource,
+  XRHitTestResult,
   XRReferenceSpace,
   XRFrame,
 } from 'three';
@@ -82,16 +83,23 @@ export function useAR() {
     },
     [xr, support]
   );
+
+  const endAR = useCallback(() => {
+    arSession?.end();
+  }, [arSession]);
   return {
     support,
     arSession,
     startAR,
+    endAR,
   };
 }
 
 export type HitState = {
   visible: boolean;
   position: Vector3;
+  positions: Vector3[];
+  hitTestResults: XRHitTestResult[];
 };
 
 export function useARHitTest() {
@@ -101,6 +109,8 @@ export function useARHitTest() {
   const hitRef = useRef<HitState>({
     visible: false,
     position: new Vector3(0, 0, 0),
+    positions: [],
+    hitTestResults: [],
   });
 
   const hitTestSource = useRef<XRHitTestSource | undefined>();
@@ -115,11 +125,15 @@ export function useARHitTest() {
     if (!session) return;
 
     if (!hitTestSourceRequested.current) {
+      // const entityTypes: XRHitTestTrackableType[] = ['plane', 'mesh'];
       session
         .requestReferenceSpace('viewer')
         .then((referenceSpace: XRReferenceSpace) => {
           session
-            .requestHitTestSource({ space: referenceSpace })
+            .requestHitTestSource({
+              space: referenceSpace,
+              // entityTypes,
+            })
             .then((source: XRHitTestSource) => {
               hitTestSource.current = source;
             });
@@ -139,6 +153,8 @@ export function useARHitTest() {
 
     if (hitTestSource.current && referenceSpace) {
       const hitTestResults = frame.getHitTestResults(hitTestSource.current);
+      hitRef.current.visible = false;
+
       if (hitTestResults.length) {
         const hit = hitTestResults[0];
         const pose = hit.getPose(referenceSpace);
@@ -148,11 +164,21 @@ export function useARHitTest() {
             new Matrix4().fromArray(pose.transform.matrix)
           );
         }
-      } else {
-        hitRef.current.visible = false;
       }
+      hitRef.current.hitTestResults = [...hitTestResults];
+      hitRef.current.positions = hitTestResults.reduce((result, hit) => {
+        const pose = hit.getPose(referenceSpace);
+        if (pose) {
+          result.push(
+            new Vector3(0, 0, 0).applyMatrix4(
+              new Matrix4().fromArray(pose.transform.matrix)
+            )
+          );
+        }
+        return result;
+      }, [] as Vector3[]);
     }
   }, []);
   useFrame(render);
-  return hitRef;
+  return { hitRef };
 }

@@ -65,14 +65,16 @@ const Placement: FC<PlacementProps> = ({
 };
 
 export const ARHitTest = () => {
-  const hitRef = useARHitTest();
+  const { hitRef } = useARHitTest();
 
   const { glRenderer, scene } = useThree();
-  const [controller] = useState(() => glRenderer.xr.getController(0));
+  const [controller] = useState(() => {
+    return glRenderer.xr.getController(0);
+  });
 
   const [placementData, setPlacementData] = useState<PlacementProps[]>([]);
 
-  const onSelect = useCallback(() => {
+  const onSelect = useCallback((event) => {
     console.log('触发 select 事件!');
     if (hitRef.current.visible) {
       const position = hitRef.current.position;
@@ -87,7 +89,10 @@ export const ARHitTest = () => {
   useLayoutEffect(() => {
     controller.addEventListener('select', onSelect);
     scene.add(controller);
-    return () => {};
+    return () => {
+      controller.removeEventListener('select', onSelect);
+      scene.remove(controller);
+    };
   }, []);
 
   return (
