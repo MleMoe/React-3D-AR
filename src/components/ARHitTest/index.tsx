@@ -10,7 +10,7 @@ import {
   XRHitTestSource,
   XRReferenceSpace,
 } from 'three';
-import { useFrame, useStore, useThree } from '../../core/hooks';
+import { useARHitTest, useFrame, useStore, useThree } from '../../core/hooks';
 
 type ReticleData = {
   visible: boolean;
@@ -73,19 +73,12 @@ const Placement: FC<PlacementProps> = ({
 };
 
 export const ARHitTest = () => {
+  const reticleRef = useARHitTest();
+
   const { glRenderer, scene } = useThree();
+  const [controller] = useState(() => glRenderer.xr.getController(0));
 
-  const [webXRManager] = useState(() => glRenderer.xr);
-  const [controller] = useState(() => webXRManager.getController(0));
-
-  const reticleRef = useRef<ReticleData>({
-    visible: false,
-    position: new Vector3(0, 0, 0),
-  });
   const [placementData, setPlacementData] = useState<PlacementProps[]>([]);
-
-  const hitTestSource = useRef<XRHitTestSource | undefined>();
-  const hitTestSourceRequested = useRef(false);
 
   const onSelect = useCallback(() => {
     console.log('触发 select 事件!', reticleRef);
@@ -104,56 +97,6 @@ export const ARHitTest = () => {
     scene.add(controller);
     return () => {};
   }, []);
-
-  const render = useCallback((time?: number, frame?: XRFrame) => {
-    if (!frame) {
-      return;
-    }
-
-    const session = webXRManager.getSession();
-    if (!session) return;
-
-    if (!hitTestSourceRequested.current) {
-      session
-        .requestReferenceSpace('viewer')
-        .then((referenceSpace: XRReferenceSpace) => {
-          session
-            .requestHitTestSource({ space: referenceSpace })
-            .then((source: XRHitTestSource) => {
-              hitTestSource.current = source;
-            });
-        });
-      session.addEventListener(
-        'end',
-        () => {
-          hitTestSourceRequested.current = false;
-          hitTestSource.current = undefined;
-        },
-        { once: true }
-      );
-
-      hitTestSourceRequested.current = true;
-    }
-    const referenceSpace = webXRManager.getReferenceSpace();
-
-    if (hitTestSource.current && referenceSpace) {
-      const hitTestResults = frame.getHitTestResults(hitTestSource.current);
-      if (hitTestResults.length) {
-        const hit = hitTestResults[0];
-        const pose = hit.getPose(referenceSpace);
-        if (pose) {
-          reticleRef.current.visible = true;
-          reticleRef.current.position = new Vector3(0, 0, 0).applyMatrix4(
-            new Matrix4().fromArray(pose.transform.matrix)
-          );
-        }
-      } else {
-        reticleRef.current.visible = false;
-      }
-    }
-  }, []);
-
-  useFrame(render);
 
   return (
     <group>

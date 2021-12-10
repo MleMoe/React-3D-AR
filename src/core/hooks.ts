@@ -1,6 +1,22 @@
-import { useContext, useState, useLayoutEffect, useCallback } from 'react';
+import {
+  useContext,
+  useState,
+  useLayoutEffect,
+  useCallback,
+  useRef,
+} from 'react';
 import { context } from './store';
-import { XRSessionInit, WebGLRenderer, XRSession, XRSessionMode } from 'three';
+import {
+  Vector3,
+  Matrix4,
+  XRSessionInit,
+  WebGLRenderer,
+  XRSession,
+  XRSessionMode,
+  XRHitTestSource,
+  XRReferenceSpace,
+  XRFrame,
+} from 'three';
 import { FrameCallback } from './loop';
 
 export interface XRSystem extends EventTarget {
@@ -71,4 +87,72 @@ export function useAR() {
     arSession,
     startAR,
   };
+}
+
+type ReticleData = {
+  visible: boolean;
+  position: Vector3;
+};
+
+export function useARHitTest() {
+  const { glRenderer } = useThree();
+  const [webXRManager] = useState(() => glRenderer.xr);
+
+  const hitRef = useRef<ReticleData>({
+    visible: false,
+    position: new Vector3(0, 0, 0),
+  });
+
+  const hitTestSource = useRef<XRHitTestSource | undefined>();
+  const hitTestSourceRequested = useRef(false);
+
+  const render = useCallback((time?: number, frame?: XRFrame) => {
+    if (!frame) {
+      return;
+    }
+
+    const session = webXRManager.getSession();
+    if (!session) return;
+
+    if (!hitTestSourceRequested.current) {
+      session
+        .requestReferenceSpace('viewer')
+        .then((referenceSpace: XRReferenceSpace) => {
+          session
+            .requestHitTestSource({ space: referenceSpace })
+            .then((source: XRHitTestSource) => {
+              hitTestSource.current = source;
+            });
+        });
+      session.addEventListener(
+        'end',
+        () => {
+          hitTestSourceRequested.current = false;
+          hitTestSource.current = undefined;
+        },
+        { once: true }
+      );
+
+      hitTestSourceRequested.current = true;
+    }
+    const referenceSpace = webXRManager.getReferenceSpace();
+
+    if (hitTestSource.current && referenceSpace) {
+      const hitTestResults = frame.getHitTestResults(hitTestSource.current);
+      if (hitTestResults.length) {
+        const hit = hitTestResults[0];
+        const pose = hit.getPose(referenceSpace);
+        if (pose) {
+          hitRef.current.visible = true;
+          hitRef.current.position = new Vector3(0, 0, 0).applyMatrix4(
+            new Matrix4().fromArray(pose.transform.matrix)
+          );
+        }
+      } else {
+        hitRef.current.visible = false;
+      }
+    }
+  }, []);
+  useFrame(render);
+  return hitRef;
 }
