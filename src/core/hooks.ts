@@ -17,6 +17,8 @@ import {
   XRReferenceSpace,
   XRFrame,
   XRPose,
+  XRPlane,
+  Quaternion,
 } from 'three';
 import { FrameCallback } from './loop';
 
@@ -218,4 +220,52 @@ export function useARImageTracking() {
 
   useFrame(render);
   return { imgPoseRef };
+}
+
+export type PlaneState = {
+  position: Vector3;
+  orientation: 'Horizontal' | 'Vertical';
+  polygon: Quaternion[];
+};
+export function useARPlaneDetection() {
+  const planePosesRef = useRef<PlaneState[]>([]);
+  const { glRenderer } = useStore();
+  const [webXRManager] = useState(() => glRenderer.xr);
+
+  const render = useCallback((time?: number, frame?: XRFrame) => {
+    if (!frame) {
+      return;
+    }
+    const referenceSpace = webXRManager.getReferenceSpace();
+
+    // @ts-ignore
+    const detectedPlanes: XRPlane[] = frame.detectedPlanes;
+    if (!detectedPlanes) {
+      return;
+    }
+    console.log(detectedPlanes);
+    const result: PlaneState[] = [];
+    detectedPlanes?.forEach((plane) => {
+      if (referenceSpace) {
+        const planePose = frame.getPose(plane.planeSpace, referenceSpace);
+        if (planePose) {
+          const position = new Vector3(0, 0, 0).applyMatrix4(
+            new Matrix4().fromArray(planePose.transform.matrix)
+          );
+          result.push({
+            position,
+            orientation: plane.orientation,
+            polygon: plane.polygon.map((item) => {
+              return new Quaternion(item.x, item.y, item.z, item.w);
+            }),
+          });
+        }
+      }
+    });
+
+    planePosesRef.current = result;
+  }, []);
+
+  useFrame(render);
+  return { planePosesRef };
 }
