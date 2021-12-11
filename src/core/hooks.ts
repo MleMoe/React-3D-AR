@@ -64,19 +64,23 @@ export function useAR() {
   });
   const [support, setSupport] = useState<boolean>();
   const [arSession, setArSession] = useState<XRSession>();
+
   useLayoutEffect(() => {
     xr?.isSessionSupported('immersive-ar').then((isSupport) => {
       setSupport(isSupport);
     });
   }, []);
 
-  const startAR = useCallback(
+  const creactARSession = useCallback(
     (
       sessionInit: XRSessionInit,
       onSessionStarted: (session: XRSession) => Promise<void>
     ) => {
       if (!xr || !support) {
         return { support: false };
+      }
+      if (arSession) {
+        return;
       }
       xr.requestSession('immersive-ar', sessionInit).then((session) => {
         setArSession(session);
@@ -86,14 +90,15 @@ export function useAR() {
     [xr, support]
   );
 
-  const endAR = useCallback(() => {
+  const disposeARSession = useCallback(() => {
     arSession?.end();
   }, [arSession]);
+
   return {
     support,
     arSession,
-    startAR,
-    endAR,
+    creactARSession,
+    disposeARSession,
   };
 }
 

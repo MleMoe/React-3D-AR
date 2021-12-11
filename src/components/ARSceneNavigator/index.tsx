@@ -1,12 +1,13 @@
 import { FC, useState, useCallback, useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import { ARButton } from '../../core/ARButton';
+import { ARButton } from '../controls/ARButton';
 import { useAR } from '../../core/hooks';
 import { Scene } from '../../core/Scene';
 import { RootState } from '../../core/store';
 import { ARContent } from '../ARContent';
 import { ARHitTest } from '../ARHitTest';
 import { ARImageTracking } from '../ARImageTracking';
+import { PlaceButton } from '../controls/PlaceButton';
 
 export const ARSceneNavigator: FC = () => {
   const [storeRef] = useState<{ current: RootState | undefined }>(() => ({
@@ -15,7 +16,7 @@ export const ARSceneNavigator: FC = () => {
   const overlayRef = useRef<HTMLDivElement>(null!);
   const imgRef = useRef<HTMLImageElement>(null!);
 
-  const { support, arSession, startAR, endAR } = useAR();
+  const { support, arSession, creactARSession, disposeARSession } = useAR();
 
   const onSessionStarted = useCallback(async (session: THREE.XRSession) => {
     if (storeRef.current) {
@@ -43,40 +44,44 @@ export const ARSceneNavigator: FC = () => {
     }
   }, []);
 
-  const [imgBitmap, setImgBitmap] = useState<ImageBitmap>(null!);
-  useEffect(() => {
-    createImageBitmap(imgRef.current).then((imgBitmap) => {
-      setImgBitmap(imgBitmap);
-    });
-
-    return () => {};
+  const onStartAR = useCallback(() => {
+    creactARSession(
+      {
+        requiredFeatures: ['hit-test'], // 'image-tracking',
+        optionalFeatures: ['dom-overlay'],
+        // @ts-ignore
+        domOverlay: { root: overlayRef.current },
+        // trackedImages: [
+        //   {
+        //     image: imgBitmap,
+        //     widthInMeters: 0.3,
+        //   },
+        // ],
+      },
+      onSessionStarted
+    );
   }, []);
+
+  // const [imgBitmap, setImgBitmap] = useState<ImageBitmap>(null!);
+  // useEffect(() => {
+  //   createImageBitmap(imgRef.current).then((imgBitmap) => {
+  //     setImgBitmap(imgBitmap);
+  //   });
+
+  //   return () => {};
+  // }, []);
 
   return (
     <>
       <div ref={overlayRef} id='overlay'>
         <ARButton
-          onStartAR={() => {
-            startAR(
-              {
-                requiredFeatures: ['image-tracking', 'hit-test'],
-                optionalFeatures: ['dom-overlay'],
-                // @ts-ignore
-                domOverlay: { root: overlayRef.current },
-                trackedImages: [
-                  {
-                    image: imgBitmap,
-                    widthInMeters: 0.3,
-                  },
-                ],
-              },
-              onSessionStarted
-            );
-          }}
-          onEndAR={endAR}
+          isSupportAR={support}
+          onStartAR={onStartAR}
+          onEndAR={disposeARSession}
         ></ARButton>
+        <PlaceButton />
       </div>
-      <img
+      {/* <img
         ref={imgRef}
         src='/trex-image-big.jpeg'
         style={{
@@ -85,7 +90,7 @@ export const ARSceneNavigator: FC = () => {
           width: '100vw',
           height: '100vh',
         }}
-      ></img>
+      ></img> */}
 
       <Scene
         storeRef={storeRef}
@@ -97,9 +102,9 @@ export const ARSceneNavigator: FC = () => {
           args={[0xaaaaaa]}
           position={{ x: -100, y: -100, z: -100 }}
         />
-        {/* <ARContent />
-        <ARHitTest /> */}
-        <ARImageTracking imgBitmap={imgBitmap} />
+        <ARContent />
+        <ARHitTest />
+        {/* <ARImageTracking imgBitmap={imgBitmap} /> */}
       </Scene>
     </>
   );

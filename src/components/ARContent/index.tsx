@@ -12,7 +12,6 @@ export const ARContent: FC = () => {
   }));
 
   const [width, setWidth] = useState(10);
-  const [color, setColor] = useState(0xff0000);
 
   const animate: FrameCallback = useCallback(() => {
     setRotation((prev) => ({
@@ -31,11 +30,7 @@ export const ARContent: FC = () => {
         z: -50,
       }}
       geometry={new THREE.BoxGeometry(width, width, width)}
-      material={
-        new THREE.MeshPhongMaterial({
-          color,
-        })
-      }
+      material={new THREE.MeshNormalMaterial()}
       onClick={(event) => {
         console.log('触发单击事件！');
         setWidth((prev) => prev + 1);

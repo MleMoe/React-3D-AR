@@ -151,7 +151,7 @@ export class InteractionManager {
           this.dispatch(obj, { type: 'onClick', target: obj.instance });
           break;
         } else {
-          console.log('没有射线击中的对象, ', this.interactiveObjects);
+          console.log('没有射线击中的对象');
         }
       }
     }

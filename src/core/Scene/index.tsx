@@ -8,14 +8,6 @@ import * as THREE from 'three';
 import { createLoop } from '../loop';
 import { InteractionManager } from '../events';
 
-// export type ThreeRefObj = {
-//   canvas: HTMLCanvasElement;
-//   scene: THREE.Scene;
-//   camera: Camera;
-//   glRenderer: THREE.WebGLRenderer;
-//   interactionManager: InteractionManager;
-// };
-
 type ARSceneProps = Partial<{
   storeRef: {
     current: RootState | undefined;
