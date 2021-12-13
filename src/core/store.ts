@@ -3,6 +3,7 @@ import { createContext } from 'react';
 
 import create, { GetState, SetState, UseBoundStore } from 'zustand';
 import { InteractionManager } from './events';
+import { Observer } from './observer';
 
 // import { XRSession } from 'three';
 
@@ -19,8 +20,12 @@ export type RootState = {
   scene: THREE.Scene;
   camera: Camera;
 
+  // 每帧执行
   frameCallbacks: (() => void)[];
+  // 三维物体事件绑定
   interactionManager: InteractionManager;
+  // 外部控件事件绑定
+  uiObserver: Observer;
 
   set: SetState<RootState>;
   get: GetState<RootState>;
@@ -79,6 +84,7 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
       camera,
       frameCallbacks,
       interactionManager,
+      uiObserver: new Observer(),
 
       set,
       get,

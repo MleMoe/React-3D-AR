@@ -6,7 +6,7 @@ import {
   MeshPhongMaterial,
   Vector3,
 } from 'three';
-import { HitState, useARHitTest, useThree } from '../../core/hooks';
+import { HitState, useARHitTest, useStore, useThree } from '../../core/hooks';
 
 type ReticleProps = {
   dataRef: React.MutableRefObject<HitState>;
@@ -67,14 +67,11 @@ const Placement: FC<PlacementProps> = ({
 export const ARHitTest = () => {
   const { hitRef } = useARHitTest();
 
-  const { glRenderer, scene } = useThree();
-  const [controller] = useState(() => {
-    return glRenderer.xr.getController(0);
-  });
+  const { uiObserver } = useStore();
 
   const [placementData, setPlacementData] = useState<PlacementProps[]>([]);
 
-  const onSelect = useCallback((event) => {
+  const onSelect = useCallback(() => {
     console.log('触发 select 事件!');
     if (hitRef.current.visible) {
       const position = hitRef.current.position;
@@ -87,11 +84,9 @@ export const ARHitTest = () => {
   }, []);
 
   useLayoutEffect(() => {
-    controller.addEventListener('select', onSelect);
-    scene.add(controller);
+    uiObserver.on('place', onSelect);
     return () => {
-      controller.removeEventListener('select', onSelect);
-      scene.remove(controller);
+      uiObserver.off('place');
     };
   }, []);
 
