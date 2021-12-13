@@ -26,7 +26,9 @@ const Reticle: FC<ReticleProps> = ({
   const children = childrenNode ?? (
     <mesh
       matrixAutoUpdate={false}
-      geometry={new RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2)}
+      geometry={new RingGeometry(0.15, 0.2, 32)
+        .rotateX(-Math.PI / 2)
+        .translate(0, -0.1, 0)}
       material={new MeshBasicMaterial()}
     ></mesh>
   );
@@ -57,7 +59,7 @@ const Placement: FC<PlacementProps> = ({
 }) => {
   const children = childrenNode ?? (
     <mesh
-      geometry={new CylinderGeometry(0.1, 0.1, 0.2, 32).translate(0, 0.1, 0)}
+      geometry={new CylinderGeometry(0.1, 0.1, 0.2, 32)}
       material={new MeshPhongMaterial({ color: 0xffffff * Math.random() })}
     ></mesh>
   );

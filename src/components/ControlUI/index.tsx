@@ -37,8 +37,7 @@ export const ControlUI: FC<ControlUIProps> = ({
   return (
     <div className='control-ui'>
       {children}
-      {uiObserver &&
-        inProgress &&
+      {inProgress &&
         controlTypes.map((type, index) => (
           <Fragment key={index}>
             {controlBtnMap[type]({ onClick: createEventEmitter(type) })}
