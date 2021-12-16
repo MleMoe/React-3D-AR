@@ -5,7 +5,7 @@ import {
   useCallback,
   useRef,
 } from 'react';
-import { context } from './store';
+import { context, RootState } from './store';
 import {
   Vector3,
   Matrix4,
@@ -226,6 +226,44 @@ export function useARImageTracking() {
   useFrame(render);
   return { imgPoseRef };
 }
+
+export function useCameraAccess(store?: RootState) {
+  const { glRenderer } = useThree();
+
+  const [glBinding] = useState<any>(() => {
+    const arSession = glRenderer.xr.getSession();
+    const gl = glRenderer.getContext();
+    // @ts-ignore
+    return new XRWebGLBinding(arSession, gl);
+  });
+
+  const cameraTextureRef = useRef<WebGLTexture>();
+
+  const frameSend = useCallback(
+    async (time?: number, frame?: XRFrame) => {
+      const referenceSpace = await glRenderer.xr
+        ?.getSession()
+        ?.requestReferenceSpace('viewer');
+      if (referenceSpace) {
+        let viewerPose = frame?.getViewerPose(referenceSpace);
+        if (viewerPose) {
+          for (const view of viewerPose.views) {
+            cameraTextureRef.current = glBinding.getCameraImage(frame, view);
+            console.log('cameraTexture: ', cameraTextureRef.current);
+          }
+        }
+      }
+    },
+    [glBinding]
+  );
+  useFrame(frameSend);
+
+  return { cameraTextureRef };
+}
+
+/**
+ * 平面检测待优化
+ */
 
 export type PlaneState = {
   position: Vector3;
