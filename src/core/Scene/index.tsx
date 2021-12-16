@@ -71,7 +71,7 @@ export const Scene: FC<ARSceneProps> = ({
       // 启动绘制循环
       createLoop(store.getState());
     }
-  }, [canvasRef.current, width, height]);
+  }, [width, height]);
 
   useLayoutEffect(() => {
     if (root) {

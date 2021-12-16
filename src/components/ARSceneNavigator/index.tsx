@@ -1,4 +1,4 @@
-import { FC, useState, useCallback, useRef } from 'react';
+import { FC, useState, useCallback, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { ARButton } from '../ControlUI/ARButton';
 import { useAR } from '../../core/hooks';
@@ -9,13 +9,20 @@ import { ARHitTest } from '../ARHitTest';
 import { Observer } from '../../core/observer';
 import { ControlUI } from '../ControlUI';
 import './index.scss';
+import { FaceButton } from '../ControlUI/FaceButton';
 
 export const ARSceneNavigator: FC = () => {
   const [inProgress, setInProgress] = useState(false);
 
-  const [storeRef] = useState<{ current: RootState | undefined }>(() => ({
-    current: undefined,
-  }));
+  const [storeRef, setStoreRef] = useState<{ current: RootState | undefined }>(
+    () => ({
+      current: undefined,
+    })
+  );
+
+  const [store, setStore] = useState<RootState>();
+
+  const canvasRef = useRef<HTMLCanvasElement>(null!);
 
   const [uiObserver, setUiObserver] = useState<Observer>();
 
@@ -38,13 +45,14 @@ export const ARSceneNavigator: FC = () => {
         glRenderer.xr.getCamera(new THREE.Camera()) as THREE.PerspectiveCamera
       );
       setResponseDom(overlayRef.current);
+      setStore(storeRef.current);
     }
   }, []);
 
   const onStartAR = useCallback(() => {
     creactARSession(
       {
-        requiredFeatures: ['hit-test'], // 'image-tracking',
+        requiredFeatures: ['camera-access'], // 'image-tracking', 'hit-test',
         optionalFeatures: ['dom-overlay'],
         // @ts-ignore
         domOverlay: { root: overlayRef.current },
@@ -56,9 +64,10 @@ export const ARSceneNavigator: FC = () => {
   return (
     <>
       <div ref={overlayRef} className='overlay'>
+        <canvas ref={canvasRef} className='overlay-canvas'></canvas>
         <ControlUI
           uiObserver={uiObserver}
-          controlTypes={['place']}
+          controlTypes={[]}
           inProgress={inProgress}
         >
           <ARButton
@@ -70,6 +79,7 @@ export const ARSceneNavigator: FC = () => {
               setInProgress((prev) => !prev);
             }}
           ></ARButton>
+          <FaceButton store={store} visible={inProgress}></FaceButton>
         </ControlUI>
       </div>
 
@@ -83,7 +93,7 @@ export const ARSceneNavigator: FC = () => {
           args={[0xaaaaaa]}
           position={{ x: -100, y: -100, z: -100 }}
         />
-        <ARHitTest />
+        {/* <ARHitTest /> */}
       </Scene>
     </>
   );
