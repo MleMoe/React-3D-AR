@@ -1,8 +1,8 @@
 import { FC, useState, useCallback } from 'react';
 import * as THREE from 'three';
-import { useFrame } from '../../core/hooks';
-import { FrameCallback } from '../../core/loop';
-import { Euler } from '../../core/tag-types';
+import { useFrame } from '../../packages/three-react/hooks';
+import { FrameCallback } from '../../packages/three-react/loop';
+import { Euler } from '../../packages/three-react/tag-types';
 
 export const ARContent: FC = () => {
   const [rotation, setRotation] = useState<Euler>(() => ({

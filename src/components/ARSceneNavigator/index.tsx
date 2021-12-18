@@ -1,16 +1,16 @@
 import { FC, useState, useCallback, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { ARButton } from '../ControlUI/ARButton';
-import { useAR } from '../../core/hooks';
-import { Scene } from '../../core/Scene';
-import { RootState } from '../../core/store';
+import { Scene } from '../../packages/three-react/Scene';
+import { RootState } from '../../packages/three-react/store';
 import { ARContent } from '../ARContent';
 import { ARHitTest } from '../ARHitTest';
-import { Observer } from '../../core/observer';
+import { Observer } from '../../packages/three-react/observer';
 import { ControlUI } from '../ControlUI';
 import './index.scss';
 import { FaceButton } from '../ControlUI/FaceButton';
 import { CamaraAccessTest } from '../extends/CameraAccessTest';
+import { useAR } from '../../packages/use-webar/hooks';
 
 export const ARSceneNavigator: FC = () => {
   const [inProgress, setInProgress] = useState(false);
@@ -63,12 +63,6 @@ export const ARSceneNavigator: FC = () => {
   return (
     <>
       <div ref={overlayRef} className='overlay'>
-        <canvas
-          className='overlay-canvas'
-          style={{ zIndex: 10, background: 'darkkhaki' }}
-        ></canvas>
-        {store && <CamaraAccessTest store={store} />}
-
         <ControlUI
           uiObserver={uiObserver}
           controlTypes={[]}
@@ -97,7 +91,7 @@ export const ARSceneNavigator: FC = () => {
           args={[0xaaaaaa]}
           position={{ x: -100, y: -100, z: -100 }}
         />
-        {/* <ARHitTest /> */}
+        <ARContent />
       </Scene>
     </>
   );

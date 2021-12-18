@@ -1,8 +1,9 @@
 import { useLayoutEffect, useMemo, useState, FC, useRef } from 'react';
-import { useCameraAccess, useStore, useThree } from '../../../core/hooks';
+import { useThree } from '../../../packages/three-react/hooks';
 import { MeshBasicMaterial } from 'three';
-import { RootState } from '../../../core/store';
+import { RootState } from '../../../packages/three-react/store';
 import './index.scss';
+import { useCameraAccess } from '../../../packages/use-webar/hooks';
 
 function drawCanvasFromTexture(
   gl: WebGLRenderingContext,

@@ -1,9 +1,9 @@
 import { FC, useState, useCallback, useLayoutEffect } from 'react';
 import { Matrix4 } from 'three';
-import { useARImageTracking } from '../../core/hooks';
+import { useARImageTracking } from '../../packages/use-webar/hooks';
 
 import { CylinderGeometry, MeshPhongMaterial, Vector3 } from 'three';
-import { useThree } from '../../core/hooks';
+import { useThree } from '../../packages/three-react/hooks';
 
 type PlacementProps = {
   position: Vector3;

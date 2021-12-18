@@ -6,7 +6,8 @@ import {
   MeshPhongMaterial,
   Vector3,
 } from 'three';
-import { HitState, useARHitTest, useStore, useThree } from '../../core/hooks';
+import { HitState, useARHitTest } from '../../packages/use-webar/hooks';
+import { useStore } from '../../packages/three-react/hooks';
 
 type ReticleProps = {
   dataRef: React.MutableRefObject<HitState>;

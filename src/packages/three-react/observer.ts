@@ -1,4 +1,4 @@
-import { ControlType } from '../components/ControlUI';
+import { ControlType } from '../../components/ControlUI';
 
 export type UIEventType = ControlType;
 

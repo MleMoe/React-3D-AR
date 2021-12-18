@@ -11,7 +11,7 @@ import {
   FACEMESH_FACE_OVAL,
   FACEMESH_LIPS,
 } from '@mediapipe/face_mesh';
-import { RootState } from '../../../core/store';
+import { RootState } from '../../../packages/three-react/store';
 import { XRFrame, XRSession } from 'three';
 
 type FaceButtonProps = {

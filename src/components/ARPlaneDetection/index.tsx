@@ -9,11 +9,10 @@ import {
   DoubleSide,
 } from 'three';
 import {
-  HitState,
-  useThree,
-  useARPlaneDetection,
   PlaneState,
-} from '../../core/hooks';
+  useARPlaneDetection,
+} from '../../packages/use-webar/hooks';
+import { useThree } from '../../packages/three-react/hooks';
 
 type PlaneProps = {
   dataRef: React.MutableRefObject<PlaneState[]>;

@@ -1,5 +1,5 @@
 import { FC, Fragment, useCallback, useState } from 'react';
-import { Observer } from '../../core/observer';
+import { Observer } from '../../packages/three-react/observer';
 import { PlaceButton } from './PlaceButton';
 import './index.scss';
 
