@@ -10,6 +10,7 @@ import { Observer } from '../../core/observer';
 import { ControlUI } from '../ControlUI';
 import './index.scss';
 import { FaceButton } from '../ControlUI/FaceButton';
+import { CamaraAccessTest } from '../extends/CameraAccessTest';
 
 export const ARSceneNavigator: FC = () => {
   const [inProgress, setInProgress] = useState(false);
@@ -21,8 +22,6 @@ export const ARSceneNavigator: FC = () => {
   );
 
   const [store, setStore] = useState<RootState>();
-
-  const canvasRef = useRef<HTMLCanvasElement>(null!);
 
   const [uiObserver, setUiObserver] = useState<Observer>();
 
@@ -64,7 +63,12 @@ export const ARSceneNavigator: FC = () => {
   return (
     <>
       <div ref={overlayRef} className='overlay'>
-        <canvas ref={canvasRef} className='overlay-canvas'></canvas>
+        <canvas
+          className='overlay-canvas'
+          style={{ zIndex: 10, background: 'darkkhaki' }}
+        ></canvas>
+        {store && <CamaraAccessTest store={store} />}
+
         <ControlUI
           uiObserver={uiObserver}
           controlTypes={[]}

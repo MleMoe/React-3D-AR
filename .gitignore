@@ -5,3 +5,4 @@ dist-ssr
 *.local
 public/trex-image-big.jpeg
 src/assets
+.vscode/settings.json

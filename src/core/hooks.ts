@@ -30,17 +30,15 @@ export interface XRSystem extends EventTarget {
   ) => Promise<XRSession>;
 }
 
-export function useStore() {
-  const store = useContext(context).getState();
-  if (!store)
-    throw `请在 scene 的 child 组件使用，若不是，请使用 Scene 的 storeRef`;
-  return store;
+export function useStore(rootStore?: RootState) {
+  const store = useContext(context)?.getState();
+  if (store) return store;
+
+  return rootStore as RootState;
 }
 
-export function useThree() {
-  const store = useContext(context).getState();
-  if (!store)
-    throw `请在 scene 的 child 组件使用，若不是，请使用 Scene 的 storeRef`;
+export function useThree(rootStore?: RootState) {
+  const store = useStore(rootStore);
   const [three] = useState(() => {
     const { glRenderer, scene, camera } = store;
     return { glRenderer, scene, camera };
@@ -48,11 +46,11 @@ export function useThree() {
   return three;
 }
 
-export function useFrame(callback: FrameCallback) {
-  const store = useContext(context).getState();
+export function useFrame(callback: FrameCallback, rootStore?: RootState) {
+  const store = useStore(rootStore);
   useLayoutEffect(() => {
     const { frameCallbacks } = store;
-    frameCallbacks.push(callback);
+    frameCallbacks?.push(callback);
   }, []);
 }
 
@@ -190,10 +188,10 @@ export function useARHitTest() {
   return { hitRef };
 }
 
-export function useARImageTracking() {
+export function useARImageTracking(rootStore?: RootState) {
   const imgPoseRef = useRef<XRPose>();
 
-  const { glRenderer } = useStore();
+  const { glRenderer } = useStore(rootStore);
   const [webXRManager] = useState(() => glRenderer.xr);
 
   const render = useCallback((time?: number, frame?: XRFrame) => {
@@ -228,7 +226,7 @@ export function useARImageTracking() {
 }
 
 export function useCameraAccess(store?: RootState) {
-  const { glRenderer } = useThree();
+  const { glRenderer } = useThree(store);
 
   const [glBinding] = useState<any>(() => {
     const arSession = glRenderer.xr.getSession();
@@ -239,7 +237,7 @@ export function useCameraAccess(store?: RootState) {
 
   const cameraTextureRef = useRef<WebGLTexture>();
 
-  const frameSend = useCallback(
+  const computeCameraTexture = useCallback(
     async (time?: number, frame?: XRFrame) => {
       const referenceSpace = await glRenderer.xr
         ?.getSession()
@@ -249,16 +247,26 @@ export function useCameraAccess(store?: RootState) {
         if (viewerPose) {
           for (const view of viewerPose.views) {
             cameraTextureRef.current = glBinding.getCameraImage(frame, view);
-            console.log('cameraTexture: ', cameraTextureRef.current);
           }
         }
       }
     },
     [glBinding]
   );
-  useFrame(frameSend);
+  useFrame(computeCameraTexture, store);
 
-  return { cameraTextureRef };
+  const [texture, setTexture] = useState<WebGLTexture>();
+
+  useLayoutEffect(() => {
+    const timer = setInterval(() => {
+      setTexture(cameraTextureRef.current);
+    });
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+  return { texture };
 }
 
 /**
@@ -270,9 +278,9 @@ export type PlaneState = {
   orientation: 'Horizontal' | 'Vertical';
   polygon: Quaternion[];
 };
-export function useARPlaneDetection() {
+export function useARPlaneDetection(rootStore?: RootState) {
   const planePosesRef = useRef<PlaneState[]>([]);
-  const { glRenderer } = useStore();
+  const { glRenderer } = useStore() ?? (rootStore as RootState);
   const [webXRManager] = useState(() => glRenderer.xr);
 
   const render = useCallback((time?: number, frame?: XRFrame) => {
