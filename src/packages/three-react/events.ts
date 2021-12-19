@@ -108,7 +108,6 @@ export class InteractionManager {
   update = (event: MouseEvent) => {
     const { offsetX, offsetY } = event;
     const { width, height } = this.size;
-    console.log(offsetX, offsetY, width, height);
 
     this.mouse.set((offsetX / width) * 2 - 1, -(offsetY / height) * 2 + 1);
 
@@ -142,7 +141,7 @@ export class InteractionManager {
   };
 
   onMouseClick = (event: MouseEvent) => {
-    console.log('点击！');
+    console.log('鼠标点击！');
     this.update(event);
     // const event = new InteractiveEvent('click', mouseEvent);
     for (const obj of this.interactiveObjects) {

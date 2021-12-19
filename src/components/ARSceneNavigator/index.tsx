@@ -9,7 +9,6 @@ import { Observer } from '../../packages/three-react/observer';
 import { ControlUI } from '../ControlUI';
 import './index.scss';
 import { FaceButton } from '../ControlUI/FaceButton';
-import { CamaraAccessTest } from '../extends/CameraAccessTest';
 import { useAR } from '../../packages/use-webar/hooks';
 
 export const ARSceneNavigator: FC = () => {
@@ -62,10 +61,13 @@ export const ARSceneNavigator: FC = () => {
 
   return (
     <>
-      <div ref={overlayRef} className='overlay'>
+      <div
+        ref={overlayRef}
+        className={'overlay' + (inProgress ? ' overlay-ar' : '')}
+      >
         <ControlUI
           uiObserver={uiObserver}
-          controlTypes={[]}
+          controlTypes={['place']}
           inProgress={inProgress}
         >
           <ARButton
