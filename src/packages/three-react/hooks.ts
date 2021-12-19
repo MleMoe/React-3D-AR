@@ -21,6 +21,7 @@ import {
   Quaternion,
 } from 'three';
 import { FrameCallback } from './loop';
+import { getUuid } from './utils';
 
 export function useStore(rootStore?: RootState) {
   const store = useContext(context)?.getState();
@@ -42,6 +43,11 @@ export function useFrame(callback: FrameCallback, rootStore?: RootState) {
   const store = useStore(rootStore);
   useLayoutEffect(() => {
     const { frameCallbacks } = store;
-    frameCallbacks?.push(callback);
+    const callbackId = getUuid();
+
+    frameCallbacks.set(callbackId, callback);
+    return () => {
+      frameCallbacks.delete(callbackId);
+    };
   }, []);
 }

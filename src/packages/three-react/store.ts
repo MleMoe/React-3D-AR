@@ -4,6 +4,8 @@ import { createContext } from 'react';
 import create, { GetState, SetState, UseBoundStore } from 'zustand';
 import { InteractionManager } from './events';
 import { Observer } from './observer';
+import { FrameCallback } from './loop';
+import { getUuid } from './utils';
 
 // import { XRSession } from 'three';
 
@@ -21,7 +23,7 @@ export type RootState = {
   camera: Camera;
 
   // 每帧执行
-  frameCallbacks: (() => void)[];
+  frameCallbacks: Map<string, FrameCallback>;
   // 三维物体事件绑定
   interactionManager: InteractionManager;
   // 外部控件事件绑定
@@ -76,7 +78,8 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
     const glRender = () => {
       glRenderer.render(scene, camera);
     };
-    const frameCallbacks = [glRender];
+    const frameCallbacks = new Map<string, FrameCallback>();
+    frameCallbacks.set(getUuid(), glRender);
 
     return {
       glRenderer,

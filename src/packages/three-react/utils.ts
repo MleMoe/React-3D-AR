@@ -1,3 +1,12 @@
+import { v4 as uuidv4 } from 'uuid';
+
+/**
+ * 生成一个 v4-uuid
+ */
+export function getUuid() {
+  return uuidv4();
+}
+
 export function isEqual(a: any, b: any) {
   // 除了两者引用类型都可以判断
   if (!(a instanceof Object) || !(b instanceof Object)) {

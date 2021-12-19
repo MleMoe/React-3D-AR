@@ -7,7 +7,7 @@ export type FrameCallback = (time?: number, frame?: XRFrame) => void;
  * @param container root 信息
  */
 function glRender(
-  frameCallbacks: FrameCallback[],
+  frameCallbacks: Map<string, FrameCallback>,
   time: number,
   frame?: XRFrame
 ) {

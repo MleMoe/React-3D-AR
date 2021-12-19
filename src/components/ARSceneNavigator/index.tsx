@@ -51,7 +51,7 @@ export const ARSceneNavigator: FC = () => {
   const onStartAR = useCallback(() => {
     creactARSession(
       {
-        requiredFeatures: ['camera-access'], // 'image-tracking', 'hit-test',
+        requiredFeatures: ['hit-test'], // 'image-tracking', 'hit-test', 'camera-access'
         optionalFeatures: ['dom-overlay'],
         // @ts-ignore
         domOverlay: { root: overlayRef.current },
@@ -92,6 +92,7 @@ export const ARSceneNavigator: FC = () => {
           position={{ x: -100, y: -100, z: -100 }}
         />
         <ARContent />
+        <ARHitTest />
       </Scene>
     </>
   );
