@@ -8,6 +8,7 @@ import {
 } from 'three';
 import { HitState, useARHitTest } from '../../packages/use-webar/hooks';
 import { useStore } from '../../packages/three-react/hooks';
+import { Model } from '../ARContent/model';
 
 type ReticleProps = {
   dataRef: React.MutableRefObject<HitState>;
@@ -101,7 +102,12 @@ export const ARHitTest = () => {
         position={hitRef.current.position}
       />
       {placementData.map((item, index) => (
-        <Placement key={index} position={item.position}></Placement>
+        <Model
+          key={index}
+          position={item.position}
+          scale={{ x: 0.2, y: 0.2, z: 0.2 }}
+        ></Model>
+        // <Placement key={index} position={item.position}></Placement>
       ))}
     </group>
   );

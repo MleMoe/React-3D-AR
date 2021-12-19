@@ -1,25 +1,6 @@
-import {
-  useContext,
-  useState,
-  useLayoutEffect,
-  useCallback,
-  useRef,
-} from 'react';
+import { useContext, useState, useLayoutEffect } from 'react';
 import { context, RootState } from './store';
-import {
-  Vector3,
-  Matrix4,
-  XRSessionInit,
-  XRSession,
-  XRSessionMode,
-  XRHitTestSource,
-  XRHitTestResult,
-  XRReferenceSpace,
-  XRFrame,
-  XRPose,
-  XRPlane,
-  Quaternion,
-} from 'three';
+
 import { FrameCallback } from './loop';
 import { getUuid } from './utils';
 

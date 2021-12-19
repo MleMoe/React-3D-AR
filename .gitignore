@@ -6,3 +6,4 @@ dist-ssr
 public/trex-image-big.jpeg
 src/assets
 .vscode/settings.json
+public/models/RobotExpressive.glb

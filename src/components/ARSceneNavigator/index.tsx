@@ -10,6 +10,7 @@ import { ControlUI } from '../ControlUI';
 import './index.scss';
 import { FaceButton } from '../ControlUI/FaceButton';
 import { useAR } from '../../packages/use-webar/hooks';
+import { Model } from '../ARContent/model';
 
 export const ARSceneNavigator: FC = () => {
   const [inProgress, setInProgress] = useState(false);
@@ -93,8 +94,10 @@ export const ARSceneNavigator: FC = () => {
           args={[0xaaaaaa]}
           position={{ x: -100, y: -100, z: -100 }}
         />
-        <ARContent />
+        {/* <ARContent /> */}
         <ARHitTest />
+        {/* <Model position={{ x: 5, y: 0, z: -10 }} /> */}
+        {/* <Model /> */}
       </Scene>
     </>
   );
