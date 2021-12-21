@@ -26,8 +26,7 @@ export const ARSceneNavigator: FC = () => {
 
   const overlayRef = useRef<HTMLDivElement>(null!);
 
-  const { support, arSession, creactARSession, disposeARSession, inProgress } =
-    useAR();
+  const { support, creactARSession, disposeARSession, inProgress } = useAR();
 
   const onSessionStarted = useCallback(async (session: THREE.XRSession) => {
     if (storeRef.current) {
@@ -91,10 +90,10 @@ export const ARSceneNavigator: FC = () => {
           position={{ x: -100, y: -100, z: -100 }}
         />
         {/* <ARContent /> */}
-        {/* <ARHitTest /> */}
+        {inProgress && <ARHitTest />}
         {/* <Model position={{ x: 5, y: 0, z: -10 }} /> */}
         {/* <Model /> */}
-        {inProgress && <CameraImage />}
+        {/* {inProgress && <CameraImage />} */}
       </Scene>
     </>
   );

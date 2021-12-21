@@ -51,16 +51,12 @@ export const Scene: FC<ARSceneProps> = ({
         canvas: canvasRef.current,
         camera,
       });
-      const {
-        glRenderer,
-        scene,
-        interactionManager,
-        camera: cameraStore,
-      } = store.getState();
+      const { glRenderer } = store.getState();
 
       if (ar) {
         glRenderer.xr.enabled = true;
       }
+
       if (storeRef) {
         storeRef.current = store.getState();
       }
@@ -88,7 +84,7 @@ export const Scene: FC<ARSceneProps> = ({
       const { raycaster, mouse } = interactionManager;
       raycaster.setFromCamera(mouse, camera);
     }
-  }, [width, height]); // 可不写 root
+  }, [width, height, root]);
 
   useLayoutEffect(() => {
     if (root && width > 0 && height > 0) {

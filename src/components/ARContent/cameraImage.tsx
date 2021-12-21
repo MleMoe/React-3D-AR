@@ -1,4 +1,4 @@
-import { FC, useState, useLayoutEffect, useCallback } from 'react';
+import { FC, useState, useEffect, useCallback } from 'react';
 import { useCameraAccess } from '../../packages/use-webar/hooks';
 import { MeshBasicMaterial, BoxGeometry } from 'three';
 import { RootState } from '../../packages/three-react/store';
@@ -8,9 +8,7 @@ import * as THREE from 'three';
 export const CameraImage: FC<{ store?: RootState }> = ({ store }) => {
   const { glRenderer } = useThree();
   const { cameraTexture } = useCameraAccess();
-  const [material, setMaterial] = useState(
-    () => new MeshBasicMaterial({ color: 'white', opacity: 0.75 })
-  );
+  const [material, setMaterial] = useState(() => new MeshBasicMaterial());
   const [rotation, setRotation] = useState(() => ({ x: 0, y: 0, z: 0 }));
   const [position, setPosition] = useState(() => ({ x: 0, y: 0, z: -5 }));
 
@@ -21,12 +19,11 @@ export const CameraImage: FC<{ store?: RootState }> = ({ store }) => {
     [material]
   );
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const texture = new THREE.Texture();
     forceTextureInitialization(texture);
     const texProps = glRenderer.properties.get(texture);
     texProps.__webglTexture = cameraTexture;
-
     return () => {
       texture.dispose();
     };

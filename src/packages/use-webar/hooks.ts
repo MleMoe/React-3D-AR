@@ -1,4 +1,11 @@
-import { useState, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
+import {
+  useState,
+  useLayoutEffect,
+  useCallback,
+  useRef,
+  useMemo,
+  useEffect,
+} from 'react';
 import { RootState } from '../three-react/store';
 import {
   Vector3,
@@ -240,7 +247,7 @@ export function useCameraAccess(store?: RootState) {
 
   const [cameraTexture, setCameraTexture] = useState<WebGLTexture>();
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const timer = setInterval(() => {
       setCameraTexture(cameraTextureRef.current);
     });
