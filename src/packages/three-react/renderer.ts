@@ -223,166 +223,181 @@ function switchInstance(
   return newInstance;
 }
 
-export let reconciler = Reconciler({
-  /**
-   * mode mutation
-   */
-  supportsMutation: true,
-  isPrimaryRenderer: false,
-  createInstance,
-
-  /**
-   * 初次添加子节点，改变 parent/child 节点
-   * in the render phase
-   */
-  appendInitialChild(parent: Instance, child: Instance) {
-    log('appendInitialChild', arguments);
-    appendChild(parent, child);
-  },
-
-  /**
-   *
-   * @param container
-   * @param child
-   */
-  appendChildToContainer(container: UseBoundStore<RootState>, child: Instance) {
-    log('appendChildToContainer', arguments);
-
-    // 最上层节点的 parent 是 scene
-    // child._local.parent = container.getState().scene;
-    container.getState().scene.add(child);
-  },
-
-  /**
-   * in the commit phase
-   * @param parent
-   * @param child
-   */
-  appendChild,
-
-  /**
-   * 在某 child 节点前插入新 child 节点
-   * @param parentInstance
-   * @param child
-   * @param beforeChild
-   */
-  insertBefore(parentInstance, child, beforeChild) {
-    log('insertBefore', arguments);
-  },
-
-  insertInContainerBefore(container, child, before) {
-    log('insertInContainerBefore', arguments);
-  },
-
-  removeChildFromContainer(
-    container: UseBoundStore<RootState>,
-    child: Instance
-  ) {
-    log('removeChildFromContainer', arguments);
-    container.getState().scene.remove(child);
-  },
-  removeChild,
-
-  /**
-   * 比较新旧参数，提供数据给 commitUpdate 更新
-   * in the render phase
-   * @returns 更新数据
-   */
-  prepareUpdate(
-    instance: Instance,
-    type: string,
-    oldProps: InstanceProps,
-    newProps: InstanceProps,
-    rootContainerInstance,
-    currentHostContext
-  ): DiffPropsData | null {
-    const { args: argsNew = [], children: childrenNew, ...restNew } = newProps;
-    const { args: argsOld = [], children: childrenOld, ...restOld } = oldProps;
-
-    // 判断构造函数参数
-    if (!isEqual(argsOld, argsNew)) {
-      return {
-        reconstruct: true,
-      };
-    }
-
-    // 判断其它 props，暂时不判断 children
-    const changes = diffProps(restOld, restNew);
-    if (changes.isChanged) {
-      return {
-        reconstruct: false,
-        changes,
-      };
-    }
-
-    return null;
-  },
-
-  /**
-   * 应用更新
-   * @param updatePayload 为 prepareUpdate return 的数据
-   */
-  commitUpdate(
-    instance: Instance,
-    updatePayload: DiffPropsData,
-    type,
-    prevProps: InstanceProps,
-    nextProps: InstanceProps,
-    internalHandle
-  ) {
-    log('commitUpdate', arguments);
-
-    const { reconstruct, changes } = updatePayload;
-    if (reconstruct) {
-      console.log('需重建节点');
-      switchInstance(instance, type, nextProps);
-      return;
-    }
-
-    if (changes) {
-      const { removeKeys, nowProps } = changes;
-      applyProps(instance, nowProps);
-    }
-  },
-
-  /**
-   * 当 child 被加入
-   * in the render phase
-   * @returns return true, the instance will receive a commitMount call later
-   */
-  finalizeInitialChildren(instance, type, props, rootContainer, hostContext) {
-    log('finalizeInitialChildren', arguments);
-    return true;
-  },
-  getChildHostContext() {},
-  getPublicInstance,
-
-  getRootHostContext(rootContainer) {
-    return null;
-  },
+export let reconciler = Reconciler(
   // @ts-ignore
-  prepareForCommit(containerInfo) {},
-  resetAfterCommit() {},
+  {
+    /**
+     * mode mutation
+     */
+    supportsMutation: true,
+    isPrimaryRenderer: false,
+    createInstance,
 
-  clearContainer() {
-    return false;
-  },
-  // 放置 event
-  commitMount() {
-    // noop
-  },
+    /**
+     * 初次添加子节点，改变 parent/child 节点
+     * in the render phase
+     */
+    appendInitialChild(parent: Instance, child: Instance) {
+      log('appendInitialChild', arguments);
+      appendChild(parent, child);
+    },
 
-  /**
-   * 文本相关
-   */
-  // createTextInstance(
-  //   text,
-  //   rootContainerInstance,
-  //   hostContext,
-  //   internalInstanceHandle
-  // ) {
-  // },
-  shouldSetTextContent() {
-    return false;
-  },
-});
+    /**
+     *
+     * @param container
+     * @param child
+     */
+    appendChildToContainer(
+      container: UseBoundStore<RootState>,
+      child: Instance
+    ) {
+      log('appendChildToContainer', arguments);
+
+      // 最上层节点的 parent 是 scene
+      // child._local.parent = container.getState().scene;
+      container.getState().scene.add(child);
+    },
+
+    /**
+     * in the commit phase
+     * @param parent
+     * @param child
+     */
+    appendChild,
+
+    /**
+     * 在某 child 节点前插入新 child 节点
+     * @param parentInstance
+     * @param child
+     * @param beforeChild
+     */
+    insertBefore(parentInstance, child, beforeChild) {
+      log('insertBefore', arguments);
+    },
+
+    insertInContainerBefore(container, child, before) {
+      log('insertInContainerBefore', arguments);
+    },
+
+    removeChildFromContainer(
+      container: UseBoundStore<RootState>,
+      child: Instance
+    ) {
+      log('removeChildFromContainer', arguments);
+      container.getState().scene.remove(child);
+    },
+    removeChild,
+
+    /**
+     * 比较新旧参数，提供数据给 commitUpdate 更新
+     * in the render phase
+     * @returns 更新数据
+     */
+    prepareUpdate(
+      instance: Instance,
+      type: string,
+      oldProps: InstanceProps,
+      newProps: InstanceProps,
+      rootContainerInstance,
+      currentHostContext
+    ): DiffPropsData | null {
+      const {
+        args: argsNew = [],
+        children: childrenNew,
+        ...restNew
+      } = newProps;
+      const {
+        args: argsOld = [],
+        children: childrenOld,
+        ...restOld
+      } = oldProps;
+
+      // 判断构造函数参数
+      if (!isEqual(argsOld, argsNew)) {
+        return {
+          reconstruct: true,
+        };
+      }
+
+      // 判断其它 props，暂时不判断 children
+      const changes = diffProps(restOld, restNew);
+      if (changes.isChanged) {
+        return {
+          reconstruct: false,
+          changes,
+        };
+      }
+
+      return null;
+    },
+
+    /**
+     * 应用更新
+     * @param updatePayload 为 prepareUpdate return 的数据
+     */
+    commitUpdate(
+      instance: Instance,
+      updatePayload: DiffPropsData,
+      type,
+      prevProps: InstanceProps,
+      nextProps: InstanceProps,
+      internalHandle
+    ) {
+      log('commitUpdate', arguments);
+
+      const { reconstruct, changes } = updatePayload;
+      if (reconstruct) {
+        console.log('需重建节点');
+        switchInstance(instance, type, nextProps);
+        return;
+      }
+
+      if (changes) {
+        const { removeKeys, nowProps } = changes;
+        applyProps(instance, nowProps);
+      }
+    },
+
+    /**
+     * 当 child 被加入
+     * in the render phase
+     * @returns return true, the instance will receive a commitMount call later
+     */
+    finalizeInitialChildren(instance, type, props, rootContainer, hostContext) {
+      log('finalizeInitialChildren', arguments);
+      return true;
+    },
+    getChildHostContext() {},
+    getPublicInstance,
+
+    getRootHostContext(rootContainer) {
+      return null;
+    },
+    prepareForCommit(containerInfo) {
+      return null;
+    },
+    resetAfterCommit() {},
+
+    clearContainer() {
+      return false;
+    },
+    // 放置 event
+    commitMount() {
+      // noop
+    },
+
+    /**
+     * 文本相关
+     */
+    // createTextInstance(
+    //   text,
+    //   rootContainerInstance,
+    //   hostContext,
+    //   internalInstanceHandle
+    // ) {
+    // },
+    shouldSetTextContent() {
+      return false;
+    },
+  }
+);
