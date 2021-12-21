@@ -191,7 +191,7 @@ type CamaraAccessTestProps = {
 export const CamaraAccessTest: FC<CamaraAccessTestProps> = ({ store }) => {
   const { glRenderer } = useThree(store);
 
-  const { texture } = useCameraAccess(store);
+  const { cameraTexture } = useCameraAccess(store);
   const canvasRef = useRef<HTMLCanvasElement>(null!);
   const [gl] = useState(() => glRenderer.getContext());
 
@@ -213,7 +213,7 @@ export const CamaraAccessTest: FC<CamaraAccessTestProps> = ({ store }) => {
         ref={canvasRef}
         className='overlay-canvas'
         onClick={() => {
-          texture && drawToCanvas(texture, canvasRef.current);
+          cameraTexture && drawToCanvas(cameraTexture, canvasRef.current);
         }}
       ></canvas>
       {/* <img
