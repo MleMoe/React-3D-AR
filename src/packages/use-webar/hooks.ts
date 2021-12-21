@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect, useCallback, useRef } from 'react';
+import { useState, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
 import { RootState } from '../three-react/store';
 import {
   Vector3,
@@ -32,6 +32,7 @@ export function useAR() {
   });
   const [support, setSupport] = useState<boolean>();
   const [arSession, setArSession] = useState<XRSession>();
+  const [inProgress, setInProgress] = useState(false);
 
   useLayoutEffect(() => {
     xr?.isSessionSupported('immersive-ar').then((isSupport) => {
@@ -53,6 +54,7 @@ export function useAR() {
       xr.requestSession('immersive-ar', sessionInit).then((session) => {
         setArSession(session);
         onSessionStarted(session);
+        setInProgress(true);
       });
     },
     [xr, support]
@@ -60,10 +62,12 @@ export function useAR() {
 
   const disposeARSession = useCallback(() => {
     arSession?.end();
+    setInProgress(false);
   }, [arSession]);
 
   return {
     support,
+    inProgress,
     arSession,
     creactARSession,
     disposeARSession,
@@ -198,22 +202,27 @@ export function useARImageTracking(rootStore?: RootState) {
 export function useCameraAccess(store?: RootState) {
   const { glRenderer } = useThree(store);
 
-  const [glBinding] = useState<any>(() => {
-    const arSession = glRenderer.xr.getSession();
-    const gl = glRenderer.getContext();
-    // @ts-ignore
-    return new XRWebGLBinding(arSession, gl);
-  });
-
   const cameraTextureRef = useRef<WebGLTexture>();
 
   const computeCameraTexture = useCallback(
     async (time?: number, frame?: XRFrame) => {
-      const referenceSpace = await glRenderer.xr
-        ?.getSession()
-        ?.requestReferenceSpace('viewer');
+      if (!frame) {
+        console.log('no frame');
+        return;
+      }
+      const arSession = frame?.session;
+      if (!arSession) {
+        console.log('no session');
+        return;
+      }
+      const gl = glRenderer.getContext();
+
+      // @ts-ignore
+      const glBinding = new XRWebGLBinding(arSession, gl);
+
+      const referenceSpace = await arSession.requestReferenceSpace('viewer');
       if (referenceSpace) {
-        let viewerPose = frame?.getViewerPose(referenceSpace);
+        let viewerPose = frame.getViewerPose(referenceSpace);
         if (viewerPose) {
           for (const view of viewerPose.views) {
             cameraTextureRef.current = glBinding.getCameraImage(frame, view);
@@ -221,22 +230,22 @@ export function useCameraAccess(store?: RootState) {
         }
       }
     },
-    [glBinding]
+    [glRenderer]
   );
-  useFrame(computeCameraTexture, store);
+  useFrame(computeCameraTexture);
 
-  const [texture, setTexture] = useState<WebGLTexture>();
+  const [cameraTexture, setCameraTexture] = useState<WebGLTexture>();
 
   useLayoutEffect(() => {
     const timer = setInterval(() => {
-      setTexture(cameraTextureRef.current);
+      setCameraTexture(cameraTextureRef.current);
     });
     return () => {
       clearInterval(timer);
     };
   }, []);
 
-  return { texture };
+  return { cameraTexture };
 }
 
 /**

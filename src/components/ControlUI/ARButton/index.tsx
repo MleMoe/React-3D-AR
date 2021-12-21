@@ -1,4 +1,4 @@
-import { FC, useState, useMemo } from 'react';
+import { FC, useMemo } from 'react';
 import './index.scss';
 
 type ARButtonProps = Partial<{
@@ -6,11 +6,9 @@ type ARButtonProps = Partial<{
   isSupportAR: boolean;
   onStartAR: () => void;
   onEndAR: () => void;
-  changeProgress: () => void;
 }>;
 
 export const ARButton: FC<ARButtonProps> = ({
-  changeProgress,
   isSupportAR,
   onStartAR,
   onEndAR,
@@ -30,7 +28,6 @@ export const ARButton: FC<ARButtonProps> = ({
           return;
         }
         onStartAR?.();
-        changeProgress?.();
       }}
     >
       {statusText}
@@ -40,7 +37,6 @@ export const ARButton: FC<ARButtonProps> = ({
       className='ar-button-exit'
       onClick={() => {
         onEndAR?.();
-        changeProgress?.();
       }}
     >
       <svg

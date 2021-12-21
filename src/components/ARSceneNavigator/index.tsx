@@ -11,10 +11,9 @@ import './index.scss';
 import { FaceButton } from '../ControlUI/FaceButton';
 import { useAR } from '../../packages/use-webar/hooks';
 import { Model } from '../ARContent/model';
+import { CameraImage } from '../ARContent/cameraImage';
 
 export const ARSceneNavigator: FC = () => {
-  const [inProgress, setInProgress] = useState(false);
-
   const [storeRef, setStoreRef] = useState<{ current: RootState | undefined }>(
     () => ({
       current: undefined,
@@ -27,13 +26,13 @@ export const ARSceneNavigator: FC = () => {
 
   const overlayRef = useRef<HTMLDivElement>(null!);
 
-  const { support, arSession, creactARSession, disposeARSession } = useAR();
+  const { support, arSession, creactARSession, disposeARSession, inProgress } =
+    useAR();
 
   const onSessionStarted = useCallback(async (session: THREE.XRSession) => {
     if (storeRef.current) {
       // UI 控件事件监听
       setUiObserver(storeRef.current.uiObserver);
-
       storeRef.current.glRenderer.xr.setReferenceSpaceType('local');
       await storeRef.current.glRenderer.xr.setSession(session);
 
@@ -51,7 +50,7 @@ export const ARSceneNavigator: FC = () => {
   const onStartAR = useCallback(() => {
     creactARSession(
       {
-        requiredFeatures: ['hit-test'], // 'image-tracking', 'hit-test', 'camera-access'
+        requiredFeatures: ['hit-test', 'camera-access'], // 'image-tracking', 'hit-test', 'camera-access'
         optionalFeatures: ['dom-overlay'],
         // @ts-ignore
         domOverlay: { root: overlayRef.current },
@@ -76,11 +75,8 @@ export const ARSceneNavigator: FC = () => {
             onStartAR={onStartAR}
             onEndAR={disposeARSession}
             inProgress={inProgress}
-            changeProgress={() => {
-              setInProgress((prev) => !prev);
-            }}
           ></ARButton>
-          <FaceButton store={store} visible={inProgress}></FaceButton>
+          {/* <FaceButton store={store} visible={inProgress}></FaceButton> */}
         </ControlUI>
       </div>
 
@@ -95,9 +91,10 @@ export const ARSceneNavigator: FC = () => {
           position={{ x: -100, y: -100, z: -100 }}
         />
         {/* <ARContent /> */}
-        <ARHitTest />
+        {/* <ARHitTest /> */}
         {/* <Model position={{ x: 5, y: 0, z: -10 }} /> */}
         {/* <Model /> */}
+        {inProgress && <CameraImage />}
       </Scene>
     </>
   );

@@ -6,9 +6,9 @@ import { getUuid } from './utils';
 
 export function useStore(rootStore?: RootState) {
   const store = useContext(context)?.getState();
-  if (store) return store;
+  if (rootStore) return rootStore;
 
-  return rootStore as RootState;
+  return store;
 }
 
 export function useThree(rootStore?: RootState) {

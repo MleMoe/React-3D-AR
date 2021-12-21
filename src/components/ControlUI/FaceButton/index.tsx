@@ -83,7 +83,7 @@ export const FaceButton: FC<FaceButtonProps> = ({ visible, store }) => {
     console.log(glBinding);
     // console.log(glBinding.getCameraImage(size));
 
-    frameCallbacks?.push(frameSend);
+    // frameCallbacks?.push(frameSend);
   }, [frameCallbacks, frameSend]);
 
   return visible ? (
