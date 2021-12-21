@@ -245,18 +245,7 @@ export function useCameraAccess(store?: RootState) {
 
   useFrame(computeCameraTexture, store);
 
-  const [cameraTexture, setCameraTexture] = useState<WebGLTexture>();
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCameraTexture(cameraTextureRef.current);
-    });
-    return () => {
-      clearInterval(timer);
-    };
-  }, []);
-
-  return { cameraTexture };
+  return { cameraTextureRef };
 }
 
 /**
