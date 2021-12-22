@@ -28,7 +28,9 @@ export const Model: FC<ModelProps> = (props) => {
         setModel(gltf);
         groupRef.current.add(gltf.scene);
         mixerRef.current = new AnimationMixer(groupRef.current);
-        mixerRef.current.clipAction(gltf.animations[0]).play();
+        mixerRef.current
+          .clipAction(gltf.animations[Math.round(Math.random() * 11)])
+          .play();
       },
       function onProgress(xhr) {
         if (xhr.lengthComputable) {
