@@ -2,6 +2,7 @@ import Index from './index';
 import About from './about';
 import FaceMesh from './face-mesh';
 import ThreeApp from './three';
+import VisApp from './visualization';
 
 const routes = [
   {
@@ -17,8 +18,8 @@ const routes = [
     component: FaceMesh,
   },
   {
-    path: '/three',
-    component: ThreeApp,
+    path: '/vis',
+    component: VisApp,
   },
 ];
 

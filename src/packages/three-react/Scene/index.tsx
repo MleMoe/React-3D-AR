@@ -6,7 +6,7 @@ import { Provider } from '../provider';
 import { createStore, Camera, RootState } from '../store';
 import * as THREE from 'three';
 import { createLoop } from '../loop';
-import { InteractionManager } from '../events';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 type ARSceneProps = Partial<{
   storeRef: {
@@ -16,6 +16,7 @@ type ARSceneProps = Partial<{
   style: React.CSSProperties;
   camera: Camera;
   ar: boolean;
+  control: boolean;
 }>;
 
 /**
@@ -36,6 +37,7 @@ export const Scene: FC<ARSceneProps> = ({
   style,
   camera,
   ar = false,
+  control = false,
   children,
 }) => {
   const [divRef, { width, height }] = useMeasure({
@@ -51,10 +53,17 @@ export const Scene: FC<ARSceneProps> = ({
         canvas: canvasRef.current,
         camera,
       });
-      const { glRenderer } = store.getState();
+      const { glRenderer, camera: cameraCurrent } = store.getState();
 
       if (ar) {
         glRenderer.xr.enabled = true;
+      }
+
+      if (control) {
+        const orbitControls = new OrbitControls(
+          cameraCurrent,
+          canvasRef.current
+        );
       }
 
       if (storeRef) {

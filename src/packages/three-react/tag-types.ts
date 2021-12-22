@@ -95,6 +95,11 @@ export type MeshProps = Object3DNode<THREE.Mesh, typeof THREE.Mesh>;
 
 export type GroupProps = Object3DNode<THREE.Group, typeof THREE.Group>;
 
+export type GridHelperProps = Object3DNode<
+  THREE.GridHelper,
+  typeof THREE.GridHelper
+>;
+
 /**
  * Light
  */
@@ -107,6 +112,10 @@ export type AmbientLightProps = LightNode<
   THREE.AmbientLight,
   typeof THREE.AmbientLight
 >;
+export type PointLightProps = LightNode<
+  THREE.PointLight,
+  typeof THREE.PointLight
+>;
 
 declare global {
   namespace JSX {
@@ -116,7 +125,9 @@ declare global {
       mesh: MeshProps;
       ambientLight: AmbientLightProps;
       directionalLight: DirectionalLightProps;
+      pointLight: PointLightProps;
       group: GroupProps;
+      gridHelper: GridHelperProps;
     }
   }
 }
