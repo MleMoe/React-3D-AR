@@ -1,5 +1,6 @@
-.button-place {
+.button-navi {
   display: flex;
+  box-sizing: border-box;
   width: 45px;
   height: 45px;
   border-radius: 23px;
@@ -7,15 +8,11 @@
   text-align: center;
 
   background: rgba(211, 211, 211, 0.37);
-  color: rgb(135, 242, 250);
+  color: rgba(0, 0, 0, 0.897);
 
   outline: none;
   border: none;
   cursor: pointer;
-
-  // &:hover {
-  //   background: rgba(141, 137, 137, 0.856);
-  // }
 
   svg {
     margin: auto;
