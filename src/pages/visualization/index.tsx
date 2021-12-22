@@ -2,6 +2,7 @@ import { Scene } from '../../packages/three-react/Scene';
 import * as THREE from 'three';
 import { useState, useRef, useEffect } from 'react';
 import { Histogram } from '../../components/visualization/histogram';
+import { Pie } from '../../components/visualization/pie';
 
 function App() {
   const [camera] = useState(() => {
@@ -28,7 +29,8 @@ function App() {
         ).normalize()}
       />
       <pointLight args={[0xffffff, 1]}></pointLight>
-      <Histogram />
+      {/* <Histogram /> */}
+      <Pie />
       <gridHelper
         ref={gridRef}
         args={[1000, 40, 0x303030, 0x303030]}
