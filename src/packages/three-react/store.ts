@@ -6,6 +6,7 @@ import { InteractionManager } from './events';
 import { Observer } from './observer';
 import { FrameCallback } from './loop';
 import { getUuid } from './utils';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 // import { XRSession } from 'three';
 
@@ -26,6 +27,8 @@ export type RootState = {
   frameCallbacks: Map<string, FrameCallback>;
   // 三维物体事件绑定
   interactionManager: InteractionManager;
+  // three.js orbit 控制器
+  orbitControl?: OrbitControls;
   // 外部控件事件绑定
   uiObserver: Observer;
 
@@ -38,12 +41,13 @@ export type StoreProps = {
   camera?: Camera;
 
   ar?: boolean;
+  control?: boolean;
 };
 
 const context = createContext<UseBoundStore<RootState>>(null!);
 
 const createStore = (props: StoreProps): UseBoundStore<RootState> => {
-  const { canvas, camera: cameraProps } = props;
+  const { canvas, camera: cameraProps, control } = props;
   let camera: Camera;
 
   const rootState = create<RootState>((set, get) => {
@@ -87,6 +91,7 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
       camera,
       frameCallbacks,
       interactionManager,
+      ...(control ? { orbitControl: new OrbitControls(camera, canvas) } : {}),
       uiObserver: new Observer(),
 
       set,

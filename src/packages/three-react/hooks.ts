@@ -16,8 +16,8 @@ export function useStore(rootStore?: RootState) {
 export function useThree(rootStore?: RootState) {
   const store = useStore(rootStore);
   const [three] = useState(() => {
-    const { glRenderer, scene, camera } = store;
-    return { glRenderer, scene, camera };
+    const { glRenderer, scene, camera, orbitControl } = store;
+    return { glRenderer, scene, camera, orbitControl };
   });
   return three;
 }
