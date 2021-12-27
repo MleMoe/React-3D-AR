@@ -273,10 +273,12 @@ export let reconciler = Reconciler(
      */
     insertBefore(parentInstance, child, beforeChild) {
       log('insertBefore', arguments);
+      appendChild(parentInstance, child);
     },
 
     insertInContainerBefore(container, child, before) {
       log('insertInContainerBefore', arguments);
+      container.getState().scene.add(child);
     },
 
     removeChildFromContainer(
