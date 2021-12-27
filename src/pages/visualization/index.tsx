@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { useState, useRef, useEffect } from 'react';
 import { Histogram } from '../../components/visualization/histogram';
 import { Pie } from '../../components/visualization/pie';
+import { Earth } from '../../components/visualization/earth';
 
 function App() {
   const [camera] = useState(() => {
@@ -19,18 +20,22 @@ function App() {
 
   return (
     <Scene ar={false} camera={camera} control={true}>
-      <ambientLight args={[0x111111]} />
+      <ambientLight args={[0x333333]} />
       <directionalLight
-        args={[0xffffff, 0.125]}
+        args={[0xffffff, 0.25]}
         position={new THREE.Vector3(
-          Math.random() - 0.5,
-          Math.random() - 0.5,
-          Math.random() - 0.5
+          100 * Math.random() - 0.5,
+          100 * Math.random() - 0.5,
+          100 * Math.random() - 0.5
         ).normalize()}
       />
-      <pointLight args={[0xffffff, 1]}></pointLight>
+      <pointLight
+        args={[0xffffff, 0.15]}
+        position={new THREE.Vector3(-100, 100)}
+      ></pointLight>
       {/* <Histogram /> */}
-      <Pie />
+      {/* <Pie /> */}
+      <Earth />
       <gridHelper
         ref={gridRef}
         args={[1000, 40, 0x303030, 0x303030]}

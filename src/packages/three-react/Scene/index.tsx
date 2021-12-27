@@ -52,18 +52,12 @@ export const Scene: FC<ARSceneProps> = ({
       const store = createStore({
         canvas: canvasRef.current,
         camera,
+        control,
       });
       const { glRenderer, camera: cameraCurrent } = store.getState();
 
       if (ar) {
         glRenderer.xr.enabled = true;
-      }
-
-      if (control) {
-        const orbitControls = new OrbitControls(
-          cameraCurrent,
-          canvasRef.current
-        );
       }
 
       if (storeRef) {
