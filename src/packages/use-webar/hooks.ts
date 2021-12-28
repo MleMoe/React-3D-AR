@@ -20,6 +20,7 @@ import {
   XRPose,
   XRPlane,
   Quaternion,
+  XRRigidTransform,
 } from 'three';
 import { useFrame, useStore, useThree } from '../three-react/hooks';
 
@@ -298,4 +299,69 @@ export function useARPlaneDetection(rootStore?: RootState) {
 
   useFrame(render);
   return { planePosesRef };
+}
+
+type XRDepthInformation = {
+  width: number;
+  height: number;
+
+  normTextureFromNormView: XRRigidTransform;
+  rawValueToMeters: number;
+};
+
+interface XRCPUDepthInformation extends XRDepthInformation {
+  // Data format is determined by session's depthDataFormat attribute.
+  data: ArrayBuffer;
+  getDepthInMeters: (column: number, row: number) => number;
+}
+
+interface XRWebGLDepthInformation extends XRDepthInformation {
+  // Opaque texture, its format is determined by session's depthDataFormat attribute.
+  texture: WebGLTexture;
+}
+
+export function useDepthSensing(store?: RootState) {
+  const { glRenderer } = useThree(store);
+  const { glBinding, arSession } = useMemo(() => {
+    const arSession = glRenderer.xr.getSession();
+    if (!arSession) {
+      return {};
+    }
+    const gl = glRenderer.getContext();
+    // @ts-ignore
+    const glBinding = new XRWebGLBinding(arSession, gl);
+
+    return { glBinding, arSession };
+  }, []);
+
+  const depthInfoRef = useRef<XRCPUDepthInformation>();
+  // const depthGLInfoRef = useRef<XRWebGLDepthInformation>();
+
+  const computeDepthInfo = useCallback(
+    async (time?: number, frame?: XRFrame) => {
+      if (!frame || !arSession || !glBinding) {
+        console.log('no frame or arSession or glBinding');
+        return;
+      }
+
+      const referenceSpace = await arSession.requestReferenceSpace('viewer');
+      if (referenceSpace) {
+        let viewerPose = frame.getViewerPose(referenceSpace);
+        if (viewerPose) {
+          for (const view of viewerPose.views) {
+            // @ts-ignore
+            depthInfoRef.current = frame.getDepthInformation(view);
+            console.log(depthInfoRef.current);
+            // depthGLInfoRef.current = glBinding.getDepthInformation(view);
+            // console.log(depthGLInfoRef.current);
+          }
+        }
+      }
+    },
+    [glRenderer]
+  );
+
+  useFrame(computeDepthInfo, store);
+
+  return { depthInfoRef };
 }

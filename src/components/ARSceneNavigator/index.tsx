@@ -12,6 +12,7 @@ import { FaceButton } from '../ControlUI/FaceButton';
 import { useAR } from '../../packages/use-webar/hooks';
 import { Model } from '../ARContent/model';
 import { CameraImage } from '../ARContent/cameraImage';
+import { Depth } from '../ARContent/depth';
 
 export const ARSceneNavigator: FC = () => {
   const [storeRef, setStoreRef] = useState<{ current: RootState | undefined }>(
@@ -49,10 +50,14 @@ export const ARSceneNavigator: FC = () => {
   const onStartAR = useCallback(() => {
     creactARSession(
       {
-        requiredFeatures: ['hit-test', 'camera-access'], // 'image-tracking', 'hit-test', 'camera-access'
+        requiredFeatures: ['depth-sensing'], // 'image-tracking', 'hit-test', 'camera-access'
         optionalFeatures: ['dom-overlay'],
         // @ts-ignore
         domOverlay: { root: overlayRef.current },
+        depthSensing: {
+          usagePreference: ['cpu-optimized'],
+          dataFormatPreference: ['luminance-alpha'],
+        },
       },
       onSessionStarted
     );
@@ -90,7 +95,8 @@ export const ARSceneNavigator: FC = () => {
           position={{ x: -100, y: -100, z: -100 }}
         />
         {/* <ARContent /> */}
-        {inProgress && <ARHitTest />}
+        {/* {inProgress && <ARHitTest />} */}
+        {inProgress && <Depth />}
         {/* <Model position={{ x: 5, y: 0, z: -10 }} /> */}
         {/* <Model /> */}
         {/* {inProgress && <CameraImage />} */}
