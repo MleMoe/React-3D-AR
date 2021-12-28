@@ -94,6 +94,7 @@ export const ARSceneNavigator: FC = () => {
           args={[0xaaaaaa]}
           position={{ x: -100, y: -100, z: -100 }}
         />
+        <axesHelper args={[1]} />
         {/* <ARContent /> */}
         {/* {inProgress && <ARHitTest />} */}
         {inProgress && <Depth />}

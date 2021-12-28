@@ -100,6 +100,16 @@ export type GridHelperProps = Object3DNode<
   typeof THREE.GridHelper
 >;
 
+export type AxesHelperProps = Object3DNode<
+  THREE.AxesHelper,
+  typeof THREE.AxesHelper
+>;
+
+export type CameraHelperProps = Object3DNode<
+  THREE.CameraHelper,
+  typeof THREE.CameraHelper
+>;
+
 /**
  * Light
  */
@@ -128,6 +138,8 @@ declare global {
       pointLight: PointLightProps;
       group: GroupProps;
       gridHelper: GridHelperProps;
+      axesHelper: AxesHelperProps;
+      cameraHelper: CameraHelperProps;
     }
   }
 }
