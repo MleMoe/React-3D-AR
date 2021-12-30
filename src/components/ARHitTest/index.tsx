@@ -80,6 +80,7 @@ export const ARHitTest = () => {
     if (hitRef.current.visible) {
       const position = hitRef.current.position;
       if (position) {
+        console.log(position);
         setPlacementData((prev) => {
           return [...prev, { position: position }];
         });
@@ -102,12 +103,12 @@ export const ARHitTest = () => {
         position={hitRef.current.position}
       />
       {placementData.map((item, index) => (
-        <Model
-          key={index}
-          position={item.position}
-          scale={{ x: 0.2, y: 0.2, z: 0.2 }}
-        ></Model>
-        // <Placement key={index} position={item.position}></Placement>
+        // <Model
+        //   key={index}
+        //   position={item.position}
+        //   scale={{ x: 0.2, y: 0.2, z: 0.2 }}
+        // ></Model>
+        <Placement key={index} position={item.position}></Placement>
       ))}
     </group>
   );

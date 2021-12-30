@@ -309,7 +309,7 @@ type XRDepthInformation = {
   rawValueToMeters: number;
 };
 
-interface XRCPUDepthInformation extends XRDepthInformation {
+export interface XRCPUDepthInformation extends XRDepthInformation {
   // Data format is determined by session's depthDataFormat attribute.
   data: ArrayBuffer;
   getDepthInMeters: (column: number, row: number) => number;

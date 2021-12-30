@@ -83,7 +83,7 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
       glRenderer.render(scene, camera);
     };
     const frameCallbacks = new Map<string, FrameCallback>();
-    frameCallbacks.set(getUuid(), glRender);
+    frameCallbacks.set('gl-render', glRender);
 
     return {
       glRenderer,
