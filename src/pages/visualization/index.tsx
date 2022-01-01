@@ -4,16 +4,17 @@ import { useState, useRef, useEffect } from 'react';
 import { Histogram } from '../../components/visualization/histogram';
 import { Pie } from '../../components/visualization/pie';
 import { Earth } from '../../components/visualization/earth';
+import { TestDepth } from '../../components/ARContent/test-depth';
 
 function App() {
   const [camera] = useState(() => {
     const camera = new THREE.PerspectiveCamera(
       45,
       window.innerWidth / window.innerHeight,
-      1,
-      2000
+      0.1,
+      50
     );
-    camera.position.set(0, 100, 300);
+    // camera.position.set(0, 0, 0);
     return camera;
   });
   const gridRef = useRef<THREE.GridHelper>(null!);
@@ -35,10 +36,11 @@ function App() {
       ></pointLight>
       {/* <Histogram /> */}
       {/* <Pie /> */}
-      <Earth />
+      {/* <Earth /> */}
+      <TestDepth />
       <gridHelper
         ref={gridRef}
-        args={[1000, 40, 0x303030, 0x303030]}
+        args={[100, 40, 0x303030, 0x303030]}
         // position={{ x: 0, y: -75, z: 0 }}
       />
     </Scene>

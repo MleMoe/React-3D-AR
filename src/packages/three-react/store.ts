@@ -67,7 +67,7 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
         75,
         canvas.width && canvas.height ? canvas.width / canvas.height : 1,
         0.1,
-        1000
+        100
       );
     } else {
       camera = cameraProps;

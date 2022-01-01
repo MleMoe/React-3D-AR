@@ -13,6 +13,7 @@ import { useAR } from '../../packages/use-webar/hooks';
 import { Model } from '../ARContent/model';
 import { CameraImage } from '../ARContent/cameraImage';
 import { Depth } from '../ARContent/depth';
+import { TestDepth } from '../ARContent/test-depth';
 
 export const ARSceneNavigator: FC = () => {
   const [storeRef, setStoreRef] = useState<{ current: RootState | undefined }>(
@@ -50,7 +51,7 @@ export const ARSceneNavigator: FC = () => {
   const onStartAR = useCallback(() => {
     creactARSession(
       {
-        requiredFeatures: ['depth-sensing'], // 'image-tracking', 'hit-test', 'camera-access'
+        requiredFeatures: ['hit-test', 'depth-sensing'], // 'image-tracking', 'hit-test', 'camera-access'
         optionalFeatures: ['dom-overlay'],
         // @ts-ignore
         domOverlay: { root: overlayRef.current },
@@ -87,6 +88,7 @@ export const ARSceneNavigator: FC = () => {
       <Scene
         storeRef={storeRef}
         ar={true}
+        control={true}
         camera={new THREE.PerspectiveCamera(75)}
       >
         <ambientLight args={[0xaaaaaa]} />
@@ -97,7 +99,8 @@ export const ARSceneNavigator: FC = () => {
         <axesHelper args={[1]} />
         {/* <ARContent /> */}
         {/* {inProgress && <ARHitTest />} */}
-        {inProgress && <Depth />}
+        {/* {inProgress && <Depth />} */}
+        <TestDepth />
         {/* <Model position={{ x: 5, y: 0, z: -10 }} /> */}
         {/* <Model /> */}
         {/* {inProgress && <CameraImage />} */}
