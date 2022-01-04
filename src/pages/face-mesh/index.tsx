@@ -6,12 +6,12 @@ import {
   FaceMesh,
   Results,
   FACEMESH_TESSELATION,
-  FACEMESH_RIGHT_EYE,
-  FACEMESH_LEFT_EYE,
-  FACEMESH_RIGHT_EYEBROW,
-  FACEMESH_LEFT_EYEBROW,
+  // FACEMESH_RIGHT_EYE,
+  // FACEMESH_LEFT_EYE,
+  // FACEMESH_RIGHT_EYEBROW,
+  // FACEMESH_LEFT_EYEBROW,
   FACEMESH_FACE_OVAL,
-  FACEMESH_LIPS,
+  // FACEMESH_LIPS,
 } from '@mediapipe/face_mesh';
 import { drawConnectors } from '@mediapipe/drawing_utils';
 

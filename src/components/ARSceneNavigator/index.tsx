@@ -14,6 +14,9 @@ import { Model } from '../ARContent/model';
 import { CameraImage } from '../ARContent/cameraImage';
 import { Depth } from '../ARContent/depth';
 import { TestDepth } from '../ARContent/test-depth';
+import { CameraScreen } from '../ARContent/cameraScreen';
+import { MPFace } from '../mediaPipe/face';
+import { MPHand } from '../mediaPipe/hand';
 
 export const ARSceneNavigator: FC = () => {
   const [storeRef, setStoreRef] = useState<{ current: RootState | undefined }>(
@@ -28,7 +31,7 @@ export const ARSceneNavigator: FC = () => {
 
   const overlayRef = useRef<HTMLDivElement>(null!);
 
-  const { support, creactARSession, disposeARSession, inProgress } = useAR();
+  const { support, createARSession, disposeARSession, inProgress } = useAR();
 
   const onSessionStarted = useCallback(async (session: THREE.XRSession) => {
     if (storeRef.current) {
@@ -49,16 +52,16 @@ export const ARSceneNavigator: FC = () => {
   }, []);
 
   const onStartAR = useCallback(() => {
-    creactARSession(
+    createARSession(
       {
-        requiredFeatures: ['hit-test', 'depth-sensing'], // 'image-tracking', 'hit-test', 'camera-access'
+        requiredFeatures: ['camera-access', 'hit-test'], // 'depth-sensing' 'image-tracking', 'hit-test',
         optionalFeatures: ['dom-overlay'],
         // @ts-ignore
         domOverlay: { root: overlayRef.current },
-        depthSensing: {
-          usagePreference: ['cpu-optimized'],
-          dataFormatPreference: ['luminance-alpha'],
-        },
+        // depthSensing: {
+        //   usagePreference: ['cpu-optimized'],
+        //   dataFormatPreference: ['luminance-alpha'],
+        // },
       },
       onSessionStarted
     );
@@ -70,6 +73,7 @@ export const ARSceneNavigator: FC = () => {
         ref={overlayRef}
         className={'overlay' + (inProgress ? ' overlay-ar' : '')}
       >
+        <canvas className='overlay-canvas' />
         <ControlUI
           uiObserver={uiObserver}
           controlTypes={['place']}
@@ -89,7 +93,14 @@ export const ARSceneNavigator: FC = () => {
         storeRef={storeRef}
         ar={true}
         control={true}
-        camera={new THREE.PerspectiveCamera(75)}
+        camera={
+          new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            100
+          )
+        }
       >
         <ambientLight args={[0xaaaaaa]} />
         <directionalLight
@@ -99,11 +110,16 @@ export const ARSceneNavigator: FC = () => {
         <axesHelper args={[1]} />
         {/* <ARContent /> */}
         {/* {inProgress && <ARHitTest />} */}
-        {/* {inProgress && <Depth />} */}
-        <TestDepth />
+        {/* {inProgress && <TestDepth />} */}
+        {/* <TestDepth /> */}
+        <gridHelper
+          args={[100, 40, 0x303030, 0x303030]}
+          position={{ x: 0, y: 0, z: 0 }}
+        />
+
         {/* <Model position={{ x: 5, y: 0, z: -10 }} /> */}
         {/* <Model /> */}
-        {/* {inProgress && <CameraImage />} */}
+        {inProgress && <MPFace />}
       </Scene>
     </>
   );

@@ -11,6 +11,22 @@
 
   &-ar {
     top: 0;
+
+    & .overlay-canvas {
+      visibility: visible;
+    }
+  }
+
+  &-canvas {
+    position: fixed;
+    // background-color: red;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    visibility: hidden;
   }
 }
 

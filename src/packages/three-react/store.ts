@@ -8,8 +8,6 @@ import { FrameCallback } from './loop';
 import { getUuid } from './utils';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
-// import { XRSession } from 'three';
-
 export type Camera = THREE.PerspectiveCamera;
 export type Raycaster = THREE.Raycaster & {
   enabled: boolean;

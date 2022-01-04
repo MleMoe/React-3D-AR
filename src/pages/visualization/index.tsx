@@ -5,6 +5,7 @@ import { Histogram } from '../../components/visualization/histogram';
 import { Pie } from '../../components/visualization/pie';
 import { Earth } from '../../components/visualization/earth';
 import { TestDepth } from '../../components/ARContent/test-depth';
+import { useThree } from '../../packages/three-react/hooks';
 
 function App() {
   const [camera] = useState(() => {

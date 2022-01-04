@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useState, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { Camera, XRFrame, WebGLProperties } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
@@ -45,6 +46,7 @@ var CopyShader = {
 export const TestDepth = () => {
   const { frameCallbacks } = useStore();
   const { camera, scene, glRenderer, orbitControl } = useThree();
+  const gl = useMemo(() => glRenderer.getContext(), []);
 
   const [target] = useState(() => {
     const target = new THREE.WebGLRenderTarget(
@@ -97,14 +99,20 @@ export const TestDepth = () => {
           }
 
           void main() {
-            //vec3 diffuse = texture2D( tDiffuse, vUv ).rgb;
+            vec4 texel = texture2D( tDiffuse, vUv );
+
             float depth = readDepth( tDepth, vUv );
 
-            gl_FragColor.rgb = vec3(depth, 1.0, 1.0);
-            if (depth < 0.5){
-              gl_FragColor.rgb = vec3(1.0, 0.5 + depth, 1.0);
+            if (depth < 1.1){
+              gl_FragColor = texel;
+              // gl_FragColor.rgb = vec3(0.01, 0.01, 0.01);
             }
-            gl_FragColor.a = 1.0;
+            else {
+              gl_FragColor.rgb = vec3(0.01, 0.01, 0.01);
+            }
+            gl_FragColor.a = 0.5;
+            gl_FragColor.rgb = vec3(0.01, 0.01, 0.01);
+            // gl_FragColor = texel;
           }
         `,
         uniforms: {
@@ -119,9 +127,26 @@ export const TestDepth = () => {
 
   const postScene = useMemo(() => {
     const pScene = new THREE.Scene();
-    const postPlane = new THREE.PlaneGeometry(2, 2);
+    const postPlane = new THREE.PlaneGeometry(1, 1);
     const postQuad = new THREE.Mesh(postPlane, postMaterial);
     pScene.add(postQuad);
+    pScene.onBeforeRender = (
+      renderer: THREE.WebGLRenderer,
+      scene: THREE.Scene,
+      camera: THREE.Camera,
+      renderTarget: any
+    ) => {
+      // console.log(scene);
+      // console.log(camera);
+      // console.log(renderTarget);
+    };
+    pScene.onAfterRender = (
+      renderer: THREE.WebGLRenderer,
+      scene: THREE.Scene,
+      camera: THREE.Camera
+    ) => {
+      // console.log('正交相机渲染完成');
+    };
     return pScene;
   }, []);
 
@@ -131,20 +156,42 @@ export const TestDepth = () => {
     return material;
   });
 
-  const [depthScreenEffect] = useState(() => new ShaderPass(CopyShader));
-
-  const [composer] = useState(() => {
-    const composer = new EffectComposer(glRenderer);
-    const renderPass = new RenderPass(scene, camera);
-    composer.addPass(renderPass);
-    composer.addPass(depthScreenEffect);
-
-    return composer;
-  });
-
   useEffect(() => {
     const render = frameCallbacks.get('gl-render');
     frameCallbacks.delete('gl-render');
+
+    scene.onBeforeRender = (
+      renderer: THREE.WebGLRenderer,
+      scene: THREE.Scene,
+      camera: THREE.Camera,
+      renderTarget: any
+    ) => {
+      // 设置了 RenderTarget 就无法正常渲染
+      // renderer.setRenderTarget(target);
+      // const textureProperties = glRenderer.properties.get(target.texture);
+      // gl.framebufferTexture2D(
+      //   gl.FRAMEBUFFER,
+      //   gl.COLOR_ATTACHMENT0,
+      //   gl.TEXTURE_2D,
+      //   textureProperties.__webglTexture,
+      //   0
+      // );
+      // gl.framebufferTexture2D(
+      //   gl.FRAMEBUFFER,
+      //   gl.DEPTH_ATTACHMENT,
+      //   gl.TEXTURE_2D,
+      //   target.depthTexture,
+      //   0
+      // );
+    };
+
+    scene.onAfterRender = (
+      renderer: THREE.WebGLRenderer,
+      scene: THREE.Scene,
+      camera: THREE.Camera
+    ) => {
+      // 设置了 RenderTarget 就无法正常渲染
+    };
 
     if (orbitControl) {
       orbitControl.target = new THREE.Vector3(0, 0, -20);
@@ -155,23 +202,72 @@ export const TestDepth = () => {
     };
   }, []);
 
-  useFrame(() => {
-    glRenderer.setRenderTarget(target);
-    glRenderer.render(scene, camera);
+  useFrame((t?: number, frame?: XRFrame) => {
+    // glRenderer.setRenderTarget(target);
 
-    // render post FX
-    postMaterial.uniforms.tDiffuse.value = target.texture;
-    postMaterial.uniforms.tDepth.value = target.depthTexture;
+    // new THREE.ArrayCamera().cameras;
+    // const arrayCameras: THREE.ArrayCamera = glRenderer.xr.getCamera(
+    //   new Camera()
+    // ) as THREE.ArrayCamera;
 
-    glRenderer.setRenderTarget(null);
-    glRenderer.render(postScene, postCamera);
+    // glRenderer.render(scene, arrayCameras.cameras[0]);
+    if (frame) {
+      glRenderer.xr.enabled = false;
+      // @ts-ignore
+      // glRenderer.xr.updateCamera(camera);
+      // // @ts-ignore
+      // const vrCamera = glRenderer.xr.getCamera(); // use XR camera for rendering
+      // glRenderer.setRenderTarget(target);
+      // glRenderer.render(scene, vrCamera);
 
-    // composer.render();
+      // glRenderer.setRenderTarget(null);
+      postMaterial.uniforms.tDiffuse.value = target.texture;
+      postMaterial.uniforms.tDepth.value = target.depthTexture;
+      glRenderer.render(postScene, postCamera);
+      glRenderer.xr.enabled = true;
+    }
+
+    // frame &&
+    //   frame.session.renderState.baseLayer &&
+    //   gl.bindFramebuffer(
+    //     gl.FRAMEBUFFER,
+    //     frame.session.renderState.baseLayer?.framebuffer
+    //   );
+
+    // if (frame) {
+    //   // glRenderer.setRenderTarget(target);
+    //   // const arrayCameras: THREE.ArrayCamera = glRenderer.xr.getCamera(
+    //   //   new Camera()
+    //   // ) as THREE.ArrayCamera;
+    //   // if (arrayCameras.cameras[0]) {
+    //   // glRenderer.render(scene, camera);
+    //   // console.log(glRenderer.getRenderTarget());
+    //   glRenderer.xr.enabled = false;
+
+    //   // frame.session.renderState.baseLayer?.framebuffer;
+
+    //   postMaterial.uniforms.tDiffuse.value = target.texture;
+    //   postMaterial.uniforms.tDepth.value = target.depthTexture;
+
+    //   // glRenderer.setRenderTarget(null);
+    //   glRenderer.render(postScene, postCamera);
+    //   // // }
+    //   glRenderer.xr.enabled = true;
+    // }
   });
 
   return (
     <>
-      {new Array(10).fill(0).map((_, index) => {
+      <mesh
+        position={{
+          x: 0,
+          y: 0,
+          z: -15,
+        }}
+        geometry={new THREE.BoxGeometry(3, 3, 3)}
+        material={material}
+      ></mesh>
+      {/* {new Array(10).fill(0).map((_, index) => {
         return (
           <mesh
             key={index}
@@ -184,7 +280,7 @@ export const TestDepth = () => {
             material={material}
           ></mesh>
         );
-      })}
+      })} */}
     </>
   );
 };

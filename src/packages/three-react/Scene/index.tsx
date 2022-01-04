@@ -7,6 +7,7 @@ import { createStore, Camera, RootState } from '../store';
 import * as THREE from 'three';
 import { createLoop } from '../loop';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { WebXRManager } from '../../../utils/WebARManager';
 
 type ARSceneProps = Partial<{
   storeRef: {
@@ -58,6 +59,7 @@ export const Scene: FC<ARSceneProps> = ({
 
       if (ar) {
         glRenderer.xr.enabled = true;
+        // glRenderer.xr = new WebXRManager(glRenderer, glRenderer.getContext());
       }
 
       if (storeRef) {

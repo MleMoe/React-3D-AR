@@ -83,7 +83,7 @@ const logConfig = {
   appendInitialChild: false,
   removeChildFromContainer: false,
   removeChild: true,
-  insertInContainerBefore: true,
+  insertInContainerBefore: false,
   insertBefore: true,
   prepareUpdate: true,
   commitUpdate: false,

@@ -48,7 +48,7 @@ export function useAR() {
     });
   }, []);
 
-  const creactARSession = useCallback(
+  const createARSession = useCallback(
     (
       sessionInit: XRSessionInit,
       onSessionStarted: (session: XRSession) => Promise<void>
@@ -78,7 +78,7 @@ export function useAR() {
     support,
     inProgress,
     arSession,
-    creactARSession,
+    createARSession,
     disposeARSession,
   };
 }
