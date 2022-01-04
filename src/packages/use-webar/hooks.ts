@@ -353,7 +353,7 @@ export function useDepthSensing(store?: RootState) {
             depthInfoRef.current = frame.getDepthInformation(view);
             // 此处 console 取消会出现 xrFrame active 的 bug
             // Failed to read the 'data' property from 'XRCPUDepthInformation': XRDepthInformation members are only accessible when their XRFrame's `active` boolean is `true`.
-            console.log(depthInfoRef.current);
+            // console.log(depthInfoRef.current);
 
             // depthGLInfoRef.current = glBinding.getDepthInformation(view);
             // console.log(depthGLInfoRef.current);

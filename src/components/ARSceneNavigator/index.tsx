@@ -17,6 +17,7 @@ import { TestDepth } from '../ARContent/test-depth';
 import { CameraScreen } from '../ARContent/cameraScreen';
 import { MPFace } from '../mediaPipe/face';
 import { MPHand } from '../mediaPipe/hand';
+import { DepthScreen } from '../ARContent/depthScreen';
 
 export const ARSceneNavigator: FC = () => {
   const [storeRef, setStoreRef] = useState<{ current: RootState | undefined }>(
@@ -54,14 +55,14 @@ export const ARSceneNavigator: FC = () => {
   const onStartAR = useCallback(() => {
     createARSession(
       {
-        requiredFeatures: ['camera-access', 'hit-test'], // 'depth-sensing' 'image-tracking', 'hit-test',
+        requiredFeatures: ['depth-sensing'], //'camera-access', 'hit-test', 'depth-sensing' 'image-tracking', 'hit-test',
         optionalFeatures: ['dom-overlay'],
         // @ts-ignore
         domOverlay: { root: overlayRef.current },
-        // depthSensing: {
-        //   usagePreference: ['cpu-optimized'],
-        //   dataFormatPreference: ['luminance-alpha'],
-        // },
+        depthSensing: {
+          usagePreference: ['cpu-optimized'],
+          dataFormatPreference: ['luminance-alpha'],
+        },
       },
       onSessionStarted
     );
@@ -119,7 +120,7 @@ export const ARSceneNavigator: FC = () => {
 
         {/* <Model position={{ x: 5, y: 0, z: -10 }} /> */}
         {/* <Model /> */}
-        {inProgress && <MPFace />}
+        {inProgress && <DepthScreen />}
       </Scene>
     </>
   );

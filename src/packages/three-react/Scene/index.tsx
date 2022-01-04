@@ -7,7 +7,6 @@ import { createStore, Camera, RootState } from '../store';
 import * as THREE from 'three';
 import { createLoop } from '../loop';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { WebXRManager } from '../../../utils/WebARManager';
 
 type ARSceneProps = Partial<{
   storeRef: {
