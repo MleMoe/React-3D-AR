@@ -6,7 +6,11 @@ import {
   MeshPhongMaterial,
   Vector3,
 } from 'three';
-import { HitState, useARHitTest } from '../../packages/use-webar/hooks';
+import {
+  HitState,
+  useARHitTest,
+  useDepthOcclusionMaterial,
+} from '../../packages/use-webar/hooks';
 import { useStore } from '../../packages/three-react/hooks';
 import { Model } from '../ARContent/model';
 
@@ -28,9 +32,7 @@ const Reticle: FC<ReticleProps> = ({
   const children = childrenNode ?? (
     <mesh
       matrixAutoUpdate={false}
-      geometry={new RingGeometry(0.15, 0.2, 32)
-        .rotateX(-Math.PI / 2)
-        .translate(0, -0.1, 0)}
+      geometry={new RingGeometry(0.05, 0.07, 32).rotateX(-Math.PI / 2)}
       material={new MeshBasicMaterial()}
     ></mesh>
   );
@@ -71,7 +73,12 @@ const Placement: FC<PlacementProps> = ({
 export const ARHitTest = () => {
   const { hitRef } = useARHitTest();
 
-  const { uiObserver } = useStore();
+  const dMaterial = useDepthOcclusionMaterial();
+  const [material] = useState(
+    () => new MeshPhongMaterial({ color: 0xffffff * Math.random() })
+  );
+
+  const { uiObserver, scene } = useStore();
 
   const [placementData, setPlacementData] = useState<PlacementProps[]>([]);
 
@@ -90,6 +97,7 @@ export const ARHitTest = () => {
 
   useLayoutEffect(() => {
     uiObserver.on('place', onSelect);
+    scene.overrideMaterial = dMaterial;
     return () => {
       uiObserver.off('place');
     };
@@ -103,12 +111,18 @@ export const ARHitTest = () => {
         position={hitRef.current.position}
       />
       {placementData.map((item, index) => (
-        // <Model
+        <Model
+          key={index}
+          position={item.position}
+          scale={{ x: 0.08, y: 0.08, z: 0.08 }}
+        ></Model>
+        // <mesh
         //   key={index}
         //   position={item.position}
-        //   scale={{ x: 0.2, y: 0.2, z: 0.2 }}
-        // ></Model>
-        <Placement key={index} position={item.position}></Placement>
+        //   geometry={new CylinderGeometry(0.06, 0.06, 0.1, 32)}
+        //   material={material}
+        // ></mesh>
+        // <Placement key={index} position={item.position}></Placement>
       ))}
     </group>
   );

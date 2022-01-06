@@ -25,14 +25,14 @@ export const Model: FC<ModelProps> = (props) => {
     if (loadResults) {
       groupRef.current.add(loadResults[0].scene);
       mixerRef.current = new AnimationMixer(groupRef.current);
-      mixerRef.current
-        .clipAction(loadResults[0].animations[Math.round(Math.random() * 11)])
-        .play();
+      // mixerRef.current
+      //   .clipAction(loadResults[0].animations[Math.round(Math.random() * 11)])
+      //   .play();
     }
   }, [loadResults]);
 
   const animation = useCallback(() => {
-    mixerRef.current?.update(clock.getDelta());
+    // mixerRef.current?.update(clock.getDelta());
   }, [clock]);
 
   useFrame(animation);

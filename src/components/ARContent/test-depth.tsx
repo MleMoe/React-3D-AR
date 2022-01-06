@@ -1,47 +1,12 @@
 import { useEffect, useCallback, useState, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { Mesh } from 'three';
 import { Camera, XRFrame, WebGLProperties } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
 
 import { useStore, useThree, useFrame } from '../../packages/three-react/hooks';
-
-var CopyShader = {
-  uniforms: {
-    tDiffuse: { value: null },
-    opacity: { value: 1.0 },
-    depthThreshold: { value: 0.5 },
-  },
-
-  vertexShader: /* glsl */ `
-		varying vec2 vUv;
-    varying float depth;
-		void main() {
-			vUv = uv;
-			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-      depth = gl_Position.z;
-		}`,
-
-  fragmentShader: /* glsl */ `
-		uniform float opacity;
-		uniform float depthThreshold;
-    varying float depth;
-
-		uniform sampler2D tDiffuse;
-		varying vec2 vUv;
-
-		void main() {
-
-      // if (depth < 0.01) {
-      //   discard;
-      // }
-      vec4 texel = texture2D( tDiffuse, vUv );
-      gl_FragColor.rgb = 1.0 - vec3(0.2);
-      gl_FragColor.a = 1.0;
-
-		}`,
-};
 
 export const TestDepth = () => {
   const { frameCallbacks } = useStore();
@@ -267,7 +232,7 @@ export const TestDepth = () => {
         geometry={new THREE.BoxGeometry(3, 3, 3)}
         material={material}
       ></mesh>
-      {/* {new Array(10).fill(0).map((_, index) => {
+      {new Array(10).fill(0).map((_, index) => {
         return (
           <mesh
             key={index}
@@ -280,7 +245,7 @@ export const TestDepth = () => {
             material={material}
           ></mesh>
         );
-      })} */}
+      })}
     </>
   );
 };
