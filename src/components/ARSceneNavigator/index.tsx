@@ -67,7 +67,7 @@ export const ARSceneNavigator: FC = () => {
   const onStartAR = useCallback(() => {
     createARSession(
       {
-        requiredFeatures: ['hit-test', 'depth-sensing'], // 'light-estimation' , 'camera-access',  'depth-sensing' 'image-tracking', 'hit-test',
+        requiredFeatures: ['hit-test', 'depth-sensing', 'anchors'], // 'light-estimation' , 'camera-access',  'depth-sensing' 'image-tracking', 'hit-test',
         optionalFeatures: ['dom-overlay'],
         // @ts-ignore
         domOverlay: { root: overlayRef.current },
@@ -108,15 +108,15 @@ export const ARSceneNavigator: FC = () => {
           args={[0xaaaaaa]}
           position={{ x: -100, y: -100, z: -100 }}
         /> */}
-        <axesHelper args={[1]} />
+        {/* <axesHelper args={[1]} /> */}
         {/* <ARContent /> */}
         {inProgress && <ARHitTest />}
+        {/* {inProgress && <DepthScreen />} */}
         {/* <TestDepth /> */}
-        {/* <TestDepth /> */}
-        <gridHelper
+        {/* <gridHelper
           args={[100, 40, 0x303030, 0x303030]}
           position={{ x: 0, y: 0, z: 0 }}
-        />
+        /> */}
 
         {/* <Model position={{ x: 5, y: 0, z: -10 }} /> */}
         {/* <Model /> */}

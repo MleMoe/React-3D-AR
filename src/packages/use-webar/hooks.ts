@@ -92,20 +92,20 @@ export function useAR() {
 export type HitState = {
   visible: boolean;
   position: Vector3;
-  positions: Vector3[];
-  hitTestResults: XRHitTestResult[];
+  hitTestResult?: XRHitTestResult;
 };
 
 export function useARHitTest() {
   const { glRenderer } = useThree();
-  const [webXRManager] = useState(() => glRenderer.xr);
 
   const hitRef = useRef<HitState>({
     visible: false,
-    position: new Vector3(0, 0, 0),
-    positions: [],
-    hitTestResults: [],
+    position: new Vector3(),
   });
+
+  const onAfterGetHitStateRef = useRef<Map<string, (hit: HitState) => void>>(
+    new Map()
+  );
 
   const hitTestSource = useRef<XRHitTestSource | undefined>();
   const hitTestSourceRequested = useRef(false);
@@ -115,17 +115,17 @@ export function useARHitTest() {
       return;
     }
 
-    const session = webXRManager.getSession();
+    const session = glRenderer.xr.getSession();
     if (!session) return;
 
     if (!hitTestSourceRequested.current) {
       // const entityTypes: XRHitTestTrackableType[] = ['plane', 'mesh'];
       session
         .requestReferenceSpace('viewer')
-        .then((referenceSpace: XRReferenceSpace) => {
+        .then((referenceViewerSpace: XRReferenceSpace) => {
           session
             .requestHitTestSource({
-              space: referenceSpace,
+              space: referenceViewerSpace,
               // entityTypes,
             })
             .then((source: XRHitTestSource) => {
@@ -143,7 +143,7 @@ export function useARHitTest() {
 
       hitTestSourceRequested.current = true;
     }
-    const referenceSpace = webXRManager.getReferenceSpace();
+    const referenceSpace = glRenderer.xr.getReferenceSpace();
 
     if (hitTestSource.current && referenceSpace) {
       const hitTestResults = frame.getHitTestResults(hitTestSource.current);
@@ -157,24 +157,17 @@ export function useARHitTest() {
           hitRef.current.position = new Vector3(0, 0, 0).applyMatrix4(
             new Matrix4().fromArray(pose.transform.matrix)
           );
+          hitRef.current.hitTestResult = hit;
+
+          onAfterGetHitStateRef.current.forEach((fn) => {
+            fn(hitRef.current);
+          });
         }
       }
-      hitRef.current.hitTestResults = [...hitTestResults];
-      hitRef.current.positions = hitTestResults.reduce((result, hit) => {
-        const pose = hit.getPose(referenceSpace);
-        if (pose) {
-          result.push(
-            new Vector3(0, 0, 0).applyMatrix4(
-              new Matrix4().fromArray(pose.transform.matrix)
-            )
-          );
-        }
-        return result;
-      }, [] as Vector3[]);
     }
   }, []);
   useFrame(render);
-  return { hitRef };
+  return { hitRef, onAfterGetHitStateRef };
 }
 
 export function useARImageTracking(rootStore?: RootState) {

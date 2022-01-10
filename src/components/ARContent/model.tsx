@@ -41,11 +41,11 @@ export const Model: FC<ModelProps> = (props) => {
     <Suspense fallback={null}>
       <group
         ref={groupRef}
-        position={{
-          x: 0,
-          y: 0,
-          z: -10,
-        }}
+        // position={{
+        //   x: 0,
+        //   y: 0,
+        //   z: -10,
+        // }}
         {...props}
       />
     </Suspense>
