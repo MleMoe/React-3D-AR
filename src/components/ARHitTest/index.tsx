@@ -122,16 +122,16 @@ export const ARHitTest: FC = ({ children }) => {
         material={new MeshBasicMaterial()}
       ></mesh>
       <group visible={false} ref={placementNodeRef}>
-        {/* <Model></Model> */}
+        <Model></Model>
 
-        {children ?? (
+        {/* {children ?? (
           <mesh
             geometry={new CylinderGeometry(0.05, 0.05, 0.1, 32)}
             material={
               new MeshPhongMaterial({ color: 0xffffff * Math.random() })
             }
           ></mesh>
-        )}
+        )} */}
       </group>
     </group>
   );

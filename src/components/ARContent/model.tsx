@@ -12,7 +12,7 @@ export const Model: FC<ModelProps> = (props) => {
   const mixerRef = useRef<AnimationMixer>();
   const { loadResults } = useLoader(
     GLTFLoader,
-    '/models/RobotExpressive.glb',
+    '/models/sunflower/sunflower.gltf',
     (xhr) => {
       if (xhr.lengthComputable) {
         const percentComplete = (xhr.loaded / xhr.total) * 100;
