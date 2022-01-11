@@ -7,6 +7,7 @@ import { Observer } from './observer';
 import { FrameCallback } from './loop';
 import { getUuid } from './utils';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { WebGLRenderer } from 'three';
 
 export type Camera = THREE.PerspectiveCamera;
 export type Raycaster = THREE.Raycaster & {
@@ -20,6 +21,9 @@ export type RootState = {
   glRenderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: Camera;
+
+  onBeforeRender: Map<number, FrameCallback>;
+  onAfterRender: Map<number, FrameCallback>;
 
   // 每帧执行
   frameCallbacks: Map<string, FrameCallback>;
@@ -37,7 +41,7 @@ export type RootState = {
 export type StoreProps = {
   canvas: HTMLCanvasElement;
   camera?: Camera;
-
+  renderer?: WebGLRenderer;
   ar?: boolean;
   control?: boolean;
 };
@@ -45,48 +49,47 @@ export type StoreProps = {
 const context = createContext<UseBoundStore<RootState>>(null!);
 
 const createStore = (props: StoreProps): UseBoundStore<RootState> => {
-  const { canvas, camera: cameraProps, control } = props;
-  let camera: Camera;
+  const { canvas, camera: cameraProps, control, renderer } = props;
 
   const rootState = create<RootState>((set, get) => {
-    const glRenderer = new THREE.WebGLRenderer({
-      powerPreference: 'high-performance',
-      canvas,
-      antialias: true,
-      alpha: true,
-    });
-    glRenderer.setSize(canvas.width, canvas.height);
-    glRenderer.outputEncoding = THREE.sRGBEncoding;
-    glRenderer.toneMapping = THREE.ACESFilmicToneMapping;
-
-    if (!cameraProps) {
-      // Create default camera
-      camera = new THREE.PerspectiveCamera(
-        75,
-        canvas.width && canvas.height ? canvas.width / canvas.height : 1,
-        0.1,
-        100
-      );
-    } else {
-      camera = cameraProps;
-      camera.aspect = canvas.width / canvas.height;
-      camera.updateProjectionMatrix();
-    }
+    const glRenderer =
+      renderer ??
+      new THREE.WebGLRenderer({
+        powerPreference: 'high-performance',
+        canvas,
+        antialias: true,
+        alpha: true,
+      });
+    // glRenderer.setSize(canvas.width, canvas.height);
+    // glRenderer.outputEncoding = THREE.sRGBEncoding;
+    // glRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+    let camera: Camera =
+      cameraProps ??
+      new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 0.1, 10);
+    camera.aspect = canvas.width / canvas.height;
+    camera.updateProjectionMatrix();
 
     const interactionManager = new InteractionManager(canvas, camera);
 
     const scene = new THREE.Scene();
 
-    const glRender = () => {
+    const onBeforeRender = new Map<number, FrameCallback>();
+    const onAfterRender = new Map<number, FrameCallback>();
+
+    const render = (time?: number, frame?: THREE.XRFrame) => {
+      onBeforeRender.forEach((callbackfn) => callbackfn(time, frame));
       glRenderer.render(scene, camera);
+      onAfterRender.forEach((callbackfn) => callbackfn(time, frame));
     };
     const frameCallbacks = new Map<string, FrameCallback>();
-    frameCallbacks.set('gl-render', glRender);
+    frameCallbacks.set('gl-render', render);
 
     return {
       glRenderer,
       scene,
       camera,
+      onBeforeRender,
+      onAfterRender,
       frameCallbacks,
       interactionManager,
       ...(control ? { orbitControl: new OrbitControls(camera, canvas) } : {}),
