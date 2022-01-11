@@ -1,6 +1,6 @@
 import { FC, useState, useCallback, useLayoutEffect } from 'react';
 import { Matrix4 } from 'three';
-import { useARImageTracking } from '../../packages/use-webar/hooks';
+import { useARImageTracking } from '../../packages/webar/hooks';
 
 import { CylinderGeometry, MeshPhongMaterial, Vector3 } from 'three';
 import { useThree } from '../../packages/three-react/hooks';

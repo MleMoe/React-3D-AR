@@ -8,10 +8,7 @@ import {
   PlaneGeometry,
   DoubleSide,
 } from 'three';
-import {
-  PlaneState,
-  useARPlaneDetection,
-} from '../../packages/use-webar/hooks';
+import { PlaneState, useARPlaneDetection } from '../../packages/webar/hooks';
 import { useThree } from '../../packages/three-react/hooks';
 
 type PlaneProps = {

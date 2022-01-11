@@ -1,5 +1,5 @@
 import { FC, useState, useCallback, useMemo } from 'react';
-import { useCameraAccess } from '../../packages/use-webar/hooks';
+import { useCameraAccess } from '../../packages/webar/hooks';
 import { MeshBasicMaterial, BoxGeometry } from 'three';
 import { RootState } from '../../packages/three-react/store';
 import { useFrame, useThree } from '../../packages/three-react/hooks';

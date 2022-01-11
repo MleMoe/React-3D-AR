@@ -3,48 +3,10 @@ import {
   useCameraAccess,
   useDepthSensing,
   XRCPUDepthInformation,
-} from '../../packages/use-webar/hooks';
+} from '../../packages/webar/hooks';
 import { RootState } from '../../packages/three-react/store';
 import { useFrame, useThree } from '../../packages/three-react/hooks';
 import * as THREE from 'three';
-
-function updateTexture(
-  depthInfoRef: React.MutableRefObject<XRCPUDepthInformation>,
-  glRenderer: THREE.WebGLRenderer,
-  textureRef: React.MutableRefObject<WebGLTexture>
-) {
-  const gl = glRenderer.getContext();
-  if (!textureRef.current) {
-    textureRef.current = gl.createTexture() as WebGLTexture;
-  }
-
-  // gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, textureRef.current);
-
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-  // Supply the data buffer after converting it to Uint8Array - the
-  // gl.texImage2D expects Uint8Array when using gl.UNSIGNED_BYTE type.
-  console.log(depthInfoRef.current);
-  if (depthInfoRef.current) {
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.LUMINANCE_ALPHA,
-      depthInfoRef.current.width,
-      depthInfoRef.current.height,
-      0,
-      gl.LUMINANCE_ALPHA,
-      gl.UNSIGNED_BYTE,
-      new Uint8Array(depthInfoRef.current.data)
-    );
-    gl.activeTexture(gl.TEXTURE0);
-  }
-
-  return textureRef.current;
-}
 
 export const DepthScreen: FC<{ store?: RootState }> = ({ store }) => {
   const { glRenderer, camera, scene } = useThree();

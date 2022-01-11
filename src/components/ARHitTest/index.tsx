@@ -15,7 +15,7 @@ import {
   HitState,
   useARHitTest,
   useDepthOcclusionMaterial,
-} from '../../packages/use-webar/hooks';
+} from '../../packages/webar/hooks';
 import { useFrame, useStore } from '../../packages/three-react/hooks';
 import { Model } from '../ARContent/model';
 import { getUuid } from '../../packages/three-react/utils';

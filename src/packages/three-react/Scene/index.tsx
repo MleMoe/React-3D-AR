@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import { createLoop } from '../loop';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
-type ARSceneProps = Partial<{
+type SceneProps = Partial<{
   storeRef: {
     current: RootState | undefined;
   };
@@ -17,6 +17,7 @@ type ARSceneProps = Partial<{
   camera: Camera;
   ar: boolean;
   control: boolean;
+  renderer: THREE.WebGLRenderer;
 }>;
 
 /**
@@ -31,10 +32,11 @@ function render(root: Root, element: React.ReactNode) {
   );
 }
 
-export const Scene: FC<ARSceneProps> = ({
+export const Scene: FC<SceneProps> = ({
   storeRef,
   className,
   style,
+  renderer,
   camera,
   ar = false,
   control = false,
@@ -53,6 +55,7 @@ export const Scene: FC<ARSceneProps> = ({
         canvas: canvasRef.current,
         camera,
         control,
+        renderer,
       });
       const { glRenderer, camera: cameraCurrent } = store.getState();
 
