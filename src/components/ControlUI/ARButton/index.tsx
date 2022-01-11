@@ -9,24 +9,18 @@ type ARButtonProps = Partial<{
 }>;
 
 export const ARButton: FC<ARButtonProps> = ({
-  isSupportAR,
   onStartAR,
   onEndAR,
   inProgress,
 }) => {
-  const statusText = useMemo(() => {
-    if (!isSupportAR) {
-      return 'UNSUPPORT AR';
-    }
-    return inProgress ? 'END AR' : 'START AR';
-  }, [inProgress, isSupportAR]);
+  const statusText = useMemo(
+    () => (inProgress ? 'END AR' : 'START AR'),
+    [inProgress]
+  );
   return !inProgress ? (
     <button
       className='ar-button-start'
       onClick={() => {
-        if (!isSupportAR) {
-          return;
-        }
         onStartAR?.();
       }}
     >

@@ -34,6 +34,8 @@ export type RootState = {
   // 外部控件事件绑定
   uiObserver: Observer;
 
+  ar: any;
+
   set: SetState<RootState>;
   get: GetState<RootState>;
 };
@@ -42,27 +44,31 @@ export type StoreProps = {
   canvas: HTMLCanvasElement;
   camera?: Camera;
   renderer?: WebGLRenderer;
-  ar?: boolean;
+  ar?: any;
   control?: boolean;
 };
 
 const context = createContext<UseBoundStore<RootState>>(null!);
 
 const createStore = (props: StoreProps): UseBoundStore<RootState> => {
-  const { canvas, camera: cameraProps, control, renderer } = props;
+  const { canvas, camera: cameraProps, control, renderer, ar } = props;
 
   const rootState = create<RootState>((set, get) => {
     const glRenderer =
       renderer ??
       new THREE.WebGLRenderer({
         powerPreference: 'high-performance',
-        canvas,
         antialias: true,
         alpha: true,
+        depth: true,
+        precision: 'highp',
+        preserveDrawingBuffer: false,
+        premultipliedAlpha: true,
+        logarithmicDepthBuffer: false,
+        stencil: true,
       });
-    // glRenderer.setSize(canvas.width, canvas.height);
-    // glRenderer.outputEncoding = THREE.sRGBEncoding;
-    // glRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+    glRenderer.domElement = canvas;
+
     let camera: Camera =
       cameraProps ??
       new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 0.1, 10);
@@ -77,6 +83,8 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
     const onAfterRender = new Map<number, FrameCallback>();
 
     const render = (time?: number, frame?: THREE.XRFrame) => {
+      // ar 处理
+      ar?.render(time, frame);
       onBeforeRender.forEach((callbackfn) => callbackfn(time, frame));
       glRenderer.render(scene, camera);
       onAfterRender.forEach((callbackfn) => callbackfn(time, frame));
@@ -94,6 +102,7 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
       interactionManager,
       ...(control ? { orbitControl: new OrbitControls(camera, canvas) } : {}),
       uiObserver: new Observer(),
+      ar: ar ?? {},
 
       set,
       get,

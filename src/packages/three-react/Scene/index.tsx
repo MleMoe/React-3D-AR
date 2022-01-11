@@ -7,15 +7,16 @@ import { createStore, Camera, RootState } from '../store';
 import * as THREE from 'three';
 import { createLoop } from '../loop';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { ARManager } from '../../webar/manager';
 
-type SceneProps = Partial<{
+export type SceneProps = Partial<{
   storeRef: {
     current: RootState | undefined;
   };
   className: string;
   style: React.CSSProperties;
   camera: Camera;
-  ar: boolean;
+  ar: ARManager;
   control: boolean;
   renderer: THREE.WebGLRenderer;
 }>;
@@ -38,7 +39,7 @@ export const Scene: FC<SceneProps> = ({
   style,
   renderer,
   camera,
-  ar = false,
+  ar,
   control = false,
   children,
 }) => {
@@ -56,12 +57,11 @@ export const Scene: FC<SceneProps> = ({
         camera,
         control,
         renderer,
+        ar,
       });
-      const { glRenderer, camera: cameraCurrent } = store.getState();
 
       if (ar) {
-        glRenderer.xr.enabled = true;
-        // glRenderer.xr = new WebXRManager(glRenderer, glRenderer.getContext());
+        ar.setAttributesFromRoot(store.getState());
       }
 
       if (storeRef) {

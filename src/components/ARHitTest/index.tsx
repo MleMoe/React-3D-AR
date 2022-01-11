@@ -12,17 +12,18 @@ import {
   Matrix4,
 } from 'three';
 import {
-  HitState,
-  useARHitTest,
+  useARManager,
+  useARMaterial,
   useDepthOcclusionMaterial,
 } from '../../packages/webar/hooks';
 import { useFrame, useStore } from '../../packages/three-react/hooks';
 import { Model } from '../ARContent/model';
 import { getUuid } from '../../packages/three-react/utils';
+import { HitState } from '../../packages/webar/manager';
 
 export const ARHitTest: FC = ({ children }) => {
   const { uiObserver, scene, glRenderer } = useStore();
-  const { hitRef, onAfterGetHitStateRef } = useARHitTest();
+  const { hitState, onAfterHitTest } = useARManager();
 
   const reticleRef = useRef<Mesh>();
   const placementNodeRef = useRef<Group>(null!);
@@ -35,31 +36,28 @@ export const ARHitTest: FC = ({ children }) => {
 
   const onSelect = useCallback(() => {
     console.log('触发 select 事件!');
-    if (
-      hitRef.current.visible &&
-      hitRef.current.position &&
-      hitRef.current.hitTestResult
-    ) {
+    console.log(hitState);
+
+    if (hitState && hitState.position) {
+      const position = hitState.position;
       const node: Group = !placementNodeRef.current.visible
         ? placementNodeRef.current
         : placementNodeRef.current.clone();
-
-      // @ts-ignore
-      hitRef.current.hitTestResult.createAnchor?.().then((anchor) => {
-        node.position.set(
-          hitRef.current.position.x,
-          hitRef.current.position.y,
-          hitRef.current.position.z
-        );
+      //@ts-ignore
+      hitState.hitTestResult?.createAnchor?.().then((anchor) => {
+        console.log(anchor);
+        node.position.set(position.x, position.y, position.z);
 
         placementNodes.push({
           anchor,
           anchoredNode: node,
         });
+        node.visible = true;
+
         if (node.visible) {
           scene.add(node);
+          console.log(scene.children.length);
         }
-        node.visible = true;
       });
     }
   }, []);
@@ -67,8 +65,9 @@ export const ARHitTest: FC = ({ children }) => {
   useLayoutEffect(() => {
     uiObserver.on('place', onSelect);
     scene.overrideMaterial = dMaterial;
+
     const key = getUuid();
-    onAfterGetHitStateRef.current.set(key, (hit: HitState) => {
+    onAfterHitTest.set(0, (hit: HitState) => {
       if (reticleRef.current && hit.position) {
         reticleRef.current.visible = hit.visible;
 
@@ -81,7 +80,7 @@ export const ARHitTest: FC = ({ children }) => {
     });
     return () => {
       uiObserver.off('place');
-      onAfterGetHitStateRef.current.delete(key);
+      onAfterHitTest.delete(0);
       placementNodes.forEach((anchorObj) =>
         anchorObj.anchoredNode.removeFromParent()
       );

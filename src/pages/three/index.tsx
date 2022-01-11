@@ -1,7 +1,7 @@
-import { ARSceneNavigator } from '../../components/ARSceneNavigator';
+import { ARScene } from '../../packages/webar/ARScene';
 
 function App() {
-  return <ARSceneNavigator />;
+  return <ARScene />;
 }
 
 export default App;

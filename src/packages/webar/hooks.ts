@@ -29,6 +29,123 @@ import {
 import { useFrame, useStore, useThree } from '../three-react/hooks';
 import { getUuid } from '../three-react/utils';
 import { identity } from '../../assets/js/gl-matrix/mat2';
+import { ARManager } from './manager';
+
+export function useARManager() {
+  const { ar } = useStore();
+  const arManager = useMemo<ARManager>(() => ar, []);
+  return arManager;
+}
+
+export function useARMaterial(material: Material) {
+  const { glRenderer } = useStore();
+  const { onAfterDepthInfo, depthDataTexture } = useARManager();
+  const gl = useMemo(() => glRenderer.getContext(), []);
+
+  const textureRef = useRef<WebGLTexture>(gl.createTexture());
+  const [key] = useState(() => getUuid());
+
+  const shaderRef = useRef<{ shader?: Shader; modified: boolean }>({
+    modified: false,
+  });
+
+  const [depthMaterial] = useState(() => {
+    material.needsUpdate = true;
+    material.onBeforeCompile = (shader) => {
+      shader.uniforms.uScreenSize = {
+        value: new Vector2(window.innerWidth, window.innerHeight),
+      };
+      shader.uniforms.uScreenDepthTexture = { value: depthDataTexture };
+      shader.uniforms.uRawValueToMeters = { value: 1.0 };
+      shader.uniforms.uUvTransform = { value: new Matrix4() };
+      shader.uniforms.uModified = { value: false };
+
+      shader.fragmentShader =
+        `
+        uniform bool uModified;
+        uniform vec2 uScreenSize;
+        uniform sampler2D uScreenDepthTexture;
+        uniform mat4 uUvTransform;
+        uniform float uRawValueToMeters;
+        ` + shader.fragmentShader;
+
+      shader.fragmentShader = shader.fragmentShader.replace(
+        'void main() {',
+        'void main() {\n' +
+          `
+    if(uModified){
+      // fragment position in screen space
+      vec2 screenSpace = gl_FragCoord.xy / uScreenSize;
+      // transform depth uv to be normalized to screen space
+      vec2 texCoord = (uUvTransform * vec4(screenSpace.x, 1.0 - screenSpace.y, 0.0, 1.0)).xy;
+      // get luminance alpha components from depth texture
+      vec2 packedDepth = texture2D(uScreenDepthTexture, texCoord).ra;
+      // unpack into single value in millimeters
+      float depth = dot(packedDepth, vec2(255.0, 256.0 * 255.0)) * uRawValueToMeters; // m
+
+      // check if fragment is behind depth value
+      if ((gl_FragCoord.z / gl_FragCoord.w) > depth) {
+          // then do not render
+          discard;
+      }
+    }
+        
+      `
+      );
+
+      material.userData.shader = shader;
+
+      shaderRef.current = { ...shaderRef.current, shader };
+    };
+    material.customProgramCacheKey = function () {
+      return key;
+    };
+
+    return material;
+  });
+
+  useEffect(() => {
+    const onGetDepthInfoCallback = (depthInfo: XRCPUDepthInformation) => {
+      if (!depthInfo || !shaderRef.current.shader) {
+        return;
+      }
+      if (!shaderRef.current.modified) {
+        shaderRef.current.modified = true;
+        shaderRef.current.shader.uniforms.uModified.value = true;
+      }
+
+      // gl.bindTexture(gl.TEXTURE_2D, textureRef.current);
+      // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      // gl.texImage2D(
+      //   gl.TEXTURE_2D,
+      //   0,
+      //   gl.LUMINANCE_ALPHA,
+      //   depthInfo.width,
+      //   depthInfo.height,
+      //   0,
+      //   gl.LUMINANCE_ALPHA,
+      //   gl.UNSIGNED_BYTE,
+      //   new Uint8Array(depthInfo.data)
+      // );
+      // gl.activeTexture(gl.TEXTURE0);
+
+      shaderRef.current.shader.uniforms.uScreenDepthTexture.value =
+        textureRef.current;
+      shaderRef.current.shader.uniforms.uRawValueToMeters.value =
+        depthInfo.rawValueToMeters;
+      shaderRef.current.shader.uniforms.uUvTransform.value =
+        depthInfo.normDepthBufferFromNormView.matrix;
+    };
+
+    onAfterDepthInfo.set(0, onGetDepthInfoCallback);
+
+    return () => {};
+  }, []);
+
+  return depthMaterial;
+}
 
 export interface XRSystem extends EventTarget {
   isSessionSupported: (sessionMode: XRSessionMode) => Promise<boolean>;
@@ -364,14 +481,14 @@ export function useDepthOcclusionMaterial() {
   const textureRef = useRef<WebGLTexture>(gl.createTexture());
   const [key] = useState(() => getUuid());
 
-  const { onGetDepthInfoRef } = useDepthSensing();
+  const { onAfterDepthInfo } = useARManager();
 
   const shaderRef = useRef<{ shader?: Shader; modified: boolean }>({
     modified: false,
   });
 
   const [depthMaterial] = useState(() => {
-    const material = new MeshPhongMaterial({ color: 0xffffff * Math.random() });
+    const material = new MeshPhongMaterial({ color: 0xffffff });
     material.needsUpdate = true;
     material.onBeforeCompile = (shader) => {
       shader.uniforms.uScreenSize = {
@@ -429,7 +546,6 @@ export function useDepthOcclusionMaterial() {
   useEffect(() => {
     const onGetDepthInfoCallback = (depthInfo: XRCPUDepthInformation) => {
       if (!depthInfo || !shaderRef.current.shader) {
-        console.log(!!depthInfo, !!shaderRef.current.shader);
         return;
       }
       if (!shaderRef.current.modified) {
@@ -460,13 +576,12 @@ export function useDepthOcclusionMaterial() {
         depthInfo.rawValueToMeters;
       shaderRef.current.shader.uniforms.uUvTransform.value =
         depthInfo.normDepthBufferFromNormView.matrix;
-      console.log('更新');
     };
 
-    onGetDepthInfoRef.current.set(key, onGetDepthInfoCallback);
+    onAfterDepthInfo.set(0, onGetDepthInfoCallback);
 
     return () => {
-      onGetDepthInfoRef.current.delete(key);
+      onAfterDepthInfo.delete(0);
     };
   }, []);
 
