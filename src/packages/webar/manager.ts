@@ -20,14 +20,26 @@ import {
   sRGBEncoding,
   Texture,
   Mesh,
+  ShadowMaterial,
+  PlaneBufferGeometry,
+  MeshPhongMaterial,
 } from 'three';
 import { RootState } from '../three-react/store';
 import { DepthDataTexture, DepthRawTexture } from './texture';
-import { updateNormalUniforms } from './material';
+import { transformARMaterial, updateNormalUniforms } from './material';
 import { XRSystem } from './hooks';
 import { Observer } from '../three-react/observer';
 import { XRCPUDepthInformation } from './types';
 import { XREstimatedLight } from 'three/examples/jsm/webxr/XREstimatedLight';
+import {
+  World,
+  NaiveBroadphase,
+  GSSolver,
+  SplitSolver,
+  Body,
+  Vec3,
+  Plane,
+} from 'cannon-es';
 
 export type HitState = {
   visible: boolean;
@@ -64,6 +76,13 @@ export class ARManager {
 
   xrLight?: XREstimatedLight;
 
+  shadowMaterial: ShadowMaterial;
+  floorMesh: Mesh;
+
+  lastTime: number;
+  world: World;
+  floor: Body;
+
   constructor() {
     this.viewerPose = null;
 
@@ -91,6 +110,46 @@ export class ARManager {
     this.depthRawTexture = new DepthRawTexture();
     this.depthDataTexture = new DepthDataTexture();
     this.onAfterDepthInfo = new Map();
+
+    this.shadowMaterial = new MeshPhongMaterial({
+      opacity: 0.5,
+      color: 0x00ffff,
+      transparent: true,
+    });
+
+    this.floorMesh = new Mesh(
+      new PlaneBufferGeometry(100, 100, 1, 1),
+      this.shadowMaterial
+    );
+    this.floorMesh.rotation.set(-Math.PI / 2, 0, 0);
+    this.floorMesh.castShadow = false;
+    this.floorMesh.receiveShadow = true;
+
+    this.lastTime = 0;
+
+    this.world = new World({ gravity: new Vec3(0, -9.82, 0) });
+    // this.world.gravity.set(0, -9.8, 0);
+    this.world.defaultContactMaterial.contactEquationStiffness = 1e9;
+    this.world.defaultContactMaterial.contactEquationRelaxation = 4;
+    this.world.quatNormalizeSkip = 0;
+    this.world.quatNormalizeFast = false;
+
+    this.world.broadphase = new NaiveBroadphase();
+    this.world.broadphase.useBoundingBoxes = true;
+
+    var solver = new GSSolver();
+    solver.tolerance = 0.1;
+    solver.iterations = 7;
+    // @ts-ignore
+    this.world.solver = new SplitSolver(solver);
+
+    this.floor = new Body();
+    this.floor.type = Body.STATIC;
+    this.floor.position.set(0, 0, 0);
+    this.floor.velocity.set(0, 0, 0);
+    this.floor.quaternion.setFromAxisAngle(new Vec3(1, 0, 0), -Math.PI / 2);
+    this.floor.addShape(new Plane());
+    this.world.addBody(this.floor);
   }
 
   setAttributesFromRoot(root: RootState) {
@@ -131,6 +190,13 @@ export class ARManager {
     });
 
     this.depthRawTexture.initTexture(glRenderer.getContext());
+
+    this.shadowMaterial = transformARMaterial(
+      this.shadowMaterial,
+      this.depthRawTexture
+    ) as ShadowMaterial;
+
+    this.scene.add(this.floorMesh);
   }
 
   async startAR(
@@ -201,13 +267,20 @@ export class ARManager {
     });
   }
 
-  render(time?: number, frame?: XRFrame) {
+  render(time: number, frame?: XRFrame) {
+    // let delta = time - this.lastTime;
+    // this.lastTime = time;
+
     if (!frame) {
       return;
     }
+
     if (!this.renderer || !this.scene) {
       return;
     }
+
+    // this.world.step(delta / 1e3);
+
     const session = frame.session;
     const referenceSpace = this.renderer.xr.getReferenceSpace();
     if (!referenceSpace) {
@@ -241,6 +314,10 @@ export class ARManager {
           this.onAfterHitTest.forEach((fn) => {
             this.hitState && fn(this.hitState);
           });
+          if (this.hitState.position.y < this.floor.position.y) {
+            this.floor.position.y = this.hitState.position.y;
+          }
+          this.floorMesh.position.y = this.hitState.position.y;
         }
       } else {
         this.hitState.visible = false;

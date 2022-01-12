@@ -26,11 +26,13 @@ import {
   Shader,
   MeshPhongMaterial,
   Mesh,
+  Object3D,
 } from 'three';
 import { useFrame, useStore, useThree } from '../three-react/hooks';
 import { getUuid } from '../three-react/utils';
 import { ARManager } from './manager';
 import { transformARMaterial } from './material';
+import { Body, Sphere } from 'cannon-es';
 
 export function useARManager() {
   const { ar } = useStore();
@@ -40,6 +42,7 @@ export function useARManager() {
     depthRawTexture,
     depthDataTexture,
     onAfterDepthInfo,
+    world,
   } = useMemo<ARManager>(() => ar, []);
   return {
     hitState,
@@ -47,6 +50,7 @@ export function useARManager() {
     depthRawTexture,
     depthDataTexture,
     onAfterDepthInfo,
+    world,
   };
 }
 
@@ -141,6 +145,41 @@ export function useARMaterial(material: Material) {
   }, []);
 
   return depthMaterial;
+}
+
+export function usePhysicsObject(
+  objRef: React.MutableRefObject<Object3D<THREE.Event> | undefined>
+) {
+  const { world } = useARManager();
+  const { body } = useMemo(() => {
+    const body = new Body({ shape: new Sphere(0.1) });
+    body.type = Body.DYNAMIC;
+    body.mass = 1.0;
+    world.addBody(body);
+    return { body };
+  }, []);
+
+  useEffect(() => {
+    if (!objRef.current) {
+      console.log('obj is empty');
+      return;
+    }
+    const obj = objRef.current;
+    obj.onBeforeRender = () => {
+      obj.position.set(body.position.x, body.position.y, body.position.z);
+      if (!body.fixedRotation) {
+        const { x, y, z, w } = body.quaternion;
+        obj.quaternion.set(x, y, z, w);
+      }
+      console.log('渲染');
+    };
+
+    return () => {
+      obj.onBeforeRender = () => {};
+    };
+  }, []);
+
+  return { body };
 }
 
 export interface XRSystem extends EventTarget {
