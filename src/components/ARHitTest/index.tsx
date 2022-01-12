@@ -36,8 +36,7 @@ export const ARHitTest: FC = ({ children }) => {
   const dMaterial = useDepthOcclusionMaterial();
 
   const onSelect = useCallback(() => {
-    console.log('触发 select 事件!');
-    console.log(hitState);
+    console.log('select!');
 
     if (hitState && hitState.position) {
       const position = hitState.position;
@@ -46,7 +45,6 @@ export const ARHitTest: FC = ({ children }) => {
         : placementNodeRef.current.clone();
       //@ts-ignore
       hitState.hitTestResult?.createAnchor?.().then((anchor) => {
-        console.log(anchor);
         node.position.set(position.x, position.y, position.z);
 
         placementNodes.push({
@@ -57,7 +55,6 @@ export const ARHitTest: FC = ({ children }) => {
 
         if (node.visible) {
           scene.add(node);
-          console.log(scene.children.length);
         }
       });
     }
