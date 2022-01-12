@@ -21,7 +21,7 @@ import { transformARMaterial } from '../../packages/webar/material';
 
 export const ARHitTest: FC = ({ children }) => {
   const { uiObserver, scene, glRenderer } = useStore();
-  const { hitState, onAfterHitTest, depthDataTexture } = useARManager();
+  const { hitState, onAfterHitTest, depthRawTexture } = useARManager();
 
   const reticleRef = useRef<Mesh>();
   const placementNodeRef = useRef<Group>(null!);
@@ -37,7 +37,7 @@ export const ARHitTest: FC = ({ children }) => {
     () =>
       transformARMaterial(
         new MeshPhongMaterial({ color: 0xffffff * Math.random() }),
-        depthDataTexture
+        depthRawTexture
       ),
     []
   );
@@ -76,7 +76,7 @@ export const ARHitTest: FC = ({ children }) => {
 
   useLayoutEffect(() => {
     uiObserver.on('place', onSelect);
-    scene.overrideMaterial = dMaterial;
+    // scene.overrideMaterial = dMaterial;
 
     const key = getUuid();
     onAfterHitTest.set(0, (hit: HitState) => {
@@ -131,7 +131,7 @@ export const ARHitTest: FC = ({ children }) => {
         geometry={new RingGeometry(0.05, 0.06, 32)
           .rotateX(-Math.PI / 2)
           .translate(0, -0.06, 0)}
-        material={new MeshBasicMaterial()}
+        material={dMaterial}
       ></mesh>
       <group>
         {new Array(4).fill(0).map((_, index, items) => {
