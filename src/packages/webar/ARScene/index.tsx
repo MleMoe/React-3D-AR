@@ -8,6 +8,7 @@ import { Observer } from '../../three-react/observer';
 import { ControlUI } from '../../../components/ControlUI';
 import './index.scss';
 import { ARManager } from '../manager';
+import { ARLightEstimate } from '../../../components/ARLightEstimate';
 
 type ARSceneProps = {} & SceneProps;
 
@@ -27,6 +28,7 @@ export const ARScene: FC<ARSceneProps> = (props) => {
     []
   );
   const onStartAR = useCallback(() => {
+    console.log(arManager?.scene?.children);
     arManager.startAR(
       {
         requiredFeatures: [
@@ -34,7 +36,7 @@ export const ARScene: FC<ARSceneProps> = (props) => {
           'depth-sensing',
           'anchors',
           'light-estimation',
-        ], // , 'camera-access',  'depth-sensing' 'image-tracking', 'hit-test',
+        ], // , 'camera-access',  'depth-sensing' 'image-tracking'
         optionalFeatures: ['dom-overlay'],
         // @ts-ignore
         domOverlay: { root: overlayRef.current },
@@ -62,7 +64,6 @@ export const ARScene: FC<ARSceneProps> = (props) => {
           <ARButton
             onStartAR={onStartAR}
             onEndAR={() => {
-              console.log('end:', arManager.session);
               arManager.reset();
               setInProgress(false);
             }}
@@ -72,7 +73,7 @@ export const ARScene: FC<ARSceneProps> = (props) => {
       </div>
 
       <Scene ar={arManager}>
-        <ambientLight args={[0xaaaaaa]} />
+        {/* <ambientLight args={[0xeeeeee]} /> */}
         {inProgress && <ARHitTest />}
       </Scene>
     </>

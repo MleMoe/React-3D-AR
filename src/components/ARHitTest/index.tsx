@@ -10,6 +10,7 @@ import {
   Group,
   XRFrame,
   Matrix4,
+  SphereBufferGeometry,
 } from 'three';
 import {
   useARManager,
@@ -64,7 +65,7 @@ export const ARHitTest: FC = ({ children }) => {
 
   useLayoutEffect(() => {
     uiObserver.on('place', onSelect);
-    scene.overrideMaterial = dMaterial;
+    // scene.overrideMaterial = dMaterial;
 
     const key = getUuid();
     onAfterHitTest.set(0, (hit: HitState) => {
@@ -78,6 +79,7 @@ export const ARHitTest: FC = ({ children }) => {
         );
       }
     });
+
     return () => {
       uiObserver.off('place');
       onAfterHitTest.delete(0);
@@ -120,7 +122,32 @@ export const ARHitTest: FC = ({ children }) => {
           .translate(0, -0.06, 0)}
         material={new MeshBasicMaterial()}
       ></mesh>
-      <group visible={false} ref={placementNodeRef}>
+      <group>
+        {new Array(4).fill(0).map((_, index, items) => {
+          return (
+            <mesh
+              key={index}
+              geometry={new SphereBufferGeometry(0.2, 32, 32)}
+              material={
+                new MeshPhongMaterial({
+                  color: 0xdddddd,
+                  reflectivity: index / items.length,
+                })
+              }
+              position={{
+                x: 0,
+                y: index * 0.6 - (items.length - 1) * 0.3,
+                z: -5,
+              }}
+            ></mesh>
+          );
+        })}
+      </group>
+      <group
+        visible={false}
+        ref={placementNodeRef}
+        scale={{ x: 0.5, y: 0.5, z: 0.5 }}
+      >
         <Model></Model>
 
         {/* {children ?? (

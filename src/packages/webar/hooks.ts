@@ -28,13 +28,13 @@ import {
 } from 'three';
 import { useFrame, useStore, useThree } from '../three-react/hooks';
 import { getUuid } from '../three-react/utils';
-import { identity } from '../../assets/js/gl-matrix/mat2';
 import { ARManager } from './manager';
 
 export function useARManager() {
   const { ar } = useStore();
-  const arManager = useMemo<ARManager>(() => ar, []);
-  return arManager;
+  const { hitState, onAfterHitTest, depthDataTexture, onAfterDepthInfo } =
+    useMemo<ARManager>(() => ar, []);
+  return { hitState, onAfterHitTest, depthDataTexture, onAfterDepthInfo };
 }
 
 export function useARMaterial(material: Material) {
@@ -488,7 +488,7 @@ export function useDepthOcclusionMaterial() {
   });
 
   const [depthMaterial] = useState(() => {
-    const material = new MeshPhongMaterial({ color: 0xffffff });
+    const material = new MeshPhongMaterial({ color: 0xffffff * Math.random() });
     material.needsUpdate = true;
     material.onBeforeCompile = (shader) => {
       shader.uniforms.uScreenSize = {

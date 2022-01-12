@@ -5,7 +5,6 @@ import {
   DataTexture,
   PerspectiveCamera,
   DirectionalLight,
-  LightProbe,
   AmbientLight,
   WebGLRenderer,
   XRHitTestResult,
@@ -18,14 +17,16 @@ import {
   Matrix4,
   XRSessionInit,
   XRSession,
+  sRGBEncoding,
+  Texture,
 } from 'three';
 import { RootState } from '../three-react/store';
-import { XREstimatedLight } from 'three/examples/jsm/webxr/XREstimatedLight.js';
 import { DepthDataTexture } from './texture';
 import { updateNormalUniforms } from './material';
 import { XRSystem } from './hooks';
 import { Observer } from '../three-react/observer';
 import { XRCPUDepthInformation } from './types';
+import { XREstimatedLight } from 'three/examples/jsm/webxr/XREstimatedLight';
 
 export type HitState = {
   visible: boolean;
@@ -51,20 +52,15 @@ export class ARManager {
 
   viewerPose: XRViewerPose | null;
 
-  xrLight: XREstimatedLight | null;
-  directionalLight: DirectionalLight | null;
-  ambientLight: AmbientLight | null;
-
   hitTestSourceRequested: boolean;
   xrHitTestSource: XRHitTestSource | null;
   hitState: HitState;
   onAfterHitTest: Map<number, (hit: HitState) => void>;
 
-  debugDepth: boolean;
-  depthCanvas: HTMLCanvasElement | null;
-  depthTexture: CanvasTexture | null;
   depthDataTexture: DepthDataTexture;
   onAfterDepthInfo: Map<number, (depthInfo: XRCPUDepthInformation) => void>;
+
+  xrLight?: XREstimatedLight;
 
   constructor() {
     this.viewerPose = null;
@@ -83,10 +79,6 @@ export class ARManager {
     this.overlayCanvas = null;
     this.uiObserver = null;
 
-    this.xrLight = null;
-    this.directionalLight = null;
-    this.ambientLight = null;
-
     this.hitTestSourceRequested = false;
     this.xrHitTestSource = null;
     this.hitState = {
@@ -94,9 +86,6 @@ export class ARManager {
     };
     this.onAfterHitTest = new Map();
 
-    this.debugDepth = false;
-    this.depthCanvas = null;
-    this.depthTexture = null;
     this.depthDataTexture = new DepthDataTexture();
     this.onAfterDepthInfo = new Map();
   }
@@ -111,6 +100,7 @@ export class ARManager {
     this.renderer.shadowMap.type = PCFSoftShadowMap;
     this.renderer.sortObjects = false;
     this.renderer.physicallyCorrectLights = true;
+    this.renderer.outputEncoding = sRGBEncoding;
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.xr.enabled = true;
@@ -122,6 +112,20 @@ export class ARManager {
     this.gl = glRenderer.getContext();
 
     this.uiObserver = uiObserver;
+
+    this.xrLight = new XREstimatedLight(glRenderer);
+
+    this.xrLight.addEventListener('estimationstart', () => {
+      console.log('启动光估计');
+      scene.add(this.xrLight as XREstimatedLight);
+      this.updateEnvironment((this.xrLight as XREstimatedLight).environment);
+    });
+
+    this.xrLight.addEventListener('estimationend', () => {
+      console.log('结束光估计');
+      scene.remove(this.xrLight as XREstimatedLight);
+      this.updateEnvironment(null);
+    });
   }
 
   async startAR(
@@ -136,6 +140,7 @@ export class ARManager {
         onError?.();
         return;
       }
+
       this.session = await xr.requestSession('immersive-ar', sessionInit);
       if (this.session && this.root) {
         console.log(this.session);
@@ -158,9 +163,6 @@ export class ARManager {
   reset() {
     this.session?.end();
     this.xrHitTestSource?.cancel();
-    this.xrLight?.clear();
-
-    this.directionalLight?.clear();
 
     this.viewerPose = null;
 
@@ -174,10 +176,6 @@ export class ARManager {
     this.overlayCanvas = null;
     this.uiObserver = null;
 
-    this.xrLight = null;
-    this.directionalLight = null;
-    this.ambientLight = null;
-
     this.hitTestSourceRequested = false;
     this.xrHitTestSource = null;
     this.hitState = {
@@ -185,11 +183,19 @@ export class ARManager {
     };
     this.onAfterHitTest = new Map();
 
-    this.debugDepth = false;
-    this.depthCanvas = null;
-    this.depthTexture = null;
     this.depthDataTexture = new DepthDataTexture();
     this.onAfterDepthInfo = new Map();
+
+    this.xrLight = undefined;
+  }
+
+  updateEnvironment(envMap: Texture | null) {
+    this.scene?.traverse((object) => {
+      if (object.type === 'Mesh') {
+        // @ts-ignore
+        (object as Mesh).material.envMap = envMap;
+      }
+    });
   }
 
   render(time?: number, frame?: XRFrame) {
@@ -215,14 +221,6 @@ export class ARManager {
       });
 
       this.hitTestSourceRequested = true;
-    }
-
-    if (!this.xrLight) {
-      this.xrLight = new XREstimatedLight(this.renderer);
-    }
-
-    if (!this.directionalLight) {
-      this.directionalLight = this.xrLight.directionalLight;
     }
 
     if (this.xrHitTestSource && referenceSpace) {
