@@ -1,7 +1,6 @@
 import { FC, useMemo, useRef } from 'react';
 import {
   useCameraAccess,
-  useDepthSensing,
   XRCPUDepthInformation,
 } from '../../packages/webar/hooks';
 import { RootState } from '../../packages/three-react/store';

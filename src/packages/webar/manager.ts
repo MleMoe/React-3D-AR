@@ -19,9 +19,10 @@ import {
   XRSession,
   sRGBEncoding,
   Texture,
+  Mesh,
 } from 'three';
 import { RootState } from '../three-react/store';
-import { DepthDataTexture } from './texture';
+import { DepthDataTexture, DepthRawTexture } from './texture';
 import { updateNormalUniforms } from './material';
 import { XRSystem } from './hooks';
 import { Observer } from '../three-react/observer';
@@ -57,6 +58,7 @@ export class ARManager {
   hitState: HitState;
   onAfterHitTest: Map<number, (hit: HitState) => void>;
 
+  depthRawTexture: DepthRawTexture;
   depthDataTexture: DepthDataTexture;
   onAfterDepthInfo: Map<number, (depthInfo: XRCPUDepthInformation) => void>;
 
@@ -86,6 +88,7 @@ export class ARManager {
     };
     this.onAfterHitTest = new Map();
 
+    this.depthRawTexture = new DepthRawTexture();
     this.depthDataTexture = new DepthDataTexture();
     this.onAfterDepthInfo = new Map();
   }
@@ -126,6 +129,8 @@ export class ARManager {
       scene.remove(this.xrLight as XREstimatedLight);
       this.updateEnvironment(null);
     });
+
+    this.depthRawTexture.initTexture(glRenderer.getContext());
   }
 
   async startAR(
@@ -185,8 +190,6 @@ export class ARManager {
 
     this.depthDataTexture = new DepthDataTexture();
     this.onAfterDepthInfo = new Map();
-
-    this.xrLight = undefined;
   }
 
   updateEnvironment(envMap: Texture | null) {
@@ -252,14 +255,17 @@ export class ARManager {
           // @ts-ignore
           frame.getDepthInformation(view);
         if (depthData) {
+          this.depthRawTexture.updateTexture(depthData);
           this.depthDataTexture.updateDepth(depthData);
+          updateNormalUniforms(
+            this.scene,
+            depthData.normDepthBufferFromNormView,
+            depthData.rawValueToMeters
+          );
+
           this.onAfterDepthInfo.forEach((fn) => {
             this.hitState && fn(depthData);
           });
-          updateNormalUniforms(
-            this.scene,
-            depthData.normDepthBufferFromNormView
-          );
         }
       }
     }

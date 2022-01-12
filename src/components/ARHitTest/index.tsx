@@ -12,19 +12,16 @@ import {
   Matrix4,
   SphereBufferGeometry,
 } from 'three';
-import {
-  useARManager,
-  useARMaterial,
-  useDepthOcclusionMaterial,
-} from '../../packages/webar/hooks';
+import { useARManager, useARMaterial } from '../../packages/webar/hooks';
 import { useFrame, useStore } from '../../packages/three-react/hooks';
 import { Model } from '../ARContent/model';
 import { getUuid } from '../../packages/three-react/utils';
 import { HitState } from '../../packages/webar/manager';
+import { transformARMaterial } from '../../packages/webar/material';
 
 export const ARHitTest: FC = ({ children }) => {
   const { uiObserver, scene, glRenderer } = useStore();
-  const { hitState, onAfterHitTest } = useARManager();
+  const { hitState, onAfterHitTest, depthDataTexture } = useARManager();
 
   const reticleRef = useRef<Mesh>();
   const placementNodeRef = useRef<Group>(null!);
@@ -33,7 +30,17 @@ export const ARHitTest: FC = ({ children }) => {
     []
   );
 
-  const dMaterial = useDepthOcclusionMaterial();
+  // const dMaterial = useARMaterial(
+  //   new MeshPhongMaterial({ color: 0xffffff * Math.random() })
+  // );
+  const dMaterial = useMemo(
+    () =>
+      transformARMaterial(
+        new MeshPhongMaterial({ color: 0xffffff * Math.random() }),
+        depthDataTexture
+      ),
+    []
+  );
 
   const onSelect = useCallback(() => {
     console.log('select!');
@@ -58,11 +65,18 @@ export const ARHitTest: FC = ({ children }) => {
         }
       });
     }
+    console.log(scene.children);
+
+    // scene.traverse(function (child) {
+    //   if (child instanceof Mesh) {
+    //     console.log(child);
+    //   }
+    // });
   }, []);
 
   useLayoutEffect(() => {
     uiObserver.on('place', onSelect);
-    // scene.overrideMaterial = dMaterial;
+    scene.overrideMaterial = dMaterial;
 
     const key = getUuid();
     onAfterHitTest.set(0, (hit: HitState) => {

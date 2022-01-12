@@ -7,8 +7,9 @@ import {
   XRRigidTransform,
   ShaderMaterial,
   Texture,
+  Vector2,
 } from 'three';
-import { DepthDataTexture } from './texture';
+import { DepthDataTexture, DepthRawTexture } from './texture';
 import ARMaterialVertex from './glsl/ARMaterialVertex.glsl?raw';
 import ARMaterialFragment from './glsl/ARMaterialFragment.glsl?raw';
 
@@ -32,88 +33,55 @@ export class AugmentedMaterial extends ShaderMaterial {
 
 export function transformARMaterial(
   material: Material,
-  depthMap: DepthDataTexture
+  depthMap: DepthRawTexture | DepthDataTexture
 ) {
   material.userData = {
     isARMaterial: true,
     uniforms: {
-      uDepthTexture: { value: depthMap },
-      uWidth: { value: 1.0 },
-      uHeight: { value: 1.0 },
+      uScreenDepthTexture: { value: depthMap },
+      uScreenSize: {
+        value: new Vector2(window.innerWidth, window.innerHeight),
+      },
       uUvTransform: { value: new Matrix4() },
-      uOcclusionEnabled: { value: true },
+      uOcclusionEnabled: { value: false },
+      uRawValueToMeters: { value: 0.001 },
     },
   };
 
   material.onBeforeCompile = (shader) => {
+    material.needsUpdate = true;
+
     for (let i in material.userData.uniforms) {
       shader.uniforms[i] = material.userData.uniforms[i];
     }
 
     shader.fragmentShader =
       `
-			uniform sampler2D uDepthTexture;
-			uniform float uWidth;
-			uniform float uHeight;
-			uniform mat4 uUvTransform;
+      uniform vec2 uScreenSize;
+      uniform sampler2D uScreenDepthTexture;
+      uniform mat4 uUvTransform;
+      uniform float uRawValueToMeters;
 
 			uniform bool uOcclusionEnabled;
 
-			varying float vDepth;
 			` + shader.fragmentShader;
 
-    var fragmentEntryPoint = '#include <clipping_planes_fragment>';
-    if (material instanceof ShadowMaterial) {
-      fragmentEntryPoint = '#include <fog_fragment>';
-    }
-
-    // Fragment depth logic
     shader.fragmentShader = shader.fragmentShader.replace(
-      'void main',
-      `float getDepthInMillimeters(in sampler2D depthText, in vec2 uv)
-			{
-				vec2 packedDepth = texture2D(depthText, uv).ra;
-				return dot(packedDepth, vec2(255.0, 65280.0));
-			}
+      'void main() {',
+      'void main() {\n' +
+        `
+        if(uOcclusionEnabled){
+          vec2 screenSpace = gl_FragCoord.xy / uScreenSize;
+          vec2 texCoord = (uUvTransform * vec4(screenSpace.x, 1.0 - screenSpace.y, 0.0, 1.0)).xy;
+          vec2 packedDepth = texture2D(uScreenDepthTexture, texCoord).ra;
+          float depth = dot(packedDepth, vec2(255.0, 256.0 * 255.0)) * uRawValueToMeters; // m
 
-			void main`
-    );
-
-    shader.fragmentShader = shader.fragmentShader.replace(
-      fragmentEntryPoint,
+          if ((gl_FragCoord.z / gl_FragCoord.w) > depth) {
+              discard;
+          }
+        }
+        
       `
-			${fragmentEntryPoint}
-
-			if(uOcclusionEnabled)
-			{
-				// Normalize x, y to range [0, 1]
-				float x = gl_FragCoord.x / uWidth;
-				float y = gl_FragCoord.y / uHeight;
-				vec2 depthUV = (uUvTransform * vec4(vec2(x, y), 0, 1)).xy;
-
-				float depth = getDepthInMillimeters(uDepthTexture, depthUV) / 1000.0;
-				if (depth < vDepth)
-				{
-					discard;
-				}
-			}
-			`
-    );
-
-    // Vertex variables
-    shader.vertexShader =
-      `
-			varying float vDepth;
-			` + shader.vertexShader;
-
-    // Vertex depth logic
-    shader.vertexShader = shader.vertexShader.replace(
-      '#include <fog_vertex>',
-      `
-			#include <fog_vertex>
-
-			vDepth = gl_Position.z;
-			`
     );
   };
 
@@ -122,20 +90,19 @@ export function transformARMaterial(
 
 export function updateNormalUniforms(
   scene: Scene,
-  normTextureFromNormViewMatrix: XRRigidTransform
+  normTextureFromNormViewMatrix: XRRigidTransform,
+  rawValueToMeters: number
 ) {
   scene.traverse(function (child) {
     if (child instanceof Mesh) {
       if (child.material && child.material.userData.isARMaterial) {
-        child.material.userData.uniforms.uWidth.value = Math.floor(
-          window.devicePixelRatio * window.innerWidth
-        );
-        child.material.userData.uniforms.uHeight.value = Math.floor(
-          window.devicePixelRatio * window.innerHeight
-        );
-        child.material.userData.uniforms.uUvTransform.value.fromArray(
-          normTextureFromNormViewMatrix
-        );
+        if (!child.material.userData.uniforms.uOcclusionEnabled.value) {
+          child.material.userData.uniforms.uOcclusionEnabled.value = true;
+        }
+        child.material.userData.uniforms.uRawValueToMeters.value =
+          rawValueToMeters;
+        child.material.userData.uniforms.uUvTransform.value =
+          normTextureFromNormViewMatrix.matrix;
         child.material.uniformsNeedUpdate = true;
       }
     }
