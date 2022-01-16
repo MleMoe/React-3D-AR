@@ -59,6 +59,7 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
       new THREE.WebGLRenderer({
         powerPreference: 'high-performance',
         antialias: true,
+        canvas,
         alpha: true,
         depth: true,
         precision: 'highp',
@@ -67,7 +68,8 @@ const createStore = (props: StoreProps): UseBoundStore<RootState> => {
         logarithmicDepthBuffer: false,
         stencil: true,
       });
-    glRenderer.domElement = canvas;
+    glRenderer.domElement = glRenderer.domElement ?? canvas;
+    glRenderer.setSize(canvas.width, canvas.height);
 
     let camera: Camera =
       cameraProps ??

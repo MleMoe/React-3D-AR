@@ -73,7 +73,7 @@ export const ARScene: FC<ARSceneProps> = (props) => {
       </div>
 
       <Scene ar={arManager}>
-        {/* <ambientLight args={[0xeeeeee]} /> */}
+        {/* <ambientLight paras={[0xeeeeee]} /> */}
         {inProgress && <ARHitTest />}
       </Scene>
     </>

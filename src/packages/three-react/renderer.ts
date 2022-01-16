@@ -32,7 +32,7 @@ type InstanceCustomProps = {
 };
 
 export type InstanceProps = InstanceCustomProps & {
-  args?: any[];
+  paras?: any[];
 };
 
 export type Root = {
@@ -62,7 +62,7 @@ function diffProps(
 
   const removeKeys = oldKeys.filter((key) => !newKeys.includes(key));
 
-  let isChanged = false;
+  let isChanged = removeKeys.length ? true : false;
   for (const key of newKeys) {
     if (!isEqual(oldProps[key], newProps[key])) {
       isChanged = true;
@@ -75,25 +75,25 @@ function diffProps(
 
 const logConfig = {
   // 新建实例
-  createInstance: false,
+  createInstance: true,
   // child 加入容器
-  appendChildToContainer: false,
-  appendChild: false,
+  appendChildToContainer: true,
+  appendChild: true,
   // 初次 append child
-  appendInitialChild: false,
-  removeChildFromContainer: false,
+  appendInitialChild: true,
+  removeChildFromContainer: true,
   removeChild: true,
-  insertInContainerBefore: false,
+  insertInContainerBefore: true,
   insertBefore: true,
   prepareUpdate: true,
-  commitUpdate: false,
-  finalizeInitialChildren: false,
+  commitUpdate: true,
+  finalizeInitialChildren: true,
 };
 
-function log(type: keyof typeof logConfig, args: any) {
+function log(type: keyof typeof logConfig, paras: any) {
   if (logConfig[type] === true) {
     console.log(`*** ${type} ***`);
-    console.log(args);
+    console.log(paras);
   }
 }
 
@@ -168,10 +168,10 @@ function createInstance(
 ) {
   log('createInstance', arguments);
 
-  const { args = [], children, ...rest } = props;
+  const { paras = [], children, ...rest } = props;
 
   let name = `${type[0].toUpperCase()}${type.slice(1)}`;
-  let instance: Instance = new (THREE as any)[name](...args);
+  let instance: Instance = new (THREE as any)[name](...paras);
 
   instance._local = {
     containerInfo: rootContainerInstance,
@@ -304,18 +304,18 @@ export let reconciler = Reconciler(
       currentHostContext
     ): DiffPropsData | null {
       const {
-        args: argsNew = [],
+        paras: parasNew = [],
         children: childrenNew,
         ...restNew
       } = newProps;
       const {
-        args: argsOld = [],
+        paras: parasOld = [],
         children: childrenOld,
         ...restOld
       } = oldProps;
 
       // 判断构造函数参数
-      if (!isEqual(argsOld, argsNew)) {
+      if (!isEqual(parasOld, parasNew)) {
         return {
           reconstruct: true,
         };
@@ -354,8 +354,19 @@ export let reconciler = Reconciler(
         return;
       }
 
-      if (changes) {
+      if (changes?.isChanged) {
         const { removeKeys, nowProps } = changes;
+        // 待验证
+        if (removeKeys.length) {
+          const { paras = [] } = nextProps;
+          const rawInstance = new (THREE as any)[
+            `${type[0].toUpperCase()}${type.slice(1)}`
+          ](...paras);
+          removeKeys.forEach((key) => {
+            instance[key] = rawInstance[key];
+          });
+        }
+
         applyProps(instance, nowProps);
       }
     },

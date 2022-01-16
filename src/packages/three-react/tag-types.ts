@@ -2,8 +2,8 @@ import React from 'react';
 import * as THREE from 'three';
 import { EventHandlers } from './events';
 
-type Parameters<T extends (...args: any) => any> = T extends (
-  ...args: infer P
+type Parameters<T extends (...paras: any) => any> = T extends (
+  ...paras: infer P
 ) => any
   ? P
   : never;
@@ -27,12 +27,12 @@ export type Layers = THREE.Layers | Parameters<THREE.Layers['set']>[0];
 // 0x00ff00 或 #00ff00
 export type Color = number | string;
 
-type Args<T> = T extends new (...args: any) => any
+type Paras<T> = T extends new (...paras: any) => any
   ? ConstructorParameters<T>
   : T;
 export interface NodeProps<T> {
   /** 构造函数参数 */
-  args?: Args<T>;
+  paras?: Paras<T>;
   children?: React.ReactNode;
   ref?: React.Ref<React.ReactNode>;
   key?: React.Key;
@@ -89,11 +89,18 @@ export type ArrayCameraProps = Object3DNode<
 >;
 
 /**
- * Mesh
+ * 物体
  */
-export type MeshProps = Object3DNode<THREE.Mesh, typeof THREE.Mesh>;
-
 export type GroupProps = Object3DNode<THREE.Group, typeof THREE.Group>;
+
+export type MeshProps = Object3DNode<THREE.Mesh, typeof THREE.Mesh>;
+export type SpriteProps = Object3DNode<THREE.Sprite, typeof THREE.Sprite>;
+export type LineSegmentsProps = Object3DNode<
+  THREE.LineSegments,
+  typeof THREE.LineSegments
+>;
+
+export type PointsProps = Object3DNode<THREE.Points, typeof THREE.Points>;
 
 export type GridHelperProps = Object3DNode<
   THREE.GridHelper,
@@ -133,6 +140,10 @@ declare global {
       perspectiveCamera: PerspectiveCameraProps;
       orthographicCamera: OrthographicCameraProps;
       mesh: MeshProps;
+      sprite: SpriteProps;
+      lineSegments: LineSegmentsProps;
+      point: PointsProps;
+
       ambientLight: AmbientLightProps;
       directionalLight: DirectionalLightProps;
       pointLight: PointLightProps;
