@@ -59,25 +59,25 @@ export const Scene: FC<SceneProps> = ({
       });
 
       if (ar) {
-        ar.setAttributesFromRoot(store.getState());
+        ar.setAttributesFromRoot(store);
       }
 
       if (storeRef) {
-        storeRef.current = store.getState();
+        storeRef.current = store;
       }
 
       const container = reconciler.createContainer(store, 0, false, null);
 
       setRoot({ store, container });
       // 启动绘制循环
-      createLoop(store.getState());
+      createLoop(store);
     }
   }, [width, height]);
 
   useLayoutEffect(() => {
     if (root) {
       // resize renderer and camera
-      const { glRenderer, camera, interactionManager } = root.store.getState();
+      const { glRenderer, camera, interactionManager } = root.store;
       const size = glRenderer.getSize(new THREE.Vector2());
       if (width !== size.x || height !== size.y) {
         glRenderer.setSize(width, height);
@@ -93,7 +93,7 @@ export const Scene: FC<SceneProps> = ({
 
   useLayoutEffect(() => {
     if (root && width > 0 && height > 0) {
-      render(root, <React.Suspense fallback={null}>{children}</React.Suspense>);
+      render(root, children);
     }
   }, [width, height, children, root]); // 需放上 children，解决了 gl 的唯一性问题， 解决 child 元素的 diff 问题。
 

@@ -1,5 +1,4 @@
 import { Object3D, Vector2, Raycaster } from 'three';
-import { UseBoundStore } from 'zustand';
 import { Instance } from './renderer';
 import { Camera, RootState } from './store';
 export interface BaseEvent {
@@ -35,7 +34,7 @@ export class InteractionManager {
   mouse: Vector2;
   interactiveObjects: InteractiveObject[];
   raycaster: THREE.Raycaster;
-  container?: UseBoundStore<RootState>;
+  container?: RootState;
   size: {
     width: number;
     height: number;
@@ -62,7 +61,7 @@ export class InteractionManager {
     this.setEventListener();
   }
 
-  setContainer = (container: UseBoundStore<RootState>) => {
+  setContainer = (container: RootState) => {
     this.container = container;
   };
 

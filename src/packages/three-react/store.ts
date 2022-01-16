@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { createContext } from 'react';
 
-import create, { GetState, SetState, UseBoundStore } from 'zustand';
 import { InteractionManager } from './events';
 import { Observer } from './observer';
 import { FrameCallback } from './loop';
@@ -35,9 +34,6 @@ export type RootState = {
   uiObserver: Observer;
 
   ar: any;
-
-  set: SetState<RootState>;
-  get: GetState<RootState>;
 };
 
 export type StoreProps = {
@@ -48,70 +44,64 @@ export type StoreProps = {
   control?: boolean;
 };
 
-const context = createContext<UseBoundStore<RootState>>(null!);
+const context = createContext<RootState>(null!);
 
-const createStore = (props: StoreProps): UseBoundStore<RootState> => {
+const createStore = (props: StoreProps): RootState => {
   const { canvas, camera: cameraProps, control, renderer, ar } = props;
 
-  const rootState = create<RootState>((set, get) => {
-    const glRenderer =
-      renderer ??
-      new THREE.WebGLRenderer({
-        powerPreference: 'high-performance',
-        antialias: true,
-        canvas,
-        alpha: true,
-        depth: true,
-        precision: 'highp',
-        preserveDrawingBuffer: false,
-        premultipliedAlpha: true,
-        logarithmicDepthBuffer: false,
-        stencil: true,
-      });
-    glRenderer.domElement = glRenderer.domElement ?? canvas;
-    glRenderer.setSize(canvas.width, canvas.height);
+  const glRenderer =
+    renderer ??
+    new THREE.WebGLRenderer({
+      powerPreference: 'high-performance',
+      antialias: true,
+      canvas,
+      alpha: true,
+      depth: true,
+      precision: 'highp',
+      preserveDrawingBuffer: false,
+      premultipliedAlpha: true,
+      logarithmicDepthBuffer: false,
+      stencil: true,
+    });
+  glRenderer.domElement = glRenderer.domElement ?? canvas;
+  glRenderer.setSize(canvas.width, canvas.height);
 
-    let camera: Camera =
-      cameraProps ??
-      new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 0.1, 10);
-    camera.aspect = canvas.width / canvas.height;
-    camera.updateProjectionMatrix();
+  let camera: Camera =
+    cameraProps ??
+    new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 0.1, 10);
+  camera.aspect = canvas.width / canvas.height;
+  camera.updateProjectionMatrix();
 
-    const interactionManager = new InteractionManager(canvas, camera);
+  const interactionManager = new InteractionManager(canvas, camera);
 
-    const scene = new THREE.Scene();
+  const scene = new THREE.Scene();
 
-    const onBeforeRender = new Map<number, FrameCallback>();
-    const onAfterRender = new Map<number, FrameCallback>();
+  const onBeforeRender = new Map<number, FrameCallback>();
+  const onAfterRender = new Map<number, FrameCallback>();
 
-    const render = (time?: number, frame?: THREE.XRFrame) => {
-      // ar 处理
-      ar?.render(time, frame);
-      onBeforeRender.forEach((callbackfn) => callbackfn(time, frame));
-      glRenderer.render(scene, camera);
-      onAfterRender.forEach((callbackfn) => callbackfn(time, frame));
-    };
-    const frameCallbacks = new Map<string, FrameCallback>();
-    frameCallbacks.set('gl-render', render);
+  const render = (time?: number, frame?: THREE.XRFrame) => {
+    // ar 处理
+    ar?.render(time, frame);
+    onBeforeRender.forEach((callbackfn) => callbackfn(time, frame));
+    glRenderer.render(scene, camera);
+    onAfterRender.forEach((callbackfn) => callbackfn(time, frame));
+  };
+  const frameCallbacks = new Map<string, FrameCallback>();
+  frameCallbacks.set('gl-render', render);
 
-    return {
-      glRenderer,
-      scene,
-      camera,
-      onBeforeRender,
-      onAfterRender,
-      frameCallbacks,
-      interactionManager,
-      ...(control ? { orbitControl: new OrbitControls(camera, canvas) } : {}),
-      uiObserver: new Observer(),
-      ar: ar ?? {},
+  const rootState = {
+    glRenderer,
+    scene,
+    camera,
+    onBeforeRender,
+    onAfterRender,
+    frameCallbacks,
+    interactionManager,
+    ...(control ? { orbitControl: new OrbitControls(camera, canvas) } : {}),
+    uiObserver: new Observer(),
+    ar: ar ?? {},
+  };
 
-      set,
-      get,
-    };
-  });
-
-  const { interactionManager } = rootState.getState();
   interactionManager.setContainer(rootState);
 
   return rootState;

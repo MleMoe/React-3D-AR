@@ -1,29 +1,31 @@
-import { useContext, useState, useLayoutEffect, useEffect } from 'react';
-import { context, RootState } from './store';
+import {
+  useContext,
+  useState,
+  useLayoutEffect,
+  useEffect,
+  useMemo,
+} from 'react';
+import { context } from './store';
 
 import { FrameCallback } from './loop';
 import { getUuid } from './utils';
 import { Texture, TextureLoader } from 'three';
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
-export function useStore(rootStore?: RootState) {
-  const store = useContext(context)?.getState();
-  if (rootStore) return rootStore;
+export function useStore() {
+  const store = useContext(context);
 
   return store;
 }
 
-export function useThree(rootStore?: RootState) {
-  const store = useStore(rootStore);
-  const [three] = useState(() => {
-    const { glRenderer, scene, camera, orbitControl } = store;
-    return { glRenderer, scene, camera, orbitControl };
-  });
-  return three;
+export function useThree() {
+  const store = useStore();
+  const { glRenderer, scene, camera, orbitControl } = useMemo(() => store, []);
+  return { glRenderer, scene, camera, orbitControl };
 }
 
-export function useFrame(callback: FrameCallback, rootStore?: RootState) {
-  const store = useStore(rootStore);
+export function useFrame(callback: FrameCallback) {
+  const store = useStore();
   useLayoutEffect(() => {
     const { frameCallbacks } = store;
     const callbackId = getUuid();

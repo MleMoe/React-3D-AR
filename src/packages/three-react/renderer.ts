@@ -1,5 +1,4 @@
 import Reconciler from 'react-reconciler';
-import { UseBoundStore } from 'zustand';
 
 import { RootState } from './store';
 
@@ -9,7 +8,7 @@ import { EventHandlers } from './events';
 
 export type LocalState = {
   eventListeners: Partial<EventHandlers>;
-  containerInfo: UseBoundStore<RootState>;
+  containerInfo: RootState;
 };
 
 export type Instance = Omit<THREE.Object3D, 'parent' | 'children'> & {
@@ -37,7 +36,7 @@ export type InstanceProps = InstanceCustomProps & {
 
 export type Root = {
   container: Reconciler.FiberRoot;
-  store: UseBoundStore<RootState>;
+  store: RootState;
 };
 
 type ChangeInfo = {
@@ -111,7 +110,7 @@ function applyProps(instance: Instance, props: InstanceCustomProps) {
       const { eventListeners } = _local;
       const eventListener = eventListeners[type];
 
-      const { interactionManager } = _local.containerInfo.getState();
+      const { interactionManager } = _local.containerInfo;
 
       if (eventListener != undefined) {
         instance.removeEventListener(type, eventListener);
@@ -162,7 +161,7 @@ function getPublicInstance(instance: Instance) {
 function createInstance(
   type: string,
   props: InstanceProps,
-  rootContainerInstance: UseBoundStore<RootState>,
+  rootContainerInstance: RootState,
   hostContext?: any,
   internalInstanceHandle?: any
 ) {
@@ -190,7 +189,7 @@ function appendChild(parent: Instance, child: Instance) {
 }
 
 function removeChild(parent: Instance, child: Instance) {
-  child._local.containerInfo.getState().interactionManager.remove(child);
+  child._local.containerInfo.interactionManager.remove(child);
   child.removeFromParent();
 }
 
@@ -247,15 +246,12 @@ export let reconciler = Reconciler(
      * @param container
      * @param child
      */
-    appendChildToContainer(
-      container: UseBoundStore<RootState>,
-      child: Instance
-    ) {
+    appendChildToContainer(container: RootState, child: Instance) {
       log('appendChildToContainer', arguments);
 
       // 最上层节点的 parent 是 scene
       // child._local.parent = container.getState().scene;
-      container.getState().scene.add(child);
+      container.scene.add(child);
     },
 
     /**
@@ -278,15 +274,12 @@ export let reconciler = Reconciler(
 
     insertInContainerBefore(container, child, before) {
       log('insertInContainerBefore', arguments);
-      container.getState().scene.add(child);
+      container.scene.add(child);
     },
 
-    removeChildFromContainer(
-      container: UseBoundStore<RootState>,
-      child: Instance
-    ) {
+    removeChildFromContainer(container: RootState, child: Instance) {
       log('removeChildFromContainer', arguments);
-      container.getState().scene.remove(child);
+      container.scene.remove(child);
     },
     removeChild,
 

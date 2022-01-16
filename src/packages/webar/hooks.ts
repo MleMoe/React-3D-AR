@@ -322,10 +322,10 @@ export function useARHitTest() {
   return { hitRef, onAfterGetHitStateRef };
 }
 
-export function useARImageTracking(rootStore?: RootState) {
+export function useARImageTracking() {
   const imgPoseRef = useRef<XRPose>();
 
-  const { glRenderer } = useStore(rootStore);
+  const { glRenderer } = useStore();
   const [webXRManager] = useState(() => glRenderer.xr);
 
   const render = useCallback((time?: number, frame?: XRFrame) => {
@@ -359,8 +359,8 @@ export function useARImageTracking(rootStore?: RootState) {
   return { imgPoseRef };
 }
 
-export function useCameraAccess(store?: RootState) {
-  const { glRenderer } = useThree(store);
+export function useCameraAccess() {
+  const { glRenderer } = useThree();
   const { glBinding, arSession } = useMemo(() => {
     const arSession = glRenderer.xr.getSession();
     if (!arSession) {
@@ -395,7 +395,7 @@ export function useCameraAccess(store?: RootState) {
     [glRenderer]
   );
 
-  useFrame(computeCameraTexture, store);
+  useFrame(computeCameraTexture);
 
   return { cameraTextureRef };
 }
