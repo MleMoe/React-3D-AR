@@ -1,13 +1,11 @@
 import React, { FC, useState, useLayoutEffect } from 'react';
 import useMeasure from 'react-use-measure';
-import '../tag-types';
-import { reconciler, Root } from '../renderer';
-import { Provider } from '../provider';
-import { createStore, Camera, RootState } from '../store';
+import './tag-types';
+import { reconciler, Root } from './renderer';
+import { createStore, Camera, RootState, context } from './store';
 import * as THREE from 'three';
-import { createLoop } from '../loop';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { ARManager } from '../../webar/manager';
+import { createLoop } from './loop';
+import { ARManager } from './../webar/manager';
 
 export type SceneProps = Partial<{
   storeRef: {
@@ -26,7 +24,7 @@ export type SceneProps = Partial<{
  */
 function render(root: Root, element: React.ReactNode) {
   reconciler.updateContainer(
-    <Provider store={root.store} element={element} />,
+    <context.Provider value={root.store}>{element}</context.Provider>,
     root.container,
     null,
     () => undefined
