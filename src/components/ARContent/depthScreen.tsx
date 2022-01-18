@@ -1,13 +1,14 @@
-import { FC, useMemo, useRef } from 'react';
+import { FC, useMemo, useRef, useEffect } from 'react';
 import {
   useCameraAccess,
   XRCPUDepthInformation,
 } from '../../packages/webar/hooks';
 import { RootState } from '../../packages/three-react/store';
-import { useFrame, useThree } from '../../packages/three-react/hooks';
+import { useFrame, useStore, useThree } from '../../packages/three-react/hooks';
 import * as THREE from 'three';
 
 export const DepthScreen: FC<{ store?: RootState }> = ({ store }) => {
+  const { frameCallbacks } = useStore();
   const { glRenderer, camera, scene } = useThree();
   const gl = useMemo(() => glRenderer.getContext(), []);
   // const { depthInfoRef } = useDepthSensing();
@@ -23,7 +24,7 @@ export const DepthScreen: FC<{ store?: RootState }> = ({ store }) => {
           varying vec2 vTexCoord;
 
           void main() {
-            vTexCoord = uv;
+            vTexCoord = vec2(uv.x, 1.0-uv.y);
             gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
           }
         `,
@@ -38,9 +39,6 @@ export const DepthScreen: FC<{ store?: RootState }> = ({ store }) => {
           varying vec2 vTexCoord;
 
           float DepthGetMeters(in sampler2D depth_texture, in vec2 depth_uv) {
-            // Depth is packed into the luminance and alpha components of its texture.
-            // The texture is in a normalized format, storing raw values that need to be
-            // converted to meters.
             vec2 packedDepthAndVisibility = texture2D(depth_texture, depth_uv).ra;
             return dot(packedDepthAndVisibility, vec2(255.0, 256.0 * 255.0)) * uRawValueToMeters;
           }
@@ -121,6 +119,11 @@ export const DepthScreen: FC<{ store?: RootState }> = ({ store }) => {
     };
 
     return [pCamera, pMaterial, pScene];
+  }, []);
+
+  useEffect(() => {
+    frameCallbacks.delete('0-render');
+    return () => {};
   }, []);
 
   useFrame(async (t?: number, frame?: THREE.XRFrame) => {
