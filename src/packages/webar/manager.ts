@@ -28,12 +28,8 @@ import {
   XRRigidTransform,
 } from 'three';
 import { RootState } from '../three-react/store';
-import {
-  DepthDataTexture,
-  DepthRawTexture,
-  DepthCanvasTexture,
-} from './texture';
-import { XRSystem } from './hooks';
+import { DepthRawTexture } from './texture';
+import { XRSystem } from './types';
 import { Observer } from '../three-react/observer';
 import { XRCPUDepthInformation } from './types';
 import { XREstimatedLight } from 'three/examples/jsm/webxr/XREstimatedLight';
@@ -68,7 +64,6 @@ export class ARManager {
 
   canvas: HTMLCanvasElement | null;
   overlayCanvas: HTMLCanvasElement | null;
-  canvasTexture?: DepthCanvasTexture;
   uiObserver: Observer | null;
 
   viewerPose: XRViewerPose | null;
@@ -354,8 +349,6 @@ export class ARManager {
     }
       `
       );
-
-      console.log(shader.vertexShader, shader.fragmentShader);
     };
 
     return material;

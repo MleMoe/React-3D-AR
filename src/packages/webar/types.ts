@@ -18,6 +18,14 @@ import {
   MeshPhongMaterial,
 } from 'three';
 
+export interface XRSystem extends EventTarget {
+  isSessionSupported: (sessionMode: XRSessionMode) => Promise<boolean>;
+  requestSession: (
+    sessionMode: XRSessionMode,
+    sessionInit?: any
+  ) => Promise<XRSession>;
+}
+
 export type XRDepthInformation = {
   width: number;
   height: number;
