@@ -3,8 +3,15 @@
  * @param map
  * @returns
  */
-export function sortMap(map: Map<number, (...paras: any) => any>) {
-  return new Map([...map.entries()].sort());
+export function sortMap(map: Map<string, (...paras: any) => any>) {
+  return new Map(
+    [...map.entries()]
+      .map((kv) => {
+        const k = parseFloat(kv[0].split('-')[0]);
+        return [k, kv[1]] as [number, (...paras: any) => any];
+      })
+      .sort()
+  );
 }
 
 /**
@@ -13,7 +20,7 @@ export function sortMap(map: Map<number, (...paras: any) => any>) {
  * @param paras
  */
 export function travelMap(
-  map: Map<number, (...paras: any[]) => any>,
+  map: Map<string, (...paras: any[]) => any>,
   ...paras: any[]
 ) {
   map.forEach((callbackfn) => callbackfn(...paras));

@@ -9,3 +9,5 @@ src/assets
 public/models/RobotExpressive.glb
 .VSCodeCounter
 samples/
+src/packages/webar/objects
+src/packages/webar/physics

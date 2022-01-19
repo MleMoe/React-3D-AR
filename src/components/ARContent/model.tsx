@@ -4,8 +4,8 @@ import { useFrame, useLoader } from '../../packages/three-react/hooks';
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { Group, Clock, AnimationMixer, Mesh } from 'three';
 import { GroupProps } from '../../packages/three-react/tag-types';
-import { transformARMaterial } from '../../packages/webar/material';
 import { useARManager } from '../../packages/webar/hooks';
+import { ARManager } from '../../packages/webar/manager';
 
 type ModelProps = Partial<GroupProps>;
 export const Model: FC<ModelProps> = (props) => {
@@ -34,19 +34,19 @@ export const Model: FC<ModelProps> = (props) => {
       //   //   .clipAction(loadResults[0].animations[Math.round(Math.random() * 11)])
       //   //   .play();
 
-      //   loadResults.forEach((loadResult) => {
-      //     const object = loadResult.scene;
-      //     object.traverse((child) => {
-      //       if (child instanceof Mesh) {
-      //         child.castShadow = true;
-      //         child.receiveShadow = true;
-      //         child.material = transformARMaterial(
-      //           child.material,
-      //           depthRawTexture
-      //         );
-      //       }
-      //     });
-      //   });
+      loadResults.forEach((loadResult) => {
+        const object = loadResult.scene;
+        object.traverse((child) => {
+          if (child instanceof Mesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+            child.material = ARManager.transformARMaterial(
+              child.material,
+              depthRawTexture
+            );
+          }
+        });
+      });
     }
   }, [loadResults]);
 

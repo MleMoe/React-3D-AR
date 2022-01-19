@@ -12,16 +12,16 @@ import {
   Matrix4,
   SphereBufferGeometry,
 } from 'three';
-import { useARManager, useARMaterial } from '../../packages/webar/hooks';
+import { useARManager } from '../../packages/webar/hooks';
 import { useFrame, useStore } from '../../packages/three-react/hooks';
 import { Model } from '../ARContent/model';
 import { getUuid } from '../../packages/three-react/utils';
 import { HitState } from '../../packages/webar/manager';
-import { transformARMaterial } from '../../packages/webar/material';
 
 export const ARHitTest: FC = ({ children }) => {
   const { uiObserver, scene, glRenderer } = useStore();
-  const { hitState, onAfterHitTest, depthRawTexture } = useARManager();
+  const { hitState, onAfterHitTest, depthRawTexture, transformARMaterial } =
+    useARManager();
 
   const reticleRef = useRef<Mesh>();
   const placementNodeRef = useRef<Group>(null!);
@@ -62,18 +62,11 @@ export const ARHitTest: FC = ({ children }) => {
         }
       });
     }
-    console.log(scene.children);
-
-    // scene.traverse(function (child) {
-    //   if (child instanceof Mesh) {
-    //     console.log(child);
-    //   }
-    // });
   }, []);
 
   useLayoutEffect(() => {
     uiObserver.on('place', onSelect);
-    scene.overrideMaterial = dMaterial;
+    // scene.overrideMaterial = dMaterial;
 
     const key = getUuid();
     onAfterHitTest.set(0, (hit: HitState) => {
@@ -144,7 +137,7 @@ export const ARHitTest: FC = ({ children }) => {
               position={{
                 x: 0,
                 y: index * 0.6 - (items.length - 1) * 0.3,
-                z: -15,
+                z: -5,
               }}
             ></mesh>
           );

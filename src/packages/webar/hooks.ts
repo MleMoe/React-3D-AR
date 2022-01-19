@@ -31,7 +31,6 @@ import {
 import { useFrame, useStore, useThree } from '../three-react/hooks';
 import { getUuid } from '../three-react/utils';
 import { ARManager } from './manager';
-import { transformARMaterial } from './material';
 import { Body, Sphere } from 'cannon-es';
 
 export function useARManager() {
@@ -43,6 +42,7 @@ export function useARManager() {
     onAfterDepthInfo,
     world,
     overlayCanvas,
+    transformARMaterial,
   } = useMemo<ARManager>(() => ar, []);
   return {
     hitState,
@@ -51,100 +51,8 @@ export function useARManager() {
     onAfterDepthInfo,
     world,
     overlayCanvas,
+    transformARMaterial,
   };
-}
-
-export function useARMaterial(material: Material) {
-  const { depthRawTexture } = useARManager();
-  const [key] = useState(() => getUuid());
-
-  const { onAfterDepthInfo } = useARManager();
-
-  const shaderRef = useRef<{ shader?: Shader; modified: boolean }>({
-    modified: false,
-  });
-
-  const [depthMaterial] = useState(() => {
-    material.needsUpdate = true;
-    material.onBeforeCompile = (shader) => {
-      shader.uniforms.uScreenSize = {
-        value: new Vector2(window.innerWidth, window.innerHeight),
-      };
-      shader.uniforms.uScreenDepthTexture = { value: depthRawTexture };
-      shader.uniforms.uRawValueToMeters = { value: 1.0 };
-      shader.uniforms.uUvTransform = { value: new Matrix4() };
-      shader.uniforms.uModified = { value: false };
-
-      shader.fragmentShader =
-        `
-        uniform bool uModified;
-        uniform vec2 uScreenSize;
-        uniform sampler2D uScreenDepthTexture;
-        uniform mat4 uUvTransform;
-        uniform float uRawValueToMeters;
-        ` + shader.fragmentShader;
-
-      shader.fragmentShader = shader.fragmentShader.replace(
-        'void main() {',
-        'void main() {\n' +
-          `
-    if(uModified){
-      // fragment position in screen space
-      vec2 screenSpace = gl_FragCoord.xy / uScreenSize;
-      // transform depth uv to be normalized to screen space
-      vec2 texCoord = (uUvTransform * vec4(screenSpace.x, 1.0 - screenSpace.y, 0.0, 1.0)).xy;
-      // get luminance alpha components from depth texture
-      vec2 packedDepth = texture2D(uScreenDepthTexture, texCoord).ra;
-      // unpack into single value in millimeters
-      float depth = dot(packedDepth, vec2(255.0, 256.0 * 255.0)) * uRawValueToMeters; // m
-
-      // check if fragment is behind depth value
-      if ((gl_FragCoord.z / gl_FragCoord.w) > depth) {
-          // then do not render
-          discard;
-      }
-    }
-        
-      `
-      );
-
-      material.userData.shader = shader;
-
-      shaderRef.current = { ...shaderRef.current, shader };
-    };
-    material.customProgramCacheKey = function () {
-      return key;
-    };
-
-    return material;
-  });
-
-  useEffect(() => {
-    const onGetDepthInfoCallback = (depthInfo: XRCPUDepthInformation) => {
-      if (!depthInfo || !shaderRef.current.shader) {
-        return;
-      }
-      if (!shaderRef.current.modified) {
-        shaderRef.current.modified = true;
-        shaderRef.current.shader.uniforms.uModified.value = true;
-      }
-
-      shaderRef.current.shader.uniforms.uScreenDepthTexture.value =
-        depthRawTexture;
-      shaderRef.current.shader.uniforms.uRawValueToMeters.value =
-        depthInfo.rawValueToMeters;
-      shaderRef.current.shader.uniforms.uUvTransform.value =
-        depthInfo.normDepthBufferFromNormView.matrix;
-    };
-
-    onAfterDepthInfo.set(0, onGetDepthInfoCallback);
-
-    return () => {
-      onAfterDepthInfo.delete(0);
-    };
-  }, []);
-
-  return depthMaterial;
 }
 
 export function usePhysicsObject(
