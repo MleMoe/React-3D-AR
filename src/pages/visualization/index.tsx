@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Histogram } from '../../components/visualization/histogram';
 import { Pie } from '../../components/visualization/pie';
 import { Earth } from '../../components/visualization/earth';
+import { Model } from '../../components/ARContent/model';
 
 function App() {
   const [camera] = useState(() => {
@@ -20,11 +21,11 @@ function App() {
 
   return (
     <Scene camera={camera} control={true}>
-      <mesh
+      {/* <mesh
         geometry={new THREE.CylinderGeometry(5, 5, 5, 32, 32)}
         material={new THREE.MeshNormalMaterial()}
         position={{ x: 0, y: 0, z: -10 }}
-      ></mesh>
+      ></mesh> */}
       <ambientLight paras={[0x333333]} />
       <directionalLight
         paras={[0xffffff, 0.25]}
@@ -39,6 +40,7 @@ function App() {
         position={new THREE.Vector3(-100, 100)}
       ></pointLight>
       <Histogram />
+      <Model />
       {/* <Pie /> */}
       {/* <Earth /> */}
       <gridHelper

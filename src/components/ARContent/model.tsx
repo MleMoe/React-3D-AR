@@ -26,25 +26,27 @@ export const Model: FC<ModelProps> = (props) => {
 
   useEffect(() => {
     if (loadResults) {
+      console.log(loadResults[0]);
       groupRef.current.add(loadResults[0].scene);
-      mixerRef.current = new AnimationMixer(groupRef.current);
-      // mixerRef.current
-      //   .clipAction(loadResults[0].animations[Math.round(Math.random() * 11)])
-      //   .play();
 
-      loadResults.forEach((loadResult) => {
-        const object = loadResult.scene;
-        object.traverse((child) => {
-          if (child instanceof Mesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-            child.material = transformARMaterial(
-              child.material,
-              depthRawTexture
-            );
-          }
-        });
-      });
+      //   mixerRef.current = new AnimationMixer(groupRef.current);
+      //   // mixerRef.current
+      //   //   .clipAction(loadResults[0].animations[Math.round(Math.random() * 11)])
+      //   //   .play();
+
+      //   loadResults.forEach((loadResult) => {
+      //     const object = loadResult.scene;
+      //     object.traverse((child) => {
+      //       if (child instanceof Mesh) {
+      //         child.castShadow = true;
+      //         child.receiveShadow = true;
+      //         child.material = transformARMaterial(
+      //           child.material,
+      //           depthRawTexture
+      //         );
+      //       }
+      //     });
+      //   });
     }
   }, [loadResults]);
 
@@ -56,15 +58,7 @@ export const Model: FC<ModelProps> = (props) => {
 
   return (
     <Suspense fallback={null}>
-      <group
-        ref={groupRef}
-        // position={{
-        //   x: 0,
-        //   y: 0,
-        //   z: -10,
-        // }}
-        {...props}
-      />
+      <group ref={groupRef} {...props}></group>
     </Suspense>
   );
 };

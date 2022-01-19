@@ -24,11 +24,10 @@ export function useThree() {
   return { glRenderer, scene, camera, orbitControl };
 }
 
-export function useFrame(callback: FrameCallback) {
-  const store = useStore();
+export function useFrame(callback: FrameCallback, priority?: number) {
+  const { frameCallbacks } = useStore();
   useLayoutEffect(() => {
-    const { frameCallbacks } = store;
-    const callbackId = getUuid();
+    const callbackId = `${priority ?? Math.random()}-${getUuid()}`;
 
     frameCallbacks.set(callbackId, callback);
     return () => {

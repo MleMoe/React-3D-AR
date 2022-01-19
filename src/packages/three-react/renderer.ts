@@ -74,19 +74,19 @@ function diffProps(
 
 const logConfig = {
   // 新建实例
-  createInstance: true,
+  createInstance: false,
   // child 加入容器
-  appendChildToContainer: true,
-  appendChild: true,
+  appendChildToContainer: false,
+  appendChild: false,
   // 初次 append child
-  appendInitialChild: true,
-  removeChildFromContainer: true,
-  removeChild: true,
-  insertInContainerBefore: true,
-  insertBefore: true,
-  prepareUpdate: true,
-  commitUpdate: true,
-  finalizeInitialChildren: true,
+  appendInitialChild: false,
+  removeChildFromContainer: false,
+  removeChild: false,
+  insertInContainerBefore: false,
+  insertBefore: false,
+  prepareUpdate: false,
+  commitUpdate: false,
+  finalizeInitialChildren: false,
 };
 
 function log(type: keyof typeof logConfig, paras: any) {

@@ -80,14 +80,18 @@ const createStore = (props: StoreProps): RootState => {
   const onAfterRender = new Map<number, FrameCallback>();
 
   const render = (time?: number, frame?: THREE.XRFrame) => {
-    // ar 处理
-    ar?.render(time, frame);
     onBeforeRender.forEach((callbackfn) => callbackfn(time, frame));
     glRenderer.render(scene, camera);
     onAfterRender.forEach((callbackfn) => callbackfn(time, frame));
   };
+
+  const arRender = (time?: number, frame?: THREE.XRFrame) => {
+    // ar 处理
+    ar?.render(time, frame);
+  };
   const frameCallbacks = new Map<string, FrameCallback>();
-  frameCallbacks.set('gl-render', render);
+  frameCallbacks.set('0-arRender', arRender);
+  frameCallbacks.set('0-render', render);
 
   const rootState = {
     glRenderer,

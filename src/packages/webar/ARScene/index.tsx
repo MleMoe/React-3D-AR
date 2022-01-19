@@ -12,12 +12,13 @@ import { ARLightEstimate } from '../../../components/ARLightEstimate';
 
 type ARSceneProps = {} & SceneProps;
 
-export const ARScene: FC<ARSceneProps> = (props) => {
+export const ARScene: FC<ARSceneProps> = ({ children }) => {
   const arManager = useMemo(() => new ARManager(), []);
   const [inProgress, setInProgress] = useState(false);
   const [uiObserver, setUiObserver] = useState<Observer>();
 
   const overlayRef = useRef<HTMLDivElement>(null!);
+  const overlayCanvasRef = useRef<HTMLCanvasElement>(null!);
 
   const onSessionStarted = useCallback(
     (root: RootState, session: THREE.XRSession) => {
@@ -28,7 +29,7 @@ export const ARScene: FC<ARSceneProps> = (props) => {
     []
   );
   const onStartAR = useCallback(() => {
-    console.log(arManager?.scene?.children);
+    arManager.overlayCanvas = overlayCanvasRef.current;
     arManager.startAR(
       {
         requiredFeatures: [
@@ -41,8 +42,8 @@ export const ARScene: FC<ARSceneProps> = (props) => {
         // @ts-ignore
         domOverlay: { root: overlayRef.current },
         depthSensing: {
-          usagePreference: ['cpu-optimized'],
-          dataFormatPreference: ['luminance-alpha'],
+          usagePreference: ['cpu-optimized'], // cpu-optimized
+          dataFormatPreference: ['luminance-alpha'], // luminance-alpha
         },
       },
       onSessionStarted
@@ -55,7 +56,7 @@ export const ARScene: FC<ARSceneProps> = (props) => {
         ref={overlayRef}
         className={'overlay' + (inProgress ? ' overlay-ar' : '')}
       >
-        <canvas className='overlay-canvas' />
+        <canvas ref={overlayCanvasRef} className='overlay-canvas' />
         <ControlUI
           uiObserver={uiObserver}
           controlTypes={['place']}
@@ -74,7 +75,12 @@ export const ARScene: FC<ARSceneProps> = (props) => {
 
       <Scene ar={arManager}>
         <ambientLight paras={[0xffffff]} />
-        {inProgress && <ARHitTest />}
+        {inProgress && (
+          <>
+            {/* <ARHitTest /> */}
+            {children}
+          </>
+        )}
       </Scene>
     </>
   );

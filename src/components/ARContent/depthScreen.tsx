@@ -1,21 +1,39 @@
 import { FC, useMemo, useRef, useEffect } from 'react';
 import {
+  useARManager,
   useCameraAccess,
   XRCPUDepthInformation,
 } from '../../packages/webar/hooks';
 import { RootState } from '../../packages/three-react/store';
 import { useFrame, useStore, useThree } from '../../packages/three-react/hooks';
 import * as THREE from 'three';
+import { DepthRawTexture } from '../../packages/webar/texture';
 
 export const DepthScreen: FC<{ store?: RootState }> = ({ store }) => {
-  const { frameCallbacks } = useStore();
-  const { glRenderer, camera, scene } = useThree();
-  const gl = useMemo(() => glRenderer.getContext(), []);
+  const { overlayCanvas } = useARManager();
+  const renderer = useMemo(() => {
+    const renderer = new THREE.WebGLRenderer({
+      powerPreference: 'high-performance',
+      antialias: true,
+      canvas: overlayCanvas as HTMLCanvasElement,
+      alpha: true,
+      depth: true,
+      precision: 'highp',
+      preserveDrawingBuffer: false,
+      premultipliedAlpha: true,
+      logarithmicDepthBuffer: false,
+      stencil: true,
+    });
+    // depthRawTexture.initTexture(renderer.getContext());
+    return renderer;
+  }, []);
+
+  const texture = useMemo(() => {
+    return new DepthRawTexture(renderer.getContext());
+  }, []);
+  // const gl = useMemo(() => glRenderer.getContext(), []);
   // const { depthInfoRef } = useDepthSensing();
   const depthInfoRef = useRef<XRCPUDepthInformation>();
-  const textureRef = useRef<WebGLTexture>(
-    glRenderer.getContext().createTexture()
-  );
 
   const [postCamera, postMaterial, postScene] = useMemo(() => {
     const pCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -86,10 +104,8 @@ export const DepthScreen: FC<{ store?: RootState }> = ({ store }) => {
 
         `,
       uniforms: {
-        cameraNear: { value: camera.near },
-        cameraFar: { value: camera.far },
         tDiffuse: { value: null },
-        uDepthTexture: { value: null },
+        uDepthTexture: { value: texture },
         uAlpha: { value: 0.6 },
         uRawValueToMeters: { value: 1.0 },
         uUvTransform: { value: null },
@@ -100,35 +116,13 @@ export const DepthScreen: FC<{ store?: RootState }> = ({ store }) => {
     const postPlane = new THREE.PlaneGeometry(2, 2);
     const postQuad = new THREE.Mesh(postPlane, pMaterial);
     pScene.add(postQuad);
-    pScene.onBeforeRender = (
-      renderer: THREE.WebGLRenderer,
-      scene: THREE.Scene,
-      camera: THREE.Camera,
-      renderTarget: any
-    ) => {
-      // console.log(scene);
-      // console.log(camera);
-      // console.log(renderTarget);
-    };
-    pScene.onAfterRender = (
-      renderer: THREE.WebGLRenderer,
-      scene: THREE.Scene,
-      camera: THREE.Camera
-    ) => {
-      // console.log('正交相机渲染完成');
-    };
 
     return [pCamera, pMaterial, pScene];
   }, []);
 
-  useEffect(() => {
-    frameCallbacks.delete('0-render');
-    return () => {};
-  }, []);
-
   useFrame(async (t?: number, frame?: THREE.XRFrame) => {
     if (frame) {
-      glRenderer.xr.enabled = false;
+      // glRenderer.xr.enabled = false;
       // @ts-ignore
 
       const referenceSpace = await frame.session.requestReferenceSpace(
@@ -143,44 +137,16 @@ export const DepthScreen: FC<{ store?: RootState }> = ({ store }) => {
             if (!depthInfoRef.current) {
               return;
             }
-
-            gl.bindTexture(gl.TEXTURE_2D, textureRef.current);
-
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(
-              gl.TEXTURE_2D,
-              gl.TEXTURE_WRAP_S,
-              gl.CLAMP_TO_EDGE
-            );
-            gl.texParameteri(
-              gl.TEXTURE_2D,
-              gl.TEXTURE_WRAP_T,
-              gl.CLAMP_TO_EDGE
-            );
-
-            gl.texImage2D(
-              gl.TEXTURE_2D,
-              0,
-              gl.LUMINANCE_ALPHA,
-              depthInfoRef.current.width,
-              depthInfoRef.current.height,
-              0,
-              gl.LUMINANCE_ALPHA,
-              gl.UNSIGNED_BYTE,
-              new Uint8Array(depthInfoRef.current.data)
-            );
-            gl.activeTexture(gl.TEXTURE0);
-
-            postMaterial.uniforms.uDepthTexture.value = textureRef.current;
             postMaterial.uniforms.uRawValueToMeters.value =
               depthInfoRef.current.rawValueToMeters;
             postMaterial.uniforms.uUvTransform.value =
               depthInfoRef.current.normDepthBufferFromNormView.matrix;
-            glRenderer.render(postScene, postCamera);
+            texture.updateTexture(depthInfoRef.current);
+            renderer.render(postScene, postCamera);
           }
         }
 
-        glRenderer.xr.enabled = true;
+        // glRenderer.xr.enabled = true;
       }
     }
   });

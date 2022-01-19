@@ -5,45 +5,22 @@ import {
   ShadowMaterial,
   Mesh,
   XRRigidTransform,
-  ShaderMaterial,
-  Texture,
   Vector2,
 } from 'three';
-import { DepthDataTexture, DepthRawTexture } from './texture';
-import ARMaterialVertex from './glsl/ARMaterialVertex.glsl?raw';
-import ARMaterialFragment from './glsl/ARMaterialFragment.glsl?raw';
-
-export class AugmentedMaterial extends ShaderMaterial {
-  constructor(colorMap: Texture, depthMap: DepthDataTexture) {
-    super({
-      uniforms: {
-        uColorTexture: { value: colorMap },
-        uDepthTexture: { value: depthMap },
-        uWidth: { value: 1.0 },
-        uHeight: { value: 1.0 },
-        uUvTransform: { value: new Matrix4() },
-      },
-      vertexShader: ARMaterialVertex,
-      fragmentShader: ARMaterialFragment,
-    });
-
-    this.depthWrite = true;
-  }
-}
+import { DepthRawTexture } from './texture';
 
 export function transformARMaterial(
   material: Material,
-  depthMap: DepthRawTexture | DepthDataTexture
+  depthMap: DepthRawTexture
 ) {
   material.userData = {
     isARMaterial: true,
     uniforms: {
-      uScreenDepthTexture: { value: depthMap },
-      uScreenSize: {
-        value: new Vector2(window.innerWidth, window.innerHeight),
-      },
+      uScreenDepthTexture: { value: depthMap.texture }, // aaaaa
+      uWidth: { value: 1.0 },
+      uHeight: { value: 1.0 },
       uUvTransform: { value: new Matrix4() },
-      uOcclusionEnabled: { value: false },
+      uOcclusionEnabled: { value: true },
       uRawValueToMeters: { value: 0.001 },
     },
   };
@@ -53,36 +30,60 @@ export function transformARMaterial(
 
     for (let i in material.userData.uniforms) {
       shader.uniforms[i] = material.userData.uniforms[i];
+      console.log(i, shader.uniforms[i]);
     }
+
+    shader.vertexShader =
+      `
+			varying float vDepth;
+			` + shader.vertexShader;
+
+    // Vertex depth logic
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <fog_vertex>',
+      `
+			#include <fog_vertex>
+
+			vDepth = gl_Position.z;
+			`
+    );
 
     shader.fragmentShader =
       `
-      uniform vec2 uScreenSize;
+      uniform float uWidth;
+			uniform float uHeight;
       uniform sampler2D uScreenDepthTexture;
       uniform mat4 uUvTransform;
       uniform float uRawValueToMeters;
 
 			uniform bool uOcclusionEnabled;
+      varying float vDepth;
 
 			` + shader.fragmentShader;
 
-    shader.fragmentShader = shader.fragmentShader.replace(
-      'void main() {',
-      'void main() {\n' +
-        `
-        if(uOcclusionEnabled){
-          vec2 screenSpace = gl_FragCoord.xy / uScreenSize;
-          vec2 texCoord = (uUvTransform * vec4(screenSpace.x, 1.0 - screenSpace.y, 0.0, 1.0)).xy;
-          vec2 packedDepth = texture2D(uScreenDepthTexture, texCoord).ra;
-          float depth = dot(packedDepth, vec2(255.0, 256.0 * 255.0)) * uRawValueToMeters; // m
+    const fragmentEntryPoint = '#include <clipping_planes_fragment>';
 
-          if ((gl_FragCoord.z / gl_FragCoord.w) > depth) {
-              discard;
-          }
-        }
-        
+    shader.fragmentShader = shader.fragmentShader.replace(
+      fragmentEntryPoint,
+      `
+    ${fragmentEntryPoint}
+      
+    if(uOcclusionEnabled){
+      float x = gl_FragCoord.x / uWidth;
+			float y = gl_FragCoord.y / uHeight;
+      vec2 texCoord = (uUvTransform * vec4(x, 1.0 - y, 0.0, 1.0)).xy;
+
+      vec2 packedDepth = texture2D(uScreenDepthTexture, texCoord).ra;
+      float depth = dot(packedDepth, vec2(255.0, 256.0 * 255.0)) * uRawValueToMeters; // m
+
+      if (depth < (gl_FragCoord.z / gl_FragCoord.w)) {
+          discard;
+      }
+    }
       `
     );
+
+    console.log(shader.vertexShader, shader.fragmentShader);
   };
 
   return material;
@@ -96,14 +97,25 @@ export function updateNormalUniforms(
   scene.traverse(function (child) {
     if (child instanceof Mesh) {
       if (child.material && child.material.userData.isARMaterial) {
-        if (!child.material.userData.uniforms.uOcclusionEnabled.value) {
-          child.material.userData.uniforms.uOcclusionEnabled.value = true;
-        }
+        // if (!child.material.userData.uniforms.uOcclusionEnabled.value) {
+        //   child.material.userData.uniforms.uOcclusionEnabled.value = true;
+        // }
+
+        child.material.userData.uniforms.uWidth.value = Math.floor(
+          window.devicePixelRatio * window.innerWidth
+        );
+        child.material.userData.uniforms.uHeight.value = Math.floor(
+          window.devicePixelRatio * window.innerHeight
+        );
+
         child.material.userData.uniforms.uRawValueToMeters.value =
           rawValueToMeters;
-        child.material.userData.uniforms.uUvTransform.value =
-          normTextureFromNormViewMatrix.matrix;
+        child.material.userData.uniforms.uUvTransform.value.fromArray(
+          normTextureFromNormViewMatrix.matrix
+        );
         child.material.uniformsNeedUpdate = true;
+
+        // console.log(child.material.userData.uniforms);
       }
     }
   });

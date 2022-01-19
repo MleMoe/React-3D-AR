@@ -30,13 +30,10 @@ export const ARHitTest: FC = ({ children }) => {
     []
   );
 
-  // const dMaterial = useARMaterial(
-  //   new MeshPhongMaterial({ color: 0xffffff * Math.random() })
-  // );
   const dMaterial = useMemo(
     () =>
       transformARMaterial(
-        new MeshPhongMaterial({ color: 0xffffff * Math.random() }),
+        new MeshPhongMaterial({ color: 0x0000ff }),
         depthRawTexture
       ),
     []
@@ -76,7 +73,7 @@ export const ARHitTest: FC = ({ children }) => {
 
   useLayoutEffect(() => {
     uiObserver.on('place', onSelect);
-    // scene.overrideMaterial = dMaterial;
+    scene.overrideMaterial = dMaterial;
 
     const key = getUuid();
     onAfterHitTest.set(0, (hit: HitState) => {
@@ -88,6 +85,7 @@ export const ARHitTest: FC = ({ children }) => {
           hit.position.y,
           hit.position.z
         );
+        reticleRef.current.rotation.setFromQuaternion(hit.rotation);
       }
     });
 
@@ -128,9 +126,7 @@ export const ARHitTest: FC = ({ children }) => {
       <mesh
         ref={reticleRef}
         visible={false}
-        geometry={new RingGeometry(0.05, 0.06, 32)
-          .rotateX(-Math.PI / 2)
-          .translate(0, -0.06, 0)}
+        geometry={new RingGeometry(0.03, 0.035, 32).rotateX(-Math.PI / 2)}
         material={dMaterial}
       ></mesh>
       <group>
@@ -148,7 +144,7 @@ export const ARHitTest: FC = ({ children }) => {
               position={{
                 x: 0,
                 y: index * 0.6 - (items.length - 1) * 0.3,
-                z: -5,
+                z: -15,
               }}
             ></mesh>
           );

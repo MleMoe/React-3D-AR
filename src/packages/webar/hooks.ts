@@ -40,17 +40,17 @@ export function useARManager() {
     hitState,
     onAfterHitTest,
     depthRawTexture,
-    depthDataTexture,
     onAfterDepthInfo,
     world,
+    overlayCanvas,
   } = useMemo<ARManager>(() => ar, []);
   return {
     hitState,
     onAfterHitTest,
     depthRawTexture,
-    depthDataTexture,
     onAfterDepthInfo,
     world,
+    overlayCanvas,
   };
 }
 

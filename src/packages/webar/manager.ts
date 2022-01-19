@@ -23,9 +23,14 @@ import {
   ShadowMaterial,
   PlaneBufferGeometry,
   MeshPhongMaterial,
+  Quaternion,
 } from 'three';
 import { RootState } from '../three-react/store';
-import { DepthDataTexture, DepthRawTexture } from './texture';
+import {
+  DepthDataTexture,
+  DepthRawTexture,
+  DepthCanvasTexture,
+} from './texture';
 import { transformARMaterial, updateNormalUniforms } from './material';
 import { XRSystem } from './hooks';
 import { Observer } from '../three-react/observer';
@@ -43,7 +48,8 @@ import {
 
 export type HitState = {
   visible: boolean;
-  position?: Vector3;
+  position: Vector3;
+  rotation: Quaternion;
   hitTestResult?: XRHitTestResult;
 };
 
@@ -61,6 +67,7 @@ export class ARManager {
 
   canvas: HTMLCanvasElement | null;
   overlayCanvas: HTMLCanvasElement | null;
+  canvasTexture?: DepthCanvasTexture;
   uiObserver: Observer | null;
 
   viewerPose: XRViewerPose | null;
@@ -71,7 +78,7 @@ export class ARManager {
   onAfterHitTest: Map<number, (hit: HitState) => void>;
 
   depthRawTexture: DepthRawTexture;
-  depthDataTexture: DepthDataTexture;
+  // depthDataTexture: DepthDataTexture;
   onAfterDepthInfo: Map<number, (depthInfo: XRCPUDepthInformation) => void>;
 
   xrLight?: XREstimatedLight;
@@ -104,15 +111,17 @@ export class ARManager {
     this.xrHitTestSource = null;
     this.hitState = {
       visible: false,
+      position: new Vector3(),
+      rotation: new Quaternion(),
     };
     this.onAfterHitTest = new Map();
 
     this.depthRawTexture = new DepthRawTexture();
-    this.depthDataTexture = new DepthDataTexture();
+    // this.depthDataTexture = new DepthDataTexture();
     this.onAfterDepthInfo = new Map();
 
     this.shadowMaterial = new MeshPhongMaterial({
-      opacity: 0.5,
+      opacity: 0.1,
       color: 0x00ffff,
       transparent: true,
     });
@@ -196,7 +205,7 @@ export class ARManager {
       this.depthRawTexture
     ) as ShadowMaterial;
 
-    this.scene.add(this.floorMesh);
+    // this.scene.add(this.floorMesh);
   }
 
   async startAR(
@@ -214,7 +223,6 @@ export class ARManager {
 
       this.session = await xr.requestSession('immersive-ar', sessionInit);
       if (this.session && this.root) {
-        console.log(this.session);
         this.renderer?.xr.setReferenceSpaceType('local');
         await this.renderer?.xr.setSession(this.session);
 
@@ -251,10 +259,12 @@ export class ARManager {
     this.xrHitTestSource = null;
     this.hitState = {
       visible: false,
+      position: new Vector3(),
+      rotation: new Quaternion(),
     };
     this.onAfterHitTest = new Map();
 
-    this.depthDataTexture = new DepthDataTexture();
+    // this.depthDataTexture = new DepthDataTexture();
     this.onAfterDepthInfo = new Map();
   }
 
@@ -279,6 +289,12 @@ export class ARManager {
       return;
     }
 
+    if (!this.overlayCanvas) {
+      this.overlayCanvas = document.getElementsByClassName(
+        'overlay-canvas'
+      )[0] as HTMLCanvasElement;
+    }
+
     // this.world.step(delta / 1e3);
 
     const session = frame.session;
@@ -301,14 +317,20 @@ export class ARManager {
 
     if (this.xrHitTestSource && referenceSpace) {
       const hitTestResults = frame.getHitTestResults(this.xrHitTestSource);
-      if (hitTestResults.length) {
-        const hit = hitTestResults[0];
-
+      hitTestResults.forEach((hit) => {
         const pose = hit.getPose(referenceSpace);
         if (pose) {
           this.hitState.visible = true;
-          this.hitState.position = new Vector3(0, 0, 0).applyMatrix4(
-            new Matrix4().fromArray(pose.transform.matrix)
+          this.hitState.position.set(
+            pose.transform.position.x,
+            pose.transform.position.y,
+            pose.transform.position.z
+          );
+          this.hitState.rotation.set(
+            pose.transform.orientation.x,
+            pose.transform.orientation.y,
+            pose.transform.orientation.z,
+            pose.transform.orientation.w
           );
           this.hitState.hitTestResult = hit;
           this.onAfterHitTest.forEach((fn) => {
@@ -319,7 +341,8 @@ export class ARManager {
           }
           this.floorMesh.position.y = this.hitState.position.y;
         }
-      } else {
+      });
+      if (!hitTestResults.length) {
         this.hitState.visible = false;
       }
     }
@@ -333,7 +356,8 @@ export class ARManager {
           frame.getDepthInformation(view);
         if (depthData) {
           this.depthRawTexture.updateTexture(depthData);
-          this.depthDataTexture.updateDepth(depthData);
+          // this.depthDataTexture.updateDepth(depthData);
+
           updateNormalUniforms(
             this.scene,
             depthData.normDepthBufferFromNormView,
