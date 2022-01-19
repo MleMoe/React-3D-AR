@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { ARButton } from '../../../components/ControlUI/ARButton';
 import { Scene, SceneProps } from '../../three-react/Scene';
 import { RootState } from '../../three-react/store';
-import { ARHitTest } from '../../../components/ARHitTest';
+import { ARHitTest } from '../components/ARHitTest';
 import { Observer } from '../../three-react/observer';
 import { ControlUI } from '../../../components/ControlUI';
 import './index.scss';
@@ -37,7 +37,7 @@ export const ARScene: FC<ARSceneProps> = ({ children }) => {
           'depth-sensing',
           'anchors',
           'light-estimation',
-        ], // , 'camera-access',  'depth-sensing' 'image-tracking'
+        ], //'camera-access',  'image-tracking'
         optionalFeatures: ['dom-overlay'],
         // @ts-ignore
         domOverlay: { root: overlayRef.current },

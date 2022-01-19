@@ -297,7 +297,6 @@ export class ARManager {
 
       for (let i in material.userData.uniforms) {
         shader.uniforms[i] = material.userData.uniforms[i];
-        console.log(i, shader.uniforms[i]);
       }
 
       shader.vertexShader =

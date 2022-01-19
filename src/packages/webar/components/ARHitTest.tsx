@@ -12,11 +12,11 @@ import {
   Matrix4,
   SphereBufferGeometry,
 } from 'three';
-import { useARManager } from '../../packages/webar/hooks';
-import { useFrame, useStore } from '../../packages/three-react/hooks';
-import { Model } from '../ARContent/model';
-import { getUuid } from '../../packages/three-react/utils';
-import { HitState } from '../../packages/webar/manager';
+import { useARManager } from '../hooks';
+import { useFrame, useStore } from '../../three-react/hooks';
+import { Model } from '../../../components/ARContent/model';
+import { getUuid } from '../../three-react/utils';
+import { HitState } from '../manager';
 
 export const ARHitTest: FC = ({ children }) => {
   const { uiObserver, scene, glRenderer } = useStore();

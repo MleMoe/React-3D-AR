@@ -1,10 +1,10 @@
-import { FC, useMemo, useRef, useEffect } from 'react';
-import { useARManager } from '../../packages/webar/hooks';
-import { RootState } from '../../packages/three-react/store';
-import { useFrame, useStore, useThree } from '../../packages/three-react/hooks';
+import { FC, useMemo, useRef } from 'react';
+import { useARManager } from '../hooks';
+import { RootState } from '../../three-react/store';
+import { useFrame } from '../../three-react/hooks';
 import * as THREE from 'three';
-import { DepthRawTexture } from '../../packages/webar/texture';
-import { XRCPUDepthInformation } from '../../packages/webar/types';
+import { DepthRawTexture } from '../texture';
+import { XRCPUDepthInformation } from '../types';
 
 export const DepthScreen: FC<{ store?: RootState }> = ({ store }) => {
   const { overlayCanvas } = useARManager();
