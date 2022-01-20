@@ -134,6 +134,7 @@ export type PointLightProps = LightNode<
   typeof THREE.PointLight
 >;
 
+export type ThreeTextProps = {};
 declare global {
   namespace JSX {
     interface IntrinsicElements {

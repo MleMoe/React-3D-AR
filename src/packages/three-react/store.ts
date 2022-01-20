@@ -42,12 +42,20 @@ export type StoreProps = {
   renderer?: WebGLRenderer;
   ar?: any;
   control?: boolean;
+  uiObserver?: Observer;
 };
 
 const context = createContext<RootState>(null!);
 
 const createStore = (props: StoreProps): RootState => {
-  const { canvas, camera: cameraProps, control, renderer, ar } = props;
+  const {
+    canvas,
+    camera: cameraProps,
+    control,
+    renderer,
+    ar,
+    uiObserver,
+  } = props;
 
   const glRenderer =
     renderer ??
@@ -65,6 +73,8 @@ const createStore = (props: StoreProps): RootState => {
     });
   glRenderer.domElement = glRenderer.domElement ?? canvas;
   glRenderer.setSize(canvas.width, canvas.height);
+  glRenderer.toneMapping = THREE.NoToneMapping;
+  glRenderer.outputEncoding = THREE.sRGBEncoding;
 
   let camera: Camera =
     cameraProps ??
@@ -102,7 +112,7 @@ const createStore = (props: StoreProps): RootState => {
     frameCallbacks,
     interactionManager,
     ...(control ? { orbitControl: new OrbitControls(camera, canvas) } : {}),
-    uiObserver: new Observer(),
+    uiObserver: uiObserver ?? new Observer(),
     ar: ar ?? {},
   };
 

@@ -2,10 +2,11 @@ import { FC, Suspense, useEffect, useState, useRef, useCallback } from 'react';
 
 import { useFrame, useLoader } from '../../packages/three-react/hooks';
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { Group, Clock, AnimationMixer, Mesh } from 'three';
+import { Group, Clock, AnimationMixer, Mesh, TextureLoader } from 'three';
 import { GroupProps } from '../../packages/three-react/tag-types';
 import { useARManager } from '../../packages/webar/hooks';
 import { ARManager } from '../../packages/webar/manager';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 
 type ModelProps = Partial<GroupProps>;
 export const Model: FC<ModelProps> = (props) => {
@@ -13,7 +14,7 @@ export const Model: FC<ModelProps> = (props) => {
   const groupRef = useRef<Group>(null!);
   const [clock] = useState(() => new Clock());
   const mixerRef = useRef<AnimationMixer>();
-  const { loadResults } = useLoader(
+  const { loadResults } = useLoader<GLTFLoader>(
     GLTFLoader,
     '/models/sunflower/sunflower.gltf',
     (xhr) => {
@@ -26,7 +27,6 @@ export const Model: FC<ModelProps> = (props) => {
 
   useEffect(() => {
     if (loadResults) {
-      console.log(loadResults[0]);
       groupRef.current.add(loadResults[0].scene);
 
       //   mixerRef.current = new AnimationMixer(groupRef.current);

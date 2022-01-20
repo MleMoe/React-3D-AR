@@ -1,0 +1,33 @@
+.emit-btn-list {
+  width: 100vw;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  margin-bottom: 16px;
+  z-index: 13;
+}
+
+.ar-button-exit {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
+  display: flex;
+  width: 40px;
+  height: 40px;
+  border-radius: 23px;
+  font: 13px sans-serif;
+  text-align: center;
+
+  // background: rgba(211, 211, 211, 0.37);
+
+  color: whitesmoke;
+
+  outline: none;
+  border: none;
+  cursor: pointer;
+
+  svg {
+    margin: auto;
+  }
+}

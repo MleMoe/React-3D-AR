@@ -1,4 +1,11 @@
-import { FC, useCallback, useLayoutEffect, useRef, useMemo } from 'react';
+import {
+  FC,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useMemo,
+  useEffect,
+} from 'react';
 import {
   RingGeometry,
   MeshBasicMaterial,
@@ -13,10 +20,12 @@ import {
   SphereBufferGeometry,
 } from 'three';
 import { useARManager } from '../hooks';
-import { useFrame, useStore } from '../../three-react/hooks';
+import { useFrame, useLoader, useStore } from '../../three-react/hooks';
 import { Model } from '../../../components/ARContent/model';
 import { getUuid } from '../../three-react/utils';
 import { HitState } from '../manager';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 export const ARHitTest: FC = ({ children }) => {
   const { uiObserver, scene, glRenderer } = useStore();
@@ -25,6 +34,20 @@ export const ARHitTest: FC = ({ children }) => {
 
   const reticleRef = useRef<Mesh>();
   const placementNodeRef = useRef<Group>(null!);
+  const placementBunnyRef = useRef<Group>(null!);
+  const placementRobotRef = useRef<Group>(null!);
+  const placementCylinderRef = useRef<Group>(null!);
+
+  const selectTypeMap = useMemo(
+    () => ({
+      sunflower: placementNodeRef,
+      cylinder: placementCylinderRef,
+      bunny: placementBunnyRef,
+      robot: placementRobotRef,
+    }),
+    []
+  );
+
   const placementNodes = useMemo<{ anchor: XRAnchor; anchoredNode: Group }[]>(
     () => [],
     []
@@ -39,33 +62,41 @@ export const ARHitTest: FC = ({ children }) => {
     []
   );
 
-  const onSelect = useCallback(() => {
-    console.log('select!');
+  const onSelect = useCallback(
+    (type: 'cylinder' | 'sunflower' | 'bunny' | 'robot') => {
+      console.log('select!');
 
-    if (hitState && hitState.position) {
-      const position = hitState.position;
-      const node: Group = !placementNodeRef.current.visible
-        ? placementNodeRef.current
-        : placementNodeRef.current.clone();
-      //@ts-ignore
-      hitState.hitTestResult?.createAnchor?.().then((anchor) => {
-        node.position.set(position.x, position.y, position.z);
+      if (hitState && hitState.position) {
+        const position = hitState.position;
+        const node: Group = !selectTypeMap[type].current.visible
+          ? selectTypeMap[type].current
+          : selectTypeMap[type].current.clone();
+        //@ts-ignore
+        hitState.hitTestResult?.createAnchor?.().then((anchor) => {
+          node.position.set(position.x, position.y, position.z);
+          node.rotation.setFromQuaternion(hitState.rotation);
 
-        placementNodes.push({
-          anchor,
-          anchoredNode: node,
+          placementNodes.push({
+            anchor,
+            anchoredNode: node,
+          });
+          node.visible = true;
+
+          if (node.visible) {
+            scene.add(node);
+          }
         });
-        node.visible = true;
-
-        if (node.visible) {
-          scene.add(node);
-        }
-      });
-    }
-  }, []);
+      }
+    },
+    []
+  );
 
   useLayoutEffect(() => {
-    uiObserver.on('place', onSelect);
+    uiObserver.on('sunflower', () => onSelect('sunflower'));
+    uiObserver.on('cylinder', () => onSelect('cylinder'));
+    uiObserver.on('bunny', () => onSelect('bunny'));
+    uiObserver.on('robot', () => onSelect('robot'));
+
     // scene.overrideMaterial = dMaterial;
 
     const key = getUuid();
@@ -83,7 +114,11 @@ export const ARHitTest: FC = ({ children }) => {
     });
 
     return () => {
-      uiObserver.off('place');
+      uiObserver.off('sunflower');
+      uiObserver.off('cylinder');
+      uiObserver.off('bunny');
+      uiObserver.off('robot');
+
       onAfterHitTest.delete(0);
       placementNodes.forEach((anchorObj) =>
         anchorObj.anchoredNode.removeFromParent()
@@ -114,12 +149,46 @@ export const ARHitTest: FC = ({ children }) => {
     }
   });
 
+  const { loadResults } = useLoader<GLTFLoader>(
+    GLTFLoader,
+    '/models/RobotExpressive.glb'
+  );
+
+  useEffect(() => {
+    if (loadResults) {
+      //   mixerRef.current = new AnimationMixer(groupRef.current);
+      //   // mixerRef.current
+      //   //   .clipAction(loadResults[0].animations[Math.round(Math.random() * 11)])
+      //   //   .play();
+      loadResults.forEach((loadResult) => {
+        placementBunnyRef.current.add(loadResult.scene);
+        placementRobotRef.current.add(loadResult.scene.clone());
+
+        loadResults.forEach((loadResult) => {
+          const object = loadResult.scene;
+          object.traverse((child) => {
+            if (child instanceof Mesh) {
+              // child.castShadow = true;
+              // child.receiveShadow = true;
+              child.material = transformARMaterial(
+                child.material,
+                depthRawTexture
+              );
+            }
+          });
+        });
+      });
+    }
+  }, [loadResults]);
+
   return (
     <group>
       <mesh
         ref={reticleRef}
         visible={false}
-        geometry={new RingGeometry(0.03, 0.035, 32).rotateX(-Math.PI / 2)}
+        geometry={new RingGeometry(0.03, 0.035, 32)
+          .rotateX(-Math.PI / 2)
+          .translate(0, 0.03, 0)}
         material={dMaterial}
       ></mesh>
       <group>
@@ -149,16 +218,23 @@ export const ARHitTest: FC = ({ children }) => {
         scale={{ x: 0.5, y: 0.5, z: 0.5 }}
       >
         <Model></Model>
-
-        {/* {children ?? (
-          <mesh
-            geometry={new CylinderGeometry(0.05, 0.05, 0.1, 32)}
-            material={
-              new MeshPhongMaterial({ color: 0xffffff * Math.random() })
-            }
-          ></mesh>
-        )} */}
       </group>
+      <group visible={false} ref={placementCylinderRef}>
+        <mesh
+          geometry={new CylinderGeometry(0.05, 0.05, 0.1, 32)}
+          material={dMaterial}
+        ></mesh>
+      </group>
+      <group
+        visible={false}
+        ref={placementBunnyRef}
+        scale={{ x: 0.05, y: 0.05, z: 0.05 }}
+      ></group>
+      <group
+        visible={false}
+        ref={placementRobotRef}
+        scale={{ x: 0.05, y: 0.05, z: 0.05 }}
+      ></group>
     </group>
   );
 };

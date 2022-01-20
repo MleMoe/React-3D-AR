@@ -9,8 +9,10 @@ import { context } from './store';
 
 import { FrameCallback } from './loop';
 import { getUuid } from './utils';
-import { Texture, TextureLoader } from 'three';
+import { Group, Texture, TextureLoader } from 'three';
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
+import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 
 export function useStore() {
   const store = useContext(context);
@@ -40,6 +42,10 @@ type LoadModelResult<T> = T extends TextureLoader
   ? Texture
   : T extends GLTFLoader
   ? GLTF
+  : T extends FBXLoader
+  ? Group
+  : T extends FontLoader
+  ? Font
   : unknown;
 
 interface Loader<T> extends THREE.Loader {
@@ -57,7 +63,7 @@ type LoadResult<T> = {
   loadResults?: Array<LoadModelResult<T>>;
 };
 
-export function useLoader<T = GLTFLoader>(
+export function useLoader<T>(
   Proto: new () => Loader<T>,
   filePath: string | string[],
   onProgress?: (event: ProgressEvent<EventTarget>) => void

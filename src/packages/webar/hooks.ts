@@ -36,6 +36,7 @@ import { Body, Sphere } from 'cannon-es';
 export function useARManager() {
   const { ar } = useStore();
   const {
+    overlay,
     hitState,
     onAfterHitTest,
     depthRawTexture,
@@ -45,6 +46,7 @@ export function useARManager() {
     transformARMaterial,
   } = useMemo<ARManager>(() => ar, []);
   return {
+    overlay,
     hitState,
     onAfterHitTest,
     depthRawTexture,

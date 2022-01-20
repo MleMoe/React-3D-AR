@@ -63,8 +63,13 @@ export class ARManager {
   resolution: Vector2;
 
   canvas: HTMLCanvasElement | null;
+  overlay: HTMLDivElement | null;
   overlayCanvas: HTMLCanvasElement | null;
   uiObserver: Observer | null;
+
+  onSessionStarted:
+    | ((root: RootState, session: THREE.XRSession) => void)
+    | null;
 
   viewerPose: XRViewerPose | null;
 
@@ -106,8 +111,11 @@ export class ARManager {
     this.resolution = new Vector2(window.innerWidth, window.innerHeight);
 
     this.canvas = null;
+    this.overlay = null;
     this.overlayCanvas = null;
     this.uiObserver = null;
+
+    this.onSessionStarted = null;
 
     this.hitTestSourceRequested = false;
     this.xrHitTestSource = null;
@@ -212,10 +220,10 @@ export class ARManager {
 
   async startAR(
     sessionInit: XRSessionInit,
-    onSessionStarted: (root: RootState, session: XRSession) => any,
+    onSessionStarted?: (root: RootState, session: XRSession) => any,
     onError?: () => any
   ) {
-    if (this.session === null) {
+    if (!this.session) {
       const xr = (navigator as any).xr as XRSystem;
       this.isARSupport = await xr.isSessionSupported('immersive-ar');
       if (!this.isARSupport) {
@@ -236,7 +244,11 @@ export class ARManager {
         );
         camera.fov = glRenderer.domElement.width / glRenderer.domElement.height;
 
-        this.root && onSessionStarted(this.root, this.session);
+        onSessionStarted?.(this.root, this.session);
+        this.overlay &&
+          this.root.interactionManager.setResponseDom(this.overlay);
+
+        this.onSessionStarted?.(this.root, this.session);
       }
     }
   }
@@ -360,7 +372,7 @@ export class ARManager {
   ) {
     scene.traverse(function (child) {
       if (child instanceof Mesh) {
-        if (child.material && child.material.userData.isARMaterial) {
+        if (child.material && child.material.userData?.isARMaterial) {
           // if (!child.material.userData.uniforms.uOcclusionEnabled.value) {
           //   child.material.userData.uniforms.uOcclusionEnabled.value = true;
           // }
@@ -459,7 +471,7 @@ export class ARManager {
       for (const view of this.viewerPose.views) {
         const depthData: XRCPUDepthInformation =
           // @ts-ignore
-          frame.getDepthInformation(view);
+          frame.getDepthInformation?.(view);
         if (depthData) {
           this.depthRawTexture.updateTexture(depthData);
           // this.depthDataTexture.updateDepth(depthData);

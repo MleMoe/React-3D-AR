@@ -6,6 +6,7 @@ import { createStore, Camera, RootState, context } from './store';
 import * as THREE from 'three';
 import { createLoop } from './loop';
 import { ARManager } from './../webar/manager';
+import { Observer } from './observer';
 
 export type SceneProps = Partial<{
   storeRef: {
@@ -17,6 +18,7 @@ export type SceneProps = Partial<{
   ar: ARManager;
   control: boolean;
   renderer: THREE.WebGLRenderer;
+  uiObserver: Observer;
 }>;
 
 /**
@@ -40,6 +42,7 @@ export const Scene: FC<SceneProps> = ({
   ar,
   control = false,
   children,
+  uiObserver,
 }) => {
   const [divRef, { width, height }] = useMeasure({
     scroll: true,
@@ -56,6 +59,7 @@ export const Scene: FC<SceneProps> = ({
         control,
         renderer,
         ar,
+        uiObserver,
       });
 
       if (ar) {

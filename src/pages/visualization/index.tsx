@@ -40,7 +40,6 @@ function App() {
         position={new THREE.Vector3(-100, 100)}
       ></pointLight>
       <Histogram />
-      <Model />
       {/* <Pie /> */}
       {/* <Earth /> */}
       <gridHelper

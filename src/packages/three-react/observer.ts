@@ -1,6 +1,6 @@
 import { ControlType } from '../../components/ControlUI';
 
-export type UIEventType = ControlType;
+export type UIEventType = ControlType | string;
 
 export class Observer {
   private eventsMap = new Map();
