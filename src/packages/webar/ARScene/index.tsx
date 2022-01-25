@@ -40,6 +40,7 @@ export const ARScene: FC<ARSceneProps> = ({
       arManager.reset();
     });
     arManager.overlay = overlayRef.current;
+    arManager.overlayCanvas = overlayCanvasRef.current;
   }, []);
 
   return (

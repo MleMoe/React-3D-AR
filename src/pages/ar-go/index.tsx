@@ -6,6 +6,7 @@ import { Landing } from './landing';
 import { Observer } from '../../packages/three-react/observer';
 import { EmitButton } from '../../packages/webar/components/EmitButton';
 import './index.scss';
+import { DepthScreen } from '../../packages/webar/components/DepthScreen';
 
 const btnList = [
   {
@@ -258,7 +259,10 @@ function ARGO() {
           }}
         />
       ) : (
-        <ARHitTest />
+        <>
+          <ARHitTest />
+          {/* <DepthScreen /> */}
+        </>
       )}
     </ARScene>
   );

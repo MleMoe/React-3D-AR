@@ -9,6 +9,7 @@ import { XRCPUDepthInformation } from '../types';
 export const DepthScreen: FC<{ store?: RootState }> = ({ store }) => {
   const { overlayCanvas } = useARManager();
   const renderer = useMemo(() => {
+    console.log(overlayCanvas);
     const renderer = new THREE.WebGLRenderer({
       powerPreference: 'high-performance',
       antialias: true,
