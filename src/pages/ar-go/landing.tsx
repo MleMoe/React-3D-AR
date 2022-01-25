@@ -149,6 +149,11 @@ export const Landing: FC<{
         scene.add(loadResult);
       });
     }
+    return () => {
+      loadResults?.forEach((loadResult) => {
+        scene.remove(loadResult);
+      });
+    };
   }, [loadResults]);
 
   useEffect(() => {

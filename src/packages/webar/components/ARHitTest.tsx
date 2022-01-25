@@ -192,20 +192,20 @@ export const ARHitTest: FC = ({ children }) => {
         material={dMaterial}
       ></mesh>
       <group>
-        {new Array(4).fill(0).map((_, index, items) => {
+        {new Array(1).fill(0).map((_, index, items) => {
           return (
             <mesh
               key={index}
-              geometry={new SphereBufferGeometry(0.2, 32, 32)}
+              geometry={new SphereBufferGeometry(0.5, 32, 32)}
               material={
                 new MeshPhongMaterial({
                   color: 0xdddddd,
-                  reflectivity: index / items.length,
+                  reflectivity: 3 / 4,
                 })
               }
               position={{
                 x: 0,
-                y: index * 0.6 - (items.length - 1) * 0.3,
+                y: 3 * 0.6 - (4 - 1) * 0.3,
                 z: -5,
               }}
             ></mesh>
