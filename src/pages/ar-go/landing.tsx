@@ -44,11 +44,10 @@ const genCubeUrls = function (prefix: string, postfix: string) {
 
 export const Landing: FC<{
   data?: number[];
-  onSessionStart: () => void;
+  onSessionStart?: () => void;
 }> = ({ onSessionStart }) => {
-  const { ar, uiObserver } = useStore();
-  const { scene, orbitControl, camera } = useThree();
-  const { overlay } = useARManager();
+  const { uiObserver } = useStore();
+  const { scene, orbitControl } = useThree();
   const textGroupRef = useRef<Group>();
 
   // const { loadResults } = useLoader<FBXLoader>(
@@ -105,6 +104,7 @@ export const Landing: FC<{
   }, [fontResults]);
 
   useEffect(() => {
+    console.log('绘制');
     if (orbitControl) {
       orbitControl.enableZoom = false;
       orbitControl.target.set(0, -0.18, -1);
@@ -118,10 +118,6 @@ export const Landing: FC<{
 
     const lightProbe = new LightProbe();
     scene.add(lightProbe);
-    console.log(scene.children);
-
-    // camera.far = 30;
-    // camera.updateMatrix();
 
     const urls = genCubeUrls('/textures/cube/pisa/', '.png');
     new CubeTextureLoader().load(urls, (cubeTexture) => {
@@ -218,23 +214,8 @@ export const Landing: FC<{
       <group
         ref={textGroupRef}
         onClick={() => {
-          ar.startAR({
-            requiredFeatures: [
-              'hit-test',
-              'depth-sensing',
-              'anchors',
-              'light-estimation',
-            ], //'camera-access',  'image-tracking'
-            optionalFeatures: ['dom-overlay'],
-            // @ts-ignore
-            domOverlay: { root: overlay },
-            depthSensing: {
-              usagePreference: ['cpu-optimized'], // cpu-optimized
-              dataFormatPreference: ['luminance-alpha'], // luminance-alpha
-            },
-          });
           uiObserver.emit('startSession');
-          onSessionStart();
+          onSessionStart?.();
         }}
       >
         {textGeometry && matLite && (

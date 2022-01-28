@@ -264,6 +264,10 @@ export class ARManager {
 
     this.gl = null;
     this.resolution = new Vector2(window.innerWidth, window.innerHeight);
+    this.camera?.position.set(0, 0, 0);
+    this.camera?.lookAt(0, 0, -1);
+
+    this.camera?.updateProjectionMatrix();
 
     this.canvas = null;
     this.overlayCanvas = null;
