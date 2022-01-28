@@ -37,6 +37,7 @@ export const ARHitTest: FC = ({ children }) => {
   const placementBunnyRef = useRef<Group>(null!);
   const placementRobotRef = useRef<Group>(null!);
   const placementCylinderRef = useRef<Group>(null!);
+  const placementSphereRef = useRef<Group>(null!);
 
   const selectTypeMap = useMemo(
     () => ({
@@ -44,6 +45,7 @@ export const ARHitTest: FC = ({ children }) => {
       cylinder: placementCylinderRef,
       bunny: placementBunnyRef,
       robot: placementRobotRef,
+      sphere: placementSphereRef,
     }),
     []
   );
@@ -63,7 +65,7 @@ export const ARHitTest: FC = ({ children }) => {
   );
 
   const onSelect = useCallback(
-    (type: 'cylinder' | 'sunflower' | 'bunny' | 'robot') => {
+    (type: 'sphere' | 'cylinder' | 'sunflower' | 'bunny' | 'robot') => {
       console.log('select!');
 
       if (hitState && hitState.position) {
@@ -96,6 +98,7 @@ export const ARHitTest: FC = ({ children }) => {
     uiObserver.on('cylinder', () => onSelect('cylinder'));
     uiObserver.on('bunny', () => onSelect('bunny'));
     uiObserver.on('robot', () => onSelect('robot'));
+    uiObserver.on('sphere', () => onSelect('sphere'));
 
     // scene.overrideMaterial = dMaterial;
 
@@ -118,6 +121,7 @@ export const ARHitTest: FC = ({ children }) => {
       uiObserver.off('cylinder');
       uiObserver.off('bunny');
       uiObserver.off('robot');
+      uiObserver.off('sphere');
 
       onAfterHitTest.delete(0);
       placementNodes.forEach((anchorObj) =>
@@ -222,6 +226,12 @@ export const ARHitTest: FC = ({ children }) => {
       <group visible={false} ref={placementCylinderRef}>
         <mesh
           geometry={new CylinderGeometry(0.05, 0.05, 0.1, 32)}
+          material={dMaterial}
+        ></mesh>
+      </group>
+      <group visible={false} ref={placementSphereRef}>
+        <mesh
+          geometry={new SphereBufferGeometry(0.05, 32, 32)}
           material={dMaterial}
         ></mesh>
       </group>

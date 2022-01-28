@@ -51,14 +51,14 @@ export const Landing: FC<{
   const { overlay } = useARManager();
   const textGroupRef = useRef<Group>();
 
-  const { loadResults } = useLoader<FBXLoader>(
-    FBXLoader,
-    '/models/BestRoom2/WhiteHart.fbx'
-  );
+  // const { loadResults } = useLoader<FBXLoader>(
+  //   FBXLoader,
+  //   '/models/BestRoom2/WhiteHart.fbx'
+  // );
 
   const { loadResults: fontResults } = useLoader<FontLoader>(
     FontLoader,
-    '/fonts/helvetiker_regular.typeface.json'
+    '/fonts/Parisienne_Regular.json'
   );
 
   const [material, matLite, matDark] = useMemo(
@@ -87,7 +87,7 @@ export const Landing: FC<{
     if (!fontResults?.length) return { xMid: 0 };
 
     const font = fontResults[0];
-    const message = 'ARGO ->';
+    const message = 'AR\nTravel';
     const shapes = font.generateShapes(message, 0.06);
 
     const textGeometry = new ShapeGeometry(shapes);
@@ -107,7 +107,7 @@ export const Landing: FC<{
   useEffect(() => {
     if (orbitControl) {
       orbitControl.enableZoom = false;
-      orbitControl.target.set(0, 0, -1);
+      orbitControl.target.set(0, -0.18, -1);
       // orbitControl.autoRotate = true;
     }
 
@@ -137,24 +137,24 @@ export const Landing: FC<{
     };
   }, []);
 
-  useEffect(() => {
-    if (loadResults) {
-      //   mixerRef.current = new AnimationMixer(groupRef.current);
-      //   // mixerRef.current
-      //   //   .clipAction(loadResults[0].animations[Math.round(Math.random() * 11)])
-      //   //   .play();
-      loadResults.forEach((loadResult) => {
-        loadResult.position.set(0, -0.5, -1);
-        loadResult.scale.set(0.015, 0.015, 0.015);
-        scene.add(loadResult);
-      });
-    }
-    return () => {
-      loadResults?.forEach((loadResult) => {
-        scene.remove(loadResult);
-      });
-    };
-  }, [loadResults]);
+  // useEffect(() => {
+  //   if (loadResults) {
+  //     //   mixerRef.current = new AnimationMixer(groupRef.current);
+  //     //   // mixerRef.current
+  //     //   //   .clipAction(loadResults[0].animations[Math.round(Math.random() * 11)])
+  //     //   //   .play();
+  //     loadResults.forEach((loadResult) => {
+  //       loadResult.position.set(0, -0.5, -1);
+  //       loadResult.scale.set(0.015, 0.015, 0.015);
+  //       scene.add(loadResult);
+  //     });
+  //   }
+  //   return () => {
+  //     loadResults?.forEach((loadResult) => {
+  //       scene.remove(loadResult);
+  //     });
+  //   };
+  // }, [loadResults]);
 
   useEffect(() => {
     const lineText = new Object3D();
@@ -190,7 +190,7 @@ export const Landing: FC<{
         lineText.add(lineMesh);
       }
 
-      lineText.position.set(0, 0.3, -0.95);
+      lineText.position.set(0, 0, -0.98);
       // lineText.scale.set(0.95, 0.95, 0.95);
 
       textGroupRef.current?.add(lineText);
@@ -206,7 +206,7 @@ export const Landing: FC<{
 
   return (
     <>
-      <mesh
+      {/* <mesh
         geometry={new SphereBufferGeometry(0.12, 64, 32)}
         material={material}
         position={{
@@ -214,7 +214,7 @@ export const Landing: FC<{
           y: 0,
           z: -1,
         }}
-      ></mesh>
+      ></mesh> */}
       <group
         ref={textGroupRef}
         onClick={() => {
@@ -243,17 +243,17 @@ export const Landing: FC<{
             material={matLite}
             position={{
               x: 0,
-              y: 0.3,
+              y: 0,
               z: -1,
             }}
           ></mesh>
         )}
       </group>
-      <Model
+      {/* <Model
         rotation={{ x: 0, y: -Math.PI / 4, z: 0 }}
         position={{ x: 0.15, y: -0.5, z: -1.5 }}
         scale={{ x: 0.2, y: 0.2, z: 0.2 }}
-      />
+      /> */}
     </>
   );
 };
