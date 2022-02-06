@@ -113,6 +113,8 @@ export class InteractionManager {
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
     this.interactiveObjects.forEach((object) => {
+      object.intersected = false;
+      object.distance = Infinity;
       this.checkIntersection(object);
     });
 

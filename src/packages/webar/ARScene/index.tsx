@@ -5,7 +5,7 @@ import { ARManager } from '../manager';
 import { EmitButton } from '../components/EmitButton';
 import { Observer } from '../../three-react/observer';
 
-type ARSceneProps = { dashboard: ReactNode; landing?: ReactNode } & SceneProps;
+type ARSceneProps = { dashboard?: ReactNode; landing?: ReactNode } & SceneProps;
 
 export const ARScene: FC<ARSceneProps> = ({
   children,
@@ -47,6 +47,8 @@ export const ARScene: FC<ARSceneProps> = ({
     });
     arManager.overlay = overlayRef.current;
     arManager.overlayCanvas = overlayCanvasRef.current;
+
+    return () => {};
   }, []);
 
   return (
@@ -89,8 +91,9 @@ export const ARScene: FC<ARSceneProps> = ({
 
       <Scene ar={arManager} uiObserver={uiObserver} {...props}>
         <ambientLight paras={[0xeeeeee]} />
+
         {!inProgress && landing}
-        {inProgress && children}
+        {inProgress && <>{children}</>}
       </Scene>
     </>
   );

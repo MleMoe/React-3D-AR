@@ -50,10 +50,10 @@ export const Landing: FC<{
   const { scene, orbitControl } = useThree();
   const textGroupRef = useRef<Group>();
 
-  // const { loadResults } = useLoader<FBXLoader>(
-  //   FBXLoader,
-  //   '/models/BestRoom2/WhiteHart.fbx'
-  // );
+  const { loadResults } = useLoader<FBXLoader>(
+    FBXLoader,
+    '/models/BestRoom2/WhiteHart.fbx'
+  );
 
   const { loadResults: fontResults } = useLoader<FontLoader>(
     FontLoader,
@@ -107,7 +107,7 @@ export const Landing: FC<{
     console.log('绘制');
     if (orbitControl) {
       orbitControl.enableZoom = false;
-      orbitControl.target.set(0, -0.18, -1);
+      orbitControl.target.set(0, 0, -1);
       // orbitControl.autoRotate = true;
     }
 
@@ -133,24 +133,24 @@ export const Landing: FC<{
     };
   }, []);
 
-  // useEffect(() => {
-  //   if (loadResults) {
-  //     //   mixerRef.current = new AnimationMixer(groupRef.current);
-  //     //   // mixerRef.current
-  //     //   //   .clipAction(loadResults[0].animations[Math.round(Math.random() * 11)])
-  //     //   //   .play();
-  //     loadResults.forEach((loadResult) => {
-  //       loadResult.position.set(0, -0.5, -1);
-  //       loadResult.scale.set(0.015, 0.015, 0.015);
-  //       scene.add(loadResult);
-  //     });
-  //   }
-  //   return () => {
-  //     loadResults?.forEach((loadResult) => {
-  //       scene.remove(loadResult);
-  //     });
-  //   };
-  // }, [loadResults]);
+  useEffect(() => {
+    if (loadResults) {
+      //   mixerRef.current = new AnimationMixer(groupRef.current);
+      //   // mixerRef.current
+      //   //   .clipAction(loadResults[0].animations[Math.round(Math.random() * 11)])
+      //   //   .play();
+      loadResults.forEach((loadResult) => {
+        loadResult.position.set(0, -0.5, -1);
+        loadResult.scale.set(0.015, 0.015, 0.015);
+        scene.add(loadResult);
+      });
+    }
+    return () => {
+      loadResults?.forEach((loadResult) => {
+        scene.remove(loadResult);
+      });
+    };
+  }, [loadResults]);
 
   useEffect(() => {
     const lineText = new Object3D();
@@ -214,6 +214,7 @@ export const Landing: FC<{
       <group
         ref={textGroupRef}
         onClick={() => {
+          console.log('click');
           uiObserver.emit('startSession');
           onSessionStart?.();
         }}
@@ -230,11 +231,12 @@ export const Landing: FC<{
           ></mesh>
         )}
       </group>
-      {/* <Model
+      <Model
         rotation={{ x: 0, y: -Math.PI / 4, z: 0 }}
-        position={{ x: 0.15, y: -0.5, z: -1.5 }}
+        // position={{ x: 0.15, y: -0.5, z: -1.5 }}
+        position={{ x: 0, y: 0, z: -0.5 }}
         scale={{ x: 0.2, y: 0.2, z: 0.2 }}
-      /> */}
+      />
     </>
   );
 };

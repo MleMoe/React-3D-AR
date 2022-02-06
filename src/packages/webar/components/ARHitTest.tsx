@@ -210,7 +210,7 @@ export const ARHitTest: FC = ({ children }) => {
               position={{
                 x: 0,
                 y: 3 * 0.6 - (4 - 1) * 0.3,
-                z: -5,
+                z: -9,
               }}
             ></mesh>
           );

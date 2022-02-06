@@ -29,24 +29,27 @@ export const Model: FC<ModelProps> = (props) => {
     if (loadResults) {
       groupRef.current.add(loadResults[0].scene);
 
+      console.log('加载', groupRef.current);
+
       //   mixerRef.current = new AnimationMixer(groupRef.current);
       //   // mixerRef.current
       //   //   .clipAction(loadResults[0].animations[Math.round(Math.random() * 11)])
       //   //   .play();
 
-      loadResults.forEach((loadResult) => {
-        const object = loadResult.scene;
-        object.traverse((child) => {
-          if (child instanceof Mesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-            child.material = ARManager.transformARMaterial(
-              child.material,
-              depthRawTexture
-            );
-          }
+      depthRawTexture &&
+        loadResults.forEach((loadResult) => {
+          const object = loadResult.scene;
+          object.traverse((child) => {
+            if (child instanceof Mesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+              child.material = ARManager.transformARMaterial(
+                child.material,
+                depthRawTexture
+              );
+            }
+          });
         });
-      });
     }
   }, [loadResults]);
 
@@ -54,7 +57,7 @@ export const Model: FC<ModelProps> = (props) => {
     // mixerRef.current?.update(clock.getDelta());
   }, [clock]);
 
-  useFrame(animation);
+  // useFrame(animation);
 
   return (
     <Suspense fallback={null}>

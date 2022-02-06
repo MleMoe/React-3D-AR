@@ -8,6 +8,7 @@ import { EmitButton } from '../../packages/webar/components/EmitButton';
 import './index.scss';
 import { DepthScreen } from '../../packages/webar/components/DepthScreen';
 import { ARManager } from '../../packages/webar/manager';
+import { ControlUI } from '../../components/ControlUI';
 
 const btnList = [
   {
@@ -229,7 +230,7 @@ function ARGO() {
 
   return (
     <ARScene
-      control={true}
+      // control={true}
       uiObserver={uiObserver}
       dashboard={
         <>

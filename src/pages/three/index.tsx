@@ -5,7 +5,7 @@ import { DepthScreen } from '../../packages/webar/components/DepthScreen';
 function App() {
   return (
     <ARScene>
-      <DepthScreen />
+      {/* <DepthScreen /> */}
       <ARHitTest />
     </ARScene>
   );

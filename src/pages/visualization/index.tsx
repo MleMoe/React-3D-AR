@@ -39,9 +39,9 @@ function App() {
         paras={[0xffffff, 0.15]}
         position={new THREE.Vector3(-100, 100)}
       ></pointLight>
-      <Histogram />
+      {/* <Histogram /> */}
       {/* <Pie /> */}
-      {/* <Earth /> */}
+      <Earth />
       <gridHelper
         ref={gridRef}
         paras={[1000, 40, 0x303030, 0x303030]}

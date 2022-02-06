@@ -377,9 +377,16 @@ export class ARManager {
     scene.traverse(function (child) {
       if (child instanceof Mesh) {
         if (child.material && child.material.userData?.isARMaterial) {
-          // if (!child.material.userData.uniforms.uOcclusionEnabled.value) {
-          //   child.material.userData.uniforms.uOcclusionEnabled.value = true;
-          // }
+          // if (child.material.userData?.isCollisionMaterial) {
+          //   child.material.userData.uniforms.uRawValueToMeters.value =
+          //     rawValueToMeters;
+          //   child.material.userData.uniforms.uUvTransform.value.fromArray(
+          //     normTextureFromNormViewMatrix.matrix
+          //   );
+          // } else {
+          if (!child.material.userData.uniforms.uOcclusionEnabled.value) {
+            child.material.userData.uniforms.uOcclusionEnabled.value = true;
+          }
 
           child.material.userData.uniforms.uWidth.value = Math.floor(
             window.devicePixelRatio * window.innerWidth
@@ -393,6 +400,8 @@ export class ARManager {
           child.material.userData.uniforms.uUvTransform.value.fromArray(
             normTextureFromNormViewMatrix.matrix
           );
+          // }
+
           child.material.uniformsNeedUpdate = true;
         }
       }
@@ -411,11 +420,11 @@ export class ARManager {
       return;
     }
 
-    if (!this.overlayCanvas) {
-      this.overlayCanvas = document.getElementsByClassName(
-        'overlay-canvas'
-      )[0] as HTMLCanvasElement;
-    }
+    // if (!this.overlayCanvas) {
+    //   this.overlayCanvas = document.getElementsByClassName(
+    //     'overlay-canvas'
+    //   )[0] as HTMLCanvasElement;
+    // }
 
     // this.world.step(delta / 1e3);
 
