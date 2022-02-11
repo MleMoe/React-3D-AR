@@ -94,13 +94,32 @@ export type ArrayCameraProps = Object3DNode<
 export type GroupProps = Object3DNode<THREE.Group, typeof THREE.Group>;
 
 export type MeshProps = Object3DNode<THREE.Mesh, typeof THREE.Mesh>;
-export type SpriteProps = Object3DNode<THREE.Sprite, typeof THREE.Sprite>;
+export type InstancedMeshProps = Object3DNode<
+  THREE.InstancedMesh,
+  typeof THREE.InstancedMesh
+>;
+
 export type LineSegmentsProps = Object3DNode<
   THREE.LineSegments,
   typeof THREE.LineSegments
 >;
+export type LineLoopProps = Object3DNode<THREE.LineLoop, typeof THREE.LineLoop>;
 
 export type PointsProps = Object3DNode<THREE.Points, typeof THREE.Points>;
+export type SpriteProps = Object3DNode<THREE.Sprite, typeof THREE.Sprite>;
+
+export type BoneProps = Object3DNode<THREE.Bone, typeof THREE.Bone>;
+export type SkeletonProps = Object3DNode<THREE.Skeleton, typeof THREE.Skeleton>;
+export type SkinnedMeshProps = Object3DNode<
+  THREE.SkinnedMesh,
+  typeof THREE.SkinnedMesh
+>;
+
+export type LODProps = Object3DNode<THREE.LOD, typeof THREE.LOD>;
+
+/**
+ * 辅助对象
+ */
 
 export type GridHelperProps = Object3DNode<
   THREE.GridHelper,
@@ -133,6 +152,73 @@ export type PointLightProps = LightNode<
   THREE.PointLight,
   typeof THREE.PointLight
 >;
+export type HemisphereLightProps = LightNode<
+  THREE.HemisphereLight,
+  typeof THREE.HemisphereLight
+>;
+
+export type SpotLightProps = LightNode<THREE.SpotLight, typeof THREE.SpotLight>;
+
+export type RectAreaLightProps = LightNode<
+  THREE.RectAreaLight,
+  typeof THREE.RectAreaLight
+>;
+
+export type AmbientLightProbeProps = LightNode<
+  THREE.AmbientLightProbe,
+  typeof THREE.AmbientLightProbe
+>;
+export type HemisphereLightProbeProps = LightNode<
+  THREE.HemisphereLightProbe,
+  typeof THREE.HemisphereLightProbe
+>;
+export type LightProbeProps = LightNode<
+  THREE.LightProbe,
+  typeof THREE.LightProbe
+>;
+
+export type SpotLightHelperProps = Object3DNode<
+  THREE.SpotLightHelper,
+  typeof THREE.SpotLightHelper
+>;
+export type SkeletonHelperProps = Object3DNode<
+  THREE.SkeletonHelper,
+  typeof THREE.SkeletonHelper
+>;
+export type PointLightHelperProps = Object3DNode<
+  THREE.PointLightHelper,
+  typeof THREE.PointLightHelper
+>;
+export type HemisphereLightHelperProps = Object3DNode<
+  THREE.HemisphereLightHelper,
+  typeof THREE.HemisphereLightHelper
+>;
+
+export type PolarGridHelperProps = Object3DNode<
+  THREE.PolarGridHelper,
+  typeof THREE.PolarGridHelper
+>;
+export type DirectionalLightHelperProps = Object3DNode<
+  THREE.DirectionalLightHelper,
+  typeof THREE.DirectionalLightHelper
+>;
+
+export type BoxHelperProps = Object3DNode<
+  THREE.BoxHelper,
+  typeof THREE.BoxHelper
+>;
+export type Box3HelperProps = Object3DNode<
+  THREE.Box3Helper,
+  typeof THREE.Box3Helper
+>;
+export type PlaneHelperProps = Object3DNode<
+  THREE.PlaneHelper,
+  typeof THREE.PlaneHelper
+>;
+export type ArrowHelperProps = Object3DNode<
+  THREE.ArrowHelper,
+  typeof THREE.ArrowHelper
+>;
 
 export type ThreeTextProps = {};
 declare global {
@@ -140,18 +226,49 @@ declare global {
     interface IntrinsicElements {
       perspectiveCamera: PerspectiveCameraProps;
       orthographicCamera: OrthographicCameraProps;
-      mesh: MeshProps;
-      sprite: SpriteProps;
-      lineSegments: LineSegmentsProps;
-      point: PointsProps;
 
+      group: GroupProps;
+
+      mesh: MeshProps;
+      instancedMesh: InstancedMeshProps;
+
+      lineSegments: LineSegmentsProps;
+      lineLoop: LineLoopProps;
+
+      point: PointsProps;
+      sprite: SpriteProps;
+
+      skeleton: SkeletonProps;
+      bone: BoneProps;
+      skinnedMesh: SkinnedMeshProps;
+
+      lod: LODProps;
+
+      light: LightProps;
       ambientLight: AmbientLightProps;
       directionalLight: DirectionalLightProps;
       pointLight: PointLightProps;
-      group: GroupProps;
+      hemisphereLight: HemisphereLightProps;
+      spotLight: SpotLightProps;
+      rectAreaLight: RectAreaLightProps;
+
+      lightProbe: LightProbeProps;
+      ambientLightProbe: AmbientLightProbeProps;
+      hemisphereLightProbe: HemisphereLightProbeProps;
+
       gridHelper: GridHelperProps;
       axesHelper: AxesHelperProps;
       cameraHelper: CameraHelperProps;
+      spotLightHelper: SpotLightHelperProps;
+      skeletonHelper: SkeletonHelperProps;
+      pointLightHelper: PointLightHelperProps;
+      hemisphereLightHelper: HemisphereLightHelperProps;
+      polarGridHelper: PolarGridHelperProps;
+      directionalLightHelper: DirectionalLightHelperProps;
+      boxHelper: BoxHelperProps;
+      box3Helper: Box3HelperProps;
+      planeHelper: PlaneHelperProps;
+      arrowHelper: ArrowHelperProps;
     }
   }
 }

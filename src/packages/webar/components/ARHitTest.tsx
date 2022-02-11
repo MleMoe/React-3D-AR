@@ -155,7 +155,7 @@ export const ARHitTest: FC = ({ children }) => {
 
   const { loadResults } = useLoader<GLTFLoader>(
     GLTFLoader,
-    '/models/RobotExpressive.glb'
+    '/models/bingdundun.glb' // RobotExpressive
   );
 
   useEffect(() => {
@@ -243,7 +243,7 @@ export const ARHitTest: FC = ({ children }) => {
       <group
         visible={false}
         ref={placementRobotRef}
-        scale={{ x: 0.05, y: 0.05, z: 0.05 }}
+        scale={{ x: 0.5, y: 0.5, z: 0.5 }}
       ></group>
     </group>
   );

@@ -40,8 +40,8 @@ function App() {
         position={new THREE.Vector3(-100, 100)}
       ></pointLight>
       {/* <Histogram /> */}
-      {/* <Pie /> */}
-      <Earth />
+      <Pie />
+      {/* <Earth /> */}
       <gridHelper
         ref={gridRef}
         paras={[1000, 40, 0x303030, 0x303030]}

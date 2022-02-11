@@ -215,7 +215,7 @@ export class ARManager {
       this.depthRawTexture
     ) as ShadowMaterial;
 
-    // this.scene.add(this.floorMesh);
+    this.scene.add(this.floorMesh);
   }
 
   async startAR(
