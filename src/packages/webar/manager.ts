@@ -215,7 +215,7 @@ export class ARManager {
       this.depthRawTexture
     ) as ShadowMaterial;
 
-    this.scene.add(this.floorMesh);
+    // this.scene.add(this.floorMesh);
   }
 
   async startAR(
@@ -320,7 +320,6 @@ export class ARManager {
 			varying float vDepth;
 			` + shader.vertexShader;
 
-      // Vertex depth logic
       shader.vertexShader = shader.vertexShader.replace(
         '#include <fog_vertex>',
         `
@@ -329,6 +328,8 @@ export class ARManager {
 			vDepth = gl_Position.z;
 			`
       );
+
+      console.log(shader.vertexShader);
 
       shader.fragmentShader =
         `
@@ -358,7 +359,7 @@ export class ARManager {
       vec2 packedDepth = texture2D(uScreenDepthTexture, texCoord).ra;
       float depth = dot(packedDepth, vec2(255.0, 256.0 * 255.0)) * uRawValueToMeters; // m
 
-      if (depth < (gl_FragCoord.z / gl_FragCoord.w)) {
+      if (depth < gl_FragCoord.z / gl_FragCoord.w) {
           discard;
       }
     }

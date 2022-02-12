@@ -50,10 +50,10 @@ export const Landing: FC<{
   const { scene, orbitControl } = useThree();
   const textGroupRef = useRef<Group>();
 
-  const { loadResults } = useLoader<FBXLoader>(
-    FBXLoader,
-    '/models/BestRoom2/WhiteHart.fbx'
-  );
+  // const { loadResults } = useLoader<FBXLoader>(
+  //   FBXLoader,
+  //   '/models/BestRoom2/WhiteHart.fbx'
+  // );
 
   const { loadResults: fontResults } = useLoader<FontLoader>(
     FontLoader,
@@ -133,24 +133,24 @@ export const Landing: FC<{
     };
   }, []);
 
-  useEffect(() => {
-    if (loadResults) {
-      //   mixerRef.current = new AnimationMixer(groupRef.current);
-      //   // mixerRef.current
-      //   //   .clipAction(loadResults[0].animations[Math.round(Math.random() * 11)])
-      //   //   .play();
-      loadResults.forEach((loadResult) => {
-        loadResult.position.set(0, -0.5, -1);
-        loadResult.scale.set(0.015, 0.015, 0.015);
-        scene.add(loadResult);
-      });
-    }
-    return () => {
-      loadResults?.forEach((loadResult) => {
-        scene.remove(loadResult);
-      });
-    };
-  }, [loadResults]);
+  // useEffect(() => {
+  //   if (loadResults) {
+  //     //   mixerRef.current = new AnimationMixer(groupRef.current);
+  //     //   // mixerRef.current
+  //     //   //   .clipAction(loadResults[0].animations[Math.round(Math.random() * 11)])
+  //     //   //   .play();
+  //     loadResults.forEach((loadResult) => {
+  //       loadResult.position.set(0, -0.5, -1);
+  //       loadResult.scale.set(0.015, 0.015, 0.015);
+  //       scene.add(loadResult);
+  //     });
+  //   }
+  //   return () => {
+  //     loadResults?.forEach((loadResult) => {
+  //       scene.remove(loadResult);
+  //     });
+  //   };
+  // }, [loadResults]);
 
   useEffect(() => {
     const lineText = new Object3D();

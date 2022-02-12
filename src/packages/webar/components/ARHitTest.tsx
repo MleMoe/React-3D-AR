@@ -225,13 +225,13 @@ export const ARHitTest: FC = ({ children }) => {
       </group>
       <group visible={false} ref={placementCylinderRef}>
         <mesh
-          geometry={new CylinderGeometry(0.05, 0.05, 0.1, 32)}
-          material={dMaterial}
+          geometry={new CylinderGeometry(0.05, 0.05, 0.5, 32)}
+          material={new MeshPhongMaterial({ color: 0x0000ff })}
         ></mesh>
       </group>
       <group visible={false} ref={placementSphereRef}>
         <mesh
-          geometry={new SphereBufferGeometry(0.05, 32, 32)}
+          geometry={new SphereBufferGeometry(0.15, 32, 32)}
           material={dMaterial}
         ></mesh>
       </group>
