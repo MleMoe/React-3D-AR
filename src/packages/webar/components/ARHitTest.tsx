@@ -200,7 +200,7 @@ export const ARHitTest: FC = ({ children }) => {
           return (
             <mesh
               key={index}
-              geometry={new SphereBufferGeometry(0.5, 32, 32)}
+              geometry={new SphereBufferGeometry(1.5, 32, 32)}
               material={
                 new MeshPhongMaterial({
                   color: 0xdddddd,
@@ -243,7 +243,7 @@ export const ARHitTest: FC = ({ children }) => {
       <group
         visible={false}
         ref={placementRobotRef}
-        scale={{ x: 0.5, y: 0.5, z: 0.5 }}
+        // scale={{ x: 1.2, y: 1.2, z: 1.2 }}
       ></group>
     </group>
   );
