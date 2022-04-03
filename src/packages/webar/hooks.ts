@@ -41,56 +41,58 @@ export function useARManager() {
     onAfterHitTest,
     depthRawTexture,
     onAfterDepthInfo,
-    world,
     overlayCanvas,
     transformARMaterial,
+    session,
+    xrLight,
   } = useMemo<ARManager>(() => ar, []);
   return {
+    session,
     overlay,
     hitState,
     onAfterHitTest,
     depthRawTexture,
     onAfterDepthInfo,
-    world,
     overlayCanvas,
     transformARMaterial,
+    xrLight,
   };
 }
 
-export function usePhysicsObject(
-  objRef: React.MutableRefObject<Object3D<THREE.Event> | undefined>
-) {
-  const { world } = useARManager();
-  const { body } = useMemo(() => {
-    const body = new Body({ shape: new Sphere(0.1) });
-    body.type = Body.DYNAMIC;
-    body.mass = 1.0;
-    world.addBody(body);
-    return { body };
-  }, []);
+// export function usePhysicsObject(
+//   objRef: React.MutableRefObject<Object3D<THREE.Event> | undefined>
+// ) {
+//   // const { world } = useARManager();
+//   const { body } = useMemo(() => {
+//     const body = new Body({ shape: new Sphere(0.1) });
+//     body.type = Body.DYNAMIC;
+//     body.mass = 1.0;
+//     world.addBody(body);
+//     return { body };
+//   }, []);
 
-  useEffect(() => {
-    if (!objRef.current) {
-      console.log('obj is empty');
-      return;
-    }
-    const obj = objRef.current;
-    obj.onBeforeRender = () => {
-      obj.position.set(body.position.x, body.position.y, body.position.z);
-      if (!body.fixedRotation) {
-        const { x, y, z, w } = body.quaternion;
-        obj.quaternion.set(x, y, z, w);
-      }
-      console.log('渲染');
-    };
+//   useEffect(() => {
+//     if (!objRef.current) {
+//       console.log('obj is empty');
+//       return;
+//     }
+//     const obj = objRef.current;
+//     obj.onBeforeRender = () => {
+//       obj.position.set(body.position.x, body.position.y, body.position.z);
+//       if (!body.fixedRotation) {
+//         const { x, y, z, w } = body.quaternion;
+//         obj.quaternion.set(x, y, z, w);
+//       }
+//       console.log('渲染');
+//     };
 
-    return () => {
-      obj.onBeforeRender = () => {};
-    };
-  }, []);
+//     return () => {
+//       obj.onBeforeRender = () => {};
+//     };
+//   }, []);
 
-  return { body };
-}
+//   return { body };
+// }
 
 // export function useARImageTracking() {
 //   const imgPoseRef = useRef<XRPose>();

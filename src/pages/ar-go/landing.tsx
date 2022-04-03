@@ -17,6 +17,7 @@ import {
   BufferGeometry,
   Line,
   Group,
+  AmbientLight,
 } from 'three';
 import {
   useFrame,
@@ -26,10 +27,8 @@ import {
 } from '../../packages/three-react/hooks';
 
 import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator';
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import { Model } from '../../components/ARContent/model';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
-import { useARManager } from '../../packages/webar/hooks';
 
 const genCubeUrls = function (prefix: string, postfix: string) {
   return [
@@ -50,11 +49,6 @@ export const Landing: FC<{
   const { scene, orbitControl } = useThree();
   const textGroupRef = useRef<Group>();
 
-  // const { loadResults } = useLoader<FBXLoader>(
-  //   FBXLoader,
-  //   '/models/BestRoom2/WhiteHart.fbx'
-  // );
-
   const { loadResults: fontResults } = useLoader<FontLoader>(
     FontLoader,
     '/fonts/Parisienne_Regular.json'
@@ -71,11 +65,11 @@ export const Landing: FC<{
       new MeshBasicMaterial({
         color: 0x006699,
         transparent: true,
-        opacity: 0.4,
+        opacity: 0.6,
         side: DoubleSide,
       }),
       new LineBasicMaterial({
-        color: 0x006699,
+        color: 0x00b51a,
         side: DoubleSide,
       }),
     ],
@@ -87,7 +81,7 @@ export const Landing: FC<{
 
     const font = fontResults[0];
     const message = 'AR\nTravel';
-    const shapes = font.generateShapes(message, 0.06);
+    const shapes = font.generateShapes(message, 0.12);
 
     const textGeometry = new ShapeGeometry(shapes);
 
@@ -107,7 +101,7 @@ export const Landing: FC<{
     console.log('绘制');
     if (orbitControl) {
       orbitControl.enableZoom = false;
-      orbitControl.target.set(0, 0, -1);
+      orbitControl.target.set(0, 0, -0.9);
       // orbitControl.autoRotate = true;
     }
 
@@ -132,25 +126,6 @@ export const Landing: FC<{
       scene.remove(directionalLight);
     };
   }, []);
-
-  // useEffect(() => {
-  //   if (loadResults) {
-  //     //   mixerRef.current = new AnimationMixer(groupRef.current);
-  //     //   // mixerRef.current
-  //     //   //   .clipAction(loadResults[0].animations[Math.round(Math.random() * 11)])
-  //     //   //   .play();
-  //     loadResults.forEach((loadResult) => {
-  //       loadResult.position.set(0, -0.5, -1);
-  //       loadResult.scale.set(0.015, 0.015, 0.015);
-  //       scene.add(loadResult);
-  //     });
-  //   }
-  //   return () => {
-  //     loadResults?.forEach((loadResult) => {
-  //       scene.remove(loadResult);
-  //     });
-  //   };
-  // }, [loadResults]);
 
   useEffect(() => {
     const lineText = new Object3D();
@@ -186,10 +161,11 @@ export const Landing: FC<{
         lineText.add(lineMesh);
       }
 
-      lineText.position.set(0, 0, -0.98);
+      lineText.position.set(0, 0.17, -0.85);
       // lineText.scale.set(0.95, 0.95, 0.95);
 
       textGroupRef.current?.add(lineText);
+      // lineText.scale.set(1.2, 1.2, 1.2);
     }
     return () => {
       lineText.remove(lineText);
@@ -215,8 +191,8 @@ export const Landing: FC<{
         ref={textGroupRef}
         onClick={() => {
           console.log('click');
-          uiObserver.emit('startSession');
-          onSessionStart?.();
+          // uiObserver.emit('startSession');
+          // onSessionStart?.();
         }}
       >
         {textGeometry && matLite && (
@@ -225,18 +201,20 @@ export const Landing: FC<{
             material={matLite}
             position={{
               x: 0,
-              y: 0,
-              z: -1,
+              y: 0.18,
+              z: -0.99,
             }}
           ></mesh>
         )}
+        <ambientLight paras={[0xffffff]} />
+
+        <Model
+          // rotation={{ x: 0, y: -Math.PI / 4, z: 0 }}
+          // position={{ x: 0.15, y: -0.5, z: -1.5 }}
+          position={{ x: 0, y: 0.15, z: -0.9 }}
+          scale={{ x: 0.1, y: 0.1, z: 0.1 }}
+        />
       </group>
-      <Model
-        rotation={{ x: 0, y: -Math.PI / 4, z: 0 }}
-        // position={{ x: 0.15, y: -0.5, z: -1.5 }}
-        position={{ x: 0, y: 0, z: -0.5 }}
-        scale={{ x: 0.2, y: 0.2, z: 0.2 }}
-      />
     </>
   );
 };

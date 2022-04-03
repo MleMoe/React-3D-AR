@@ -1,12 +1,22 @@
-import { FC, useEffect, useMemo, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { TextureLoader } from 'three';
-import { useLoader, useThree } from '../../packages/three-react/hooks';
+import {
+  useFrame,
+  useLoader,
+  useThree,
+} from '../../packages/three-react/hooks';
+import { FrameCallback } from '../../packages/three-react/loop';
+import { Euler, Vector3 } from '../../packages/three-react/tag-types';
 import no_clouds from './assets/no_clouds.jpg';
 
-export const Earth: FC = () => {
-  const { orbitControl } = useThree();
-  const [radius, setRadius] = useState(50);
+export const Earth: FC<{ sphereRadius?: number; position?: Vector3 }> = ({
+  sphereRadius,
+  position,
+}) => {
+  // const { orbitControl } = useThree();
+  const [radius, setRadius] = useState(sphereRadius || 50);
+  const [rotation, setRotation] = useState<Euler>({ x: 0, y: 0, z: 0 });
 
   const { loadResults } = useLoader<TextureLoader>(
     TextureLoader,
@@ -21,27 +31,26 @@ export const Earth: FC = () => {
 
   const material = useMemo(() => {
     if (loadResults) {
-      return new THREE.MeshPhongMaterial({
+      return new THREE.MeshBasicMaterial({
         map: loadResults[0],
       });
     }
   }, [loadResults]);
 
-  useEffect(() => {
-    if (orbitControl) {
-      orbitControl.target = new THREE.Vector3(0, 0, -50);
-    }
+  const animate: FrameCallback = useCallback(() => {
+    setRotation((prev) => ({
+      y: (prev.y ?? 0) + 0.01,
+    }));
   }, []);
+
+  useFrame(animate);
 
   return material ? (
     <mesh
-      position={{
-        x: 0,
-        y: 0,
-        z: -50,
-      }}
       geometry={new THREE.SphereGeometry(radius, 64, 64)}
       material={material}
+      position={position || { x: 0, y: 0, z: 0 }}
+      rotation={rotation}
       onClick={(event) => {
         console.log(event);
         setRadius((prev) => prev + 1);

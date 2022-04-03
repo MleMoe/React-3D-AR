@@ -26,7 +26,7 @@ function App() {
         material={new THREE.MeshNormalMaterial()}
         position={{ x: 0, y: 0, z: -10 }}
       ></mesh> */}
-      <ambientLight paras={[0x333333]} />
+      <ambientLight paras={[0xeeeeee]} />
       <directionalLight
         paras={[0xffffff, 0.25]}
         position={new THREE.Vector3(
@@ -40,13 +40,33 @@ function App() {
         position={new THREE.Vector3(-100, 100)}
       ></pointLight>
       {/* <Histogram /> */}
-      <Pie />
-      {/* <Earth /> */}
-      <gridHelper
-        ref={gridRef}
-        paras={[1000, 40, 0x303030, 0x303030]}
+      {/* <Pie /> */}
+      {/* <Earth sphereRadius={50} /> */}
+      {/* <Model
+        filepath={'/models/RobotExpressive.glb'}
+        scale={{ x: 20, y: 20, z: 20 }}
+        position={{ x: -100, y: 0, z: 0 }}
+      /> */}
+      <Model
+        // filepath={'/models/RobotExpressive.glb'}
+        scale={{ x: 100, y: 100, z: 100 }}
         position={{ x: 0, y: 0, z: 0 }}
       />
+      {/* <Model
+        filepath={'/models/RobotExpressive.glb'}
+        scale={{ x: 20, y: 20, z: 20 }}
+        position={{ x: 100, y: 0, z: 0 }}
+      /> */}
+      {/* <Model
+        filepath={'/models/bingdundun.glb'}
+        scale={{ x: 135, y: 135, z: 135 }}
+        position={{ x: 20, y: 0, z: 0 }}
+      /> */}
+      {/* <gridHelper
+        ref={gridRef}
+        paras={[300, 40, 0x303030, 0x303030]}
+        position={{ x: 0, y: 0, z: 0 }}
+      /> */}
     </Scene>
   );
 }

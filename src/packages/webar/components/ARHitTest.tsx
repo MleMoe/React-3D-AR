@@ -18,6 +18,7 @@ import {
   XRFrame,
   Matrix4,
   SphereBufferGeometry,
+  MeshStandardMaterial,
 } from 'three';
 import { useARManager } from '../hooks';
 import { useFrame, useLoader, useStore } from '../../three-react/hooks';
@@ -26,6 +27,7 @@ import { getUuid } from '../../three-react/utils';
 import { HitState } from '../manager';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { Earth } from '../../../components/visualization/earth';
 
 export const ARHitTest: FC = ({ children }) => {
   const { uiObserver, scene, glRenderer } = useStore();
@@ -34,8 +36,8 @@ export const ARHitTest: FC = ({ children }) => {
 
   const reticleRef = useRef<Mesh>();
   const placementNodeRef = useRef<Group>(null!);
-  const placementBunnyRef = useRef<Group>(null!);
-  const placementRobotRef = useRef<Group>(null!);
+  const placementEarthRef = useRef<Group>(null!);
+  const placementBingdundunRef = useRef<Group>(null!);
   const placementCylinderRef = useRef<Group>(null!);
   const placementSphereRef = useRef<Group>(null!);
 
@@ -43,8 +45,8 @@ export const ARHitTest: FC = ({ children }) => {
     () => ({
       sunflower: placementNodeRef,
       cylinder: placementCylinderRef,
-      bunny: placementBunnyRef,
-      robot: placementRobotRef,
+      earth: placementEarthRef,
+      bingdundun: placementBingdundunRef,
       sphere: placementSphereRef,
     }),
     []
@@ -58,14 +60,14 @@ export const ARHitTest: FC = ({ children }) => {
   const dMaterial = useMemo(
     () =>
       transformARMaterial(
-        new MeshPhongMaterial({ color: 0x0000ff }),
+        new MeshPhongMaterial({ color: 0xffffff }),
         depthRawTexture
       ),
     []
   );
 
   const onSelect = useCallback(
-    (type: 'sphere' | 'cylinder' | 'sunflower' | 'bunny' | 'robot') => {
+    (type: 'sphere' | 'cylinder' | 'sunflower' | 'earth' | 'bingdundun') => {
       console.log('select!');
 
       if (hitState && hitState.position) {
@@ -93,16 +95,65 @@ export const ARHitTest: FC = ({ children }) => {
     []
   );
 
+  const { loadResults } = useLoader<GLTFLoader>(
+    GLTFLoader,
+    '/models/bingdundun.glb' // BingdundunExpressive
+  );
+
+  const { loadResults: flowerLoadResults } = useLoader<GLTFLoader>(
+    GLTFLoader,
+    '/models/sunflower/sunflower.gltf'
+  );
+
+  useEffect(() => {
+    if (loadResults) {
+      loadResults.forEach((loadResult) => {
+        placementBingdundunRef.current.add(loadResult.scene.clone());
+
+        loadResults.forEach((loadResult) => {
+          const object = loadResult.scene;
+          object.traverse((child) => {
+            if (child instanceof Mesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+              child.material = transformARMaterial(
+                child.material,
+                depthRawTexture
+              );
+            }
+          });
+        });
+      });
+    }
+  }, [loadResults]);
+
+  useEffect(() => {
+    if (flowerLoadResults) {
+      flowerLoadResults.forEach((flowerLoadResult) => {
+        placementNodeRef.current.add(flowerLoadResult.scene.clone());
+        flowerLoadResult.scene.traverse((child) => {
+          if (child instanceof Mesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+            child.material = transformARMaterial(
+              child.material,
+              depthRawTexture
+            );
+          }
+        });
+      });
+    }
+  }, [flowerLoadResults]);
+
   useLayoutEffect(() => {
     uiObserver.on('sunflower', () => onSelect('sunflower'));
     uiObserver.on('cylinder', () => onSelect('cylinder'));
-    uiObserver.on('bunny', () => onSelect('bunny'));
-    uiObserver.on('robot', () => onSelect('robot'));
+    uiObserver.on('earth', () => onSelect('earth'));
+    uiObserver.on('bingdundun', () => onSelect('bingdundun'));
     uiObserver.on('sphere', () => onSelect('sphere'));
 
     // scene.overrideMaterial = dMaterial;
 
-    const key = getUuid();
     onAfterHitTest.set(0, (hit: HitState) => {
       if (reticleRef.current && hit.position) {
         reticleRef.current.visible = hit.visible;
@@ -119,8 +170,8 @@ export const ARHitTest: FC = ({ children }) => {
     return () => {
       uiObserver.off('sunflower');
       uiObserver.off('cylinder');
-      uiObserver.off('bunny');
-      uiObserver.off('robot');
+      uiObserver.off('earth');
+      uiObserver.off('bingdundun');
       uiObserver.off('sphere');
 
       onAfterHitTest.delete(0);
@@ -153,38 +204,6 @@ export const ARHitTest: FC = ({ children }) => {
     }
   });
 
-  const { loadResults } = useLoader<GLTFLoader>(
-    GLTFLoader,
-    '/models/bingdundun.glb' // RobotExpressive
-  );
-
-  useEffect(() => {
-    if (loadResults) {
-      //   mixerRef.current = new AnimationMixer(groupRef.current);
-      //   // mixerRef.current
-      //   //   .clipAction(loadResults[0].animations[Math.round(Math.random() * 11)])
-      //   //   .play();
-      loadResults.forEach((loadResult) => {
-        placementBunnyRef.current.add(loadResult.scene);
-        placementRobotRef.current.add(loadResult.scene.clone());
-
-        loadResults.forEach((loadResult) => {
-          const object = loadResult.scene;
-          object.traverse((child) => {
-            if (child instanceof Mesh) {
-              // child.castShadow = true;
-              // child.receiveShadow = true;
-              child.material = transformARMaterial(
-                child.material,
-                depthRawTexture
-              );
-            }
-          });
-        });
-      });
-    }
-  }, [loadResults]);
-
   return (
     <group>
       <mesh
@@ -195,38 +214,22 @@ export const ARHitTest: FC = ({ children }) => {
           .translate(0, 0.03, 0)}
         material={dMaterial}
       ></mesh>
-      <group>
-        {new Array(1).fill(0).map((_, index, items) => {
-          return (
-            <mesh
-              key={index}
-              geometry={new SphereBufferGeometry(1.5, 32, 32)}
-              material={
-                new MeshPhongMaterial({
-                  color: 0xdddddd,
-                  reflectivity: 3 / 4,
-                })
-              }
-              position={{
-                x: 0,
-                y: 3 * 0.6 - (4 - 1) * 0.3,
-                z: -9,
-              }}
-            ></mesh>
-          );
-        })}
-      </group>
-      <group
-        visible={false}
-        ref={placementNodeRef}
-        scale={{ x: 0.5, y: 0.5, z: 0.5 }}
-      >
-        <Model></Model>
-      </group>
+
+      <group visible={false} ref={placementNodeRef}></group>
       <group visible={false} ref={placementCylinderRef}>
+        {/* <mesh
+          geometry={new CylinderGeometry(0.05, 0.05, 0.3, 32)}
+          material={dMaterial}
+        ></mesh> */}
         <mesh
-          geometry={new CylinderGeometry(0.05, 0.05, 0.5, 32)}
-          material={new MeshPhongMaterial({ color: 0x0000ff })}
+          geometry={new SphereBufferGeometry(0.1, 32, 32)}
+          castShadow={true}
+          material={
+            new MeshStandardMaterial({
+              roughness: 0.2,
+              metalness: 1,
+            })
+          }
         ></mesh>
       </group>
       <group visible={false} ref={placementSphereRef}>
@@ -235,14 +238,12 @@ export const ARHitTest: FC = ({ children }) => {
           material={dMaterial}
         ></mesh>
       </group>
+      <group visible={false} ref={placementEarthRef}>
+        <Earth sphereRadius={0.15} />
+      </group>
       <group
         visible={false}
-        ref={placementBunnyRef}
-        scale={{ x: 0.05, y: 0.05, z: 0.05 }}
-      ></group>
-      <group
-        visible={false}
-        ref={placementRobotRef}
+        ref={placementBingdundunRef}
         // scale={{ x: 1.2, y: 1.2, z: 1.2 }}
       ></group>
     </group>

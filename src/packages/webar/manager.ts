@@ -1,11 +1,7 @@
 import {
   Scene,
   XRViewerPose,
-  CanvasTexture,
-  DataTexture,
   PerspectiveCamera,
-  DirectionalLight,
-  AmbientLight,
   WebGLRenderer,
   XRHitTestResult,
   XRHitTestSource,
@@ -22,7 +18,6 @@ import {
   Mesh,
   ShadowMaterial,
   PlaneBufferGeometry,
-  MeshPhongMaterial,
   Quaternion,
   Material,
   XRRigidTransform,
@@ -33,15 +28,6 @@ import { XRSystem } from './types';
 import { Observer } from '../three-react/observer';
 import { XRCPUDepthInformation } from './types';
 import { XREstimatedLight } from 'three/examples/jsm/webxr/XREstimatedLight';
-import {
-  World,
-  NaiveBroadphase,
-  GSSolver,
-  SplitSolver,
-  Body,
-  Vec3,
-  Plane,
-} from 'cannon-es';
 
 export type HitState = {
   visible: boolean;
@@ -84,12 +70,9 @@ export class ARManager {
 
   xrLight?: XREstimatedLight;
 
-  shadowMaterial: ShadowMaterial;
   floorMesh: Mesh;
 
   lastTime: number;
-  world: World;
-  floor: Body;
 
   transformARMaterial: (
     material: Material,
@@ -130,45 +113,16 @@ export class ARManager {
     // this.depthDataTexture = new DepthDataTexture();
     this.onAfterDepthInfo = new Map();
 
-    this.shadowMaterial = new MeshPhongMaterial({
-      opacity: 0.1,
-      color: 0x00ffff,
-      transparent: true,
-    });
-
     this.floorMesh = new Mesh(
       new PlaneBufferGeometry(100, 100, 1, 1),
-      this.shadowMaterial
+      new ShadowMaterial({ opacity: 0.5 })
     );
+    // this.floorMesh.position.y = -10;
     this.floorMesh.rotation.set(-Math.PI / 2, 0, 0);
     this.floorMesh.castShadow = false;
     this.floorMesh.receiveShadow = true;
 
     this.lastTime = 0;
-
-    this.world = new World({ gravity: new Vec3(0, -9.82, 0) });
-    // this.world.gravity.set(0, -9.8, 0);
-    this.world.defaultContactMaterial.contactEquationStiffness = 1e9;
-    this.world.defaultContactMaterial.contactEquationRelaxation = 4;
-    this.world.quatNormalizeSkip = 0;
-    this.world.quatNormalizeFast = false;
-
-    this.world.broadphase = new NaiveBroadphase();
-    this.world.broadphase.useBoundingBoxes = true;
-
-    var solver = new GSSolver();
-    solver.tolerance = 0.1;
-    solver.iterations = 7;
-    // @ts-ignore
-    this.world.solver = new SplitSolver(solver);
-
-    this.floor = new Body();
-    this.floor.type = Body.STATIC;
-    this.floor.position.set(0, 0, 0);
-    this.floor.velocity.set(0, 0, 0);
-    this.floor.quaternion.setFromAxisAngle(new Vec3(1, 0, 0), -Math.PI / 2);
-    this.floor.addShape(new Plane());
-    this.world.addBody(this.floor);
   }
 
   setAttributesFromRoot(root: RootState) {
@@ -196,9 +150,14 @@ export class ARManager {
 
     this.xrLight = new XREstimatedLight(glRenderer);
 
-    this.xrLight.addEventListener('estimationstart', () => {
+    this.xrLight?.addEventListener('estimationstart', () => {
       console.log('启动光估计');
-      scene.add(this.xrLight as XREstimatedLight);
+
+      if (this.xrLight) {
+        // scene.add(this.xrLight.directionalLight);
+        // scene.add(this.xrLight.lightProbe);
+        this.xrLight.directionalLight.castShadow = true;
+      }
       this.updateEnvironment((this.xrLight as XREstimatedLight).environment);
     });
 
@@ -209,11 +168,6 @@ export class ARManager {
     });
 
     this.depthRawTexture.initTexture(glRenderer.getContext());
-
-    this.shadowMaterial = ARManager.transformARMaterial(
-      this.shadowMaterial,
-      this.depthRawTexture
-    ) as ShadowMaterial;
 
     // this.scene.add(this.floorMesh);
   }
@@ -290,7 +244,11 @@ export class ARManager {
     this.scene?.traverse((object) => {
       if (object.type === 'Mesh') {
         // @ts-ignore
-        (object as Mesh).material.envMap = envMap;
+        if ((object as Mesh).material.userData?.isARMaterial) {
+          // @ts-ignore
+          (object as Mesh).material.envMap = envMap;
+          object.castShadow = true;
+        }
       }
     });
   }
@@ -328,8 +286,6 @@ export class ARManager {
 			vDepth = gl_Position.z;
 			`
       );
-
-      console.log(shader.vertexShader);
 
       shader.fragmentShader =
         `
@@ -468,9 +424,6 @@ export class ARManager {
           this.onAfterHitTest.forEach((fn) => {
             this.hitState && fn(this.hitState);
           });
-          if (this.hitState.position.y < this.floor.position.y) {
-            this.floor.position.y = this.hitState.position.y;
-          }
           this.floorMesh.position.y = this.hitState.position.y;
         }
       });

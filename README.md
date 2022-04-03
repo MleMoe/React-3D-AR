@@ -1,4 +1,9 @@
-# 环境融合渲染的 WebAR 应用组件化开发方案
+# React-3D-AR
+
+一个基于 WebXR Device API 标准的 WebAR 应用开发方案，可以体验到：
+
+- 无缝衔接的 React 开发体验，组件化编写 3D 场景
+- 无标识物跟踪的 AR 体验，虚实物体的正确遮挡效果，环境光照渲染
 
 <!-- markdownlint-disable -->
 <div align=center>
@@ -17,9 +22,9 @@
 - TypeScript，类型限定
 - pnpm，包管理
 
-## 实现思路
+## 实现 👷‍♀️
 
-### Web 3D 组件化
+### React-3D：Web 3D 组件化
 
 - 拓展 JSX 内置元素，使用 TypeScript 限定 Props，设计基础 3D 对象标签；
 - 以 Three.js Scene 为渲染目标，实现 React 3D 渲染器；

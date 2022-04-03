@@ -148,6 +148,7 @@ export class InteractionManager {
     for (const obj of this.interactiveObjects) {
       if (obj.instance._local.eventListeners['onClick']) {
         if (obj.intersected) {
+          console.log(obj);
           this.dispatch(obj, { type: 'onClick', target: obj.instance });
           break;
         } else {
