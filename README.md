@@ -1,5 +1,12 @@
 # 环境融合渲染的 WebAR 应用组件化开发方案
 
+<!-- markdownlint-disable -->
+<div style="display: flex; justify-content:center; ">
+<img src="https://github.com/MleMoe/React-3D-AR/blob/main/public/images/occlussion.jpeg" height=300/>
+<img src="https://github.com/MleMoe/React-3D-AR/blob/main/public/images/occlussion-2.jpeg" height=300/>
+<img src="https://github.com/MleMoe/React-3D-AR/blob/main/public/images/shadow.jpeg" height=300/>
+</div>
+<!-- markdownlint-restore -->
 ## 工具 🔧
 
 - React，主要使用 [React-Reconciler](https://github.com/facebook/react/tree/main/packages/react-reconciler)、JSX 和 Hooks
@@ -22,23 +29,10 @@
 ### Web AR 环境融合渲染
 
 - 基于 WebXR Device API 深度感知（Depth Sensing）模块提供的环境深度图和 Shader 编程，介入图形渲染管线，实现基于深度计算的遮挡处理方法；
+  <code>
+  <img src="https://github.com/MleMoe/React-3D-AR/blob/main/public/images/occulusion-flow.png" height="300"/>
+  </code>
 
 - 基于光照估计（Lighting Estimation）模块和 Three.js 光源类，实现虚拟场景的环境光照渲染与阴影投射；
 
 - 基于 Hit Test 和 DOM Overlay 模块，使用发布订阅模式实现交互支持。
-
-## 效果
-
-<!-- markdownlint-disable -->
-<code>
-<div style="display: flex; justify-content:center">
-<img src="https://github.com/MleMoe/React-3D-AR/blob/main/public/images/place-example.jpeg" height=300/>
-<img src="https://github.com/MleMoe/React-3D-AR/blob/main/public/images/occlussion-example-2.jpeg" height=300/>
-</div>
-
-<div style="display: flex; justify-content:center">
-<img src="https://github.com/MleMoe/React-3D-AR/blob/main/public/images/occlussion-example-1.jpeg" height=200/>
-<img src="https://github.com/MleMoe/React-3D-AR/blob/main/public/images/shadow-example-1.jpeg" height=200/>
-</div>
-</code>
-<!-- markdownlint-restore -->
