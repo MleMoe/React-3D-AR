@@ -1,25 +1,25 @@
-import { FC, Fragment, useCallback, useState } from 'react';
-import { Observer } from '../../packages/three-react/observer';
-import { PlaceButton } from './PlaceButton';
-import './index.scss';
-import { MenuButton } from './MenuButton';
-import { NaviButton } from './NaviButton';
+import { FC, Fragment, useCallback, useState } from 'react'
+import { Observer } from '../../packages/react-3d/observer'
+import { PlaceButton } from './PlaceButton'
+import './index.scss'
+import { MenuButton } from './MenuButton'
+import { NaviButton } from './NaviButton'
 
-export type ControlType = 'place';
+export type ControlType = 'place'
 
 type ControlBtnMap = {
-  [key in ControlType]: FC<{ onClick: (...args: any[]) => void }>;
-};
+  [key in ControlType]: FC<{ onClick: (...args: any[]) => void }>
+}
 
 const controlBtnMap: ControlBtnMap = {
   place: PlaceButton,
-};
+}
 
 type ControlUIProps = {
-  inProgress: boolean;
-  uiObserver?: Observer;
-  controlTypes: ControlType[];
-};
+  inProgress: boolean
+  uiObserver?: Observer
+  controlTypes: ControlType[]
+}
 export const ControlUI: FC<ControlUIProps> = ({
   inProgress,
   uiObserver,
@@ -29,12 +29,12 @@ export const ControlUI: FC<ControlUIProps> = ({
   const createEventEmitter = useCallback(
     (type: ControlType) => {
       return () => {
-        console.log('点击 place');
-        uiObserver?.emit(type);
-      };
+        console.log('点击 place')
+        uiObserver?.emit(type)
+      }
     },
     [uiObserver]
-  );
+  )
 
   return (
     <div className='control-ui'>
@@ -78,5 +78,5 @@ export const ControlUI: FC<ControlUIProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

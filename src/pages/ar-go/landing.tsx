@@ -1,8 +1,5 @@
-import { useState, FC, useEffect, useMemo, useRef } from 'react';
+import { FC, useEffect, useMemo, useRef } from 'react'
 import {
-  Vector3,
-  SphereBufferGeometry,
-  MeshPhongMaterial,
   CubeTextureLoader,
   LightProbe,
   sRGBEncoding,
@@ -12,23 +9,22 @@ import {
   DoubleSide,
   MeshBasicMaterial,
   ShapeGeometry,
-  Mesh,
   Object3D,
   BufferGeometry,
   Line,
   Group,
   AmbientLight,
-} from 'three';
+} from 'three'
 import {
   useFrame,
   useLoader,
   useStore,
   useThree,
-} from '../../packages/three-react/hooks';
+} from '../../packages/react-3d/hooks'
 
-import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator';
-import { Model } from '../../components/ARContent/model';
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
+import { LightProbeGenerator } from 'three/examples/jsm/lights/LightProbeGenerator'
+import { Model } from '../../components/ARContent/model'
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader'
 
 const genCubeUrls = function (prefix: string, postfix: string) {
   return [
@@ -38,21 +34,21 @@ const genCubeUrls = function (prefix: string, postfix: string) {
     prefix + 'ny' + postfix,
     prefix + 'pz' + postfix,
     prefix + 'nz' + postfix,
-  ];
-};
+  ]
+}
 
 export const Landing: FC<{
-  data?: number[];
-  onSessionStart?: () => void;
+  data?: number[]
+  onSessionStart?: () => void
 }> = ({ onSessionStart }) => {
-  const { uiObserver } = useStore();
-  const { scene, orbitControl } = useThree();
-  const textGroupRef = useRef<Group>();
+  const { uiObserver } = useStore()
+  const { scene, orbitControl } = useThree()
+  const textGroupRef = useRef<Group>()
 
   const { loadResults: fontResults } = useLoader<FontLoader>(
     FontLoader,
     '/fonts/Parisienne_Regular.json'
-  );
+  )
 
   const [material, matLite, matDark] = useMemo(
     () => [
@@ -74,107 +70,106 @@ export const Landing: FC<{
       }),
     ],
     []
-  );
+  )
 
   const { shapes, textGeometry, xMid } = useMemo(() => {
-    if (!fontResults?.length) return { xMid: 0 };
+    if (!fontResults?.length) return { xMid: 0 }
 
-    const font = fontResults[0];
-    const message = 'AR\nTravel';
-    const shapes = font.generateShapes(message, 0.12);
+    const font = fontResults[0]
+    const message = 'AR\nTravel'
+    const shapes = font.generateShapes(message, 0.12)
 
-    const textGeometry = new ShapeGeometry(shapes);
+    const textGeometry = new ShapeGeometry(shapes)
 
-    textGeometry.computeBoundingBox();
-    let xMid = 0;
+    textGeometry.computeBoundingBox()
+    let xMid = 0
     if (textGeometry.boundingBox) {
       xMid =
-        -0.5 *
-        (textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x);
-      textGeometry.translate(xMid, 0, 0);
+        -0.5 * (textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x)
+      textGeometry.translate(xMid, 0, 0)
     }
 
-    return { font, shapes, textGeometry, xMid };
-  }, [fontResults]);
+    return { font, shapes, textGeometry, xMid }
+  }, [fontResults])
 
   useEffect(() => {
-    console.log('绘制');
+    console.log('绘制')
     if (orbitControl) {
-      orbitControl.enableZoom = false;
-      orbitControl.target.set(0, 0, -0.9);
+      orbitControl.enableZoom = false
+      orbitControl.target.set(0, 0, -0.9)
       // orbitControl.autoRotate = true;
     }
 
-    const directionalLight = new DirectionalLight(0xffffff, 0.2);
-    directionalLight.position.set(-5, 5, -5);
-    directionalLight.lookAt(0, 0, -5);
-    scene.add(directionalLight);
+    const directionalLight = new DirectionalLight(0xffffff, 0.2)
+    directionalLight.position.set(-5, 5, -5)
+    directionalLight.lookAt(0, 0, -5)
+    scene.add(directionalLight)
 
-    const lightProbe = new LightProbe();
-    scene.add(lightProbe);
+    const lightProbe = new LightProbe()
+    scene.add(lightProbe)
 
-    const urls = genCubeUrls('/textures/cube/pisa/', '.png');
+    const urls = genCubeUrls('/textures/cube/pisa/', '.png')
     new CubeTextureLoader().load(urls, (cubeTexture) => {
-      cubeTexture.encoding = sRGBEncoding;
+      cubeTexture.encoding = sRGBEncoding
       // scene.background = cubeTexture;
-      material.envMap = cubeTexture;
-      lightProbe.copy(LightProbeGenerator.fromCubeTexture(cubeTexture));
-    });
+      material.envMap = cubeTexture
+      lightProbe.copy(LightProbeGenerator.fromCubeTexture(cubeTexture))
+    })
 
     return () => {
-      scene.remove(lightProbe);
-      scene.remove(directionalLight);
-    };
-  }, []);
+      scene.remove(lightProbe)
+      scene.remove(directionalLight)
+    }
+  }, [])
 
   useEffect(() => {
-    const lineText = new Object3D();
+    const lineText = new Object3D()
 
     if (shapes?.length) {
       // make line shape ( N.B. edge view remains visible )
 
-      const holeShapes = [];
+      const holeShapes = []
 
       for (let i = 0; i < shapes.length; i++) {
-        const shape = shapes[i];
+        const shape = shapes[i]
 
         if (shape.holes && shape.holes.length > 0) {
           for (let j = 0; j < shape.holes.length; j++) {
-            const hole = shape.holes[j];
-            holeShapes.push(hole);
+            const hole = shape.holes[j]
+            holeShapes.push(hole)
           }
         }
       }
 
       // @ts-ignore
-      shapes.push.apply(shapes, holeShapes);
+      shapes.push.apply(shapes, holeShapes)
 
       for (let i = 0; i < shapes.length; i++) {
-        const shape = shapes[i];
+        const shape = shapes[i]
 
-        const points = shape.getPoints();
-        const geometry = new BufferGeometry().setFromPoints(points);
+        const points = shape.getPoints()
+        const geometry = new BufferGeometry().setFromPoints(points)
 
-        geometry.translate(xMid, 0, 0);
+        geometry.translate(xMid, 0, 0)
 
-        const lineMesh = new Line(geometry, matDark);
-        lineText.add(lineMesh);
+        const lineMesh = new Line(geometry, matDark)
+        lineText.add(lineMesh)
       }
 
-      lineText.position.set(0, 0.17, -0.85);
+      lineText.position.set(0, 0.17, -0.85)
       // lineText.scale.set(0.95, 0.95, 0.95);
 
-      textGroupRef.current?.add(lineText);
+      textGroupRef.current?.add(lineText)
       // lineText.scale.set(1.2, 1.2, 1.2);
     }
     return () => {
-      lineText.remove(lineText);
-    };
-  }, [shapes]);
+      lineText.remove(lineText)
+    }
+  }, [shapes])
 
   useFrame(() => {
-    orbitControl?.update();
-  });
+    orbitControl?.update()
+  })
 
   return (
     <>
@@ -190,7 +185,7 @@ export const Landing: FC<{
       <group
         ref={textGroupRef}
         onClick={() => {
-          console.log('click');
+          console.log('click')
           // uiObserver.emit('startSession');
           // onSessionStart?.();
         }}
@@ -216,5 +211,5 @@ export const Landing: FC<{
         />
       </group>
     </>
-  );
-};
+  )
+}

@@ -1,10 +1,10 @@
-import { Scene } from '../../packages/three-react/Scene';
-import * as THREE from 'three';
-import { useState, useRef, useEffect } from 'react';
-import { Histogram } from '../../components/visualization/histogram';
-import { Pie } from '../../components/visualization/pie';
-import { Earth } from '../../components/visualization/earth';
-import { Model } from '../../components/ARContent/model';
+import { Scene } from '../../packages/react-3d/Scene'
+import * as THREE from 'three'
+import { useState, useRef, useEffect } from 'react'
+import { Histogram } from '../../components/visualization/histogram'
+import { Pie } from '../../components/visualization/pie'
+import { Earth } from '../../components/visualization/earth'
+import { Model } from '../../components/ARContent/model'
 
 function App() {
   const [camera] = useState(() => {
@@ -13,11 +13,11 @@ function App() {
       window.innerWidth / window.innerHeight,
       0.1,
       1000
-    );
-    camera.position.set(0, 100, 300);
-    return camera;
-  });
-  const gridRef = useRef<THREE.GridHelper>(null!);
+    )
+    camera.position.set(0, 100, 300)
+    return camera
+  })
+  const gridRef = useRef<THREE.GridHelper>(null!)
 
   return (
     <Scene camera={camera} control={true}>
@@ -68,7 +68,7 @@ function App() {
         position={{ x: 0, y: 0, z: 0 }}
       /> */}
     </Scene>
-  );
+  )
 }
 
-export default App;
+export default App

@@ -5,8 +5,8 @@ import {
   useRef,
   useMemo,
   useEffect,
-} from 'react';
-import { RootState } from '../three-react/store';
+} from 'react'
+import { RootState } from '../react-3d/store'
 import {
   Vector3,
   Matrix4,
@@ -27,14 +27,14 @@ import {
   MeshPhongMaterial,
   Mesh,
   Object3D,
-} from 'three';
-import { useFrame, useStore, useThree } from '../three-react/hooks';
-import { getUuid } from '../three-react/utils';
-import { ARManager } from './manager';
-import { Body, Sphere } from 'cannon-es';
+} from 'three'
+import { useFrame, useStore, useThree } from '../react-3d/hooks'
+import { getUuid } from '../react-3d/utils'
+import { ARManager } from './manager'
+import { Body, Sphere } from 'cannon-es'
 
 export function useARManager() {
-  const { ar } = useStore();
+  const { ar } = useStore()
   const {
     overlay,
     hitState,
@@ -45,7 +45,7 @@ export function useARManager() {
     transformARMaterial,
     session,
     xrLight,
-  } = useMemo<ARManager>(() => ar, []);
+  } = useMemo<ARManager>(() => ar, [])
   return {
     session,
     overlay,
@@ -56,7 +56,7 @@ export function useARManager() {
     overlayCanvas,
     transformARMaterial,
     xrLight,
-  };
+  }
 }
 
 // export function usePhysicsObject(
@@ -132,44 +132,44 @@ export function useARManager() {
 // }
 
 export function useCameraAccess() {
-  const { glRenderer } = useThree();
+  const { glRenderer } = useThree()
   const { glBinding, arSession } = useMemo(() => {
-    const arSession = glRenderer.xr.getSession();
+    const arSession = glRenderer.xr.getSession()
     if (!arSession) {
-      return {};
+      return {}
     }
-    const gl = glRenderer.getContext();
+    const gl = glRenderer.getContext()
     // @ts-ignore
-    const glBinding = new XRWebGLBinding(arSession, gl);
+    const glBinding = new XRWebGLBinding(arSession, gl)
 
-    return { glBinding, arSession };
-  }, []);
+    return { glBinding, arSession }
+  }, [])
 
-  const cameraTextureRef = useRef<WebGLTexture>();
+  const cameraTextureRef = useRef<WebGLTexture>()
 
   const computeCameraTexture = useCallback(
     async (time?: number, frame?: XRFrame) => {
       if (!frame || !arSession || !glBinding) {
-        console.log('no frame or arSession or glBinding');
-        return;
+        console.log('no frame or arSession or glBinding')
+        return
       }
 
-      const referenceSpace = await arSession.requestReferenceSpace('viewer');
+      const referenceSpace = await arSession.requestReferenceSpace('viewer')
       if (referenceSpace) {
-        let viewerPose = frame.getViewerPose(referenceSpace);
+        let viewerPose = frame.getViewerPose(referenceSpace)
         if (viewerPose) {
           for (const view of viewerPose.views) {
-            cameraTextureRef.current = glBinding.getCameraImage(frame, view);
+            cameraTextureRef.current = glBinding.getCameraImage(frame, view)
           }
         }
       }
     },
     [glRenderer]
-  );
+  )
 
-  useFrame(computeCameraTexture);
+  useFrame(computeCameraTexture)
 
-  return { cameraTextureRef };
+  return { cameraTextureRef }
 }
 
 // /**

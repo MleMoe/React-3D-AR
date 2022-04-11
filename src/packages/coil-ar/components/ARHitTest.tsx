@@ -5,7 +5,7 @@ import {
   useRef,
   useMemo,
   useEffect,
-} from 'react';
+} from 'react'
 import {
   RingGeometry,
   MeshBasicMaterial,
@@ -19,27 +19,27 @@ import {
   Matrix4,
   SphereBufferGeometry,
   MeshStandardMaterial,
-} from 'three';
-import { useARManager } from '../hooks';
-import { useFrame, useLoader, useStore } from '../../three-react/hooks';
-import { Model } from '../../../components/ARContent/model';
-import { getUuid } from '../../three-react/utils';
-import { HitState } from '../manager';
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { Earth } from '../../../components/visualization/earth';
+} from 'three'
+import { useARManager } from '../hooks'
+import { useFrame, useLoader, useStore } from '../../react-3d/hooks'
+import { Model } from '../../../components/ARContent/model'
+import { getUuid } from '../../react-3d/utils'
+import { HitState } from '../manager'
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { Earth } from '../../../components/visualization/earth'
 
 export const ARHitTest: FC = ({ children }) => {
-  const { uiObserver, scene, glRenderer } = useStore();
+  const { uiObserver, scene, glRenderer } = useStore()
   const { hitState, onAfterHitTest, depthRawTexture, transformARMaterial } =
-    useARManager();
+    useARManager()
 
-  const reticleRef = useRef<Mesh>();
-  const placementNodeRef = useRef<Group>(null!);
-  const placementEarthRef = useRef<Group>(null!);
-  const placementBingdundunRef = useRef<Group>(null!);
-  const placementCylinderRef = useRef<Group>(null!);
-  const placementSphereRef = useRef<Group>(null!);
+  const reticleRef = useRef<Mesh>()
+  const placementNodeRef = useRef<Group>(null!)
+  const placementEarthRef = useRef<Group>(null!)
+  const placementBingdundunRef = useRef<Group>(null!)
+  const placementCylinderRef = useRef<Group>(null!)
+  const placementSphereRef = useRef<Group>(null!)
 
   const selectTypeMap = useMemo(
     () => ({
@@ -50,12 +50,12 @@ export const ARHitTest: FC = ({ children }) => {
       sphere: placementSphereRef,
     }),
     []
-  );
+  )
 
   const placementNodes = useMemo<{ anchor: XRAnchor; anchoredNode: Group }[]>(
     () => [],
     []
-  );
+  )
 
   const dMaterial = useMemo(
     () =>
@@ -64,145 +64,145 @@ export const ARHitTest: FC = ({ children }) => {
         depthRawTexture
       ),
     []
-  );
+  )
 
   const onSelect = useCallback(
     (type: 'sphere' | 'cylinder' | 'sunflower' | 'earth' | 'bingdundun') => {
-      console.log('select!');
+      console.log('select!')
 
       if (hitState && hitState.position) {
-        const position = hitState.position;
+        const position = hitState.position
         const node: Group = !selectTypeMap[type].current.visible
           ? selectTypeMap[type].current
-          : selectTypeMap[type].current.clone();
+          : selectTypeMap[type].current.clone()
         //@ts-ignore
         hitState.hitTestResult?.createAnchor?.().then((anchor) => {
-          node.position.set(position.x, position.y, position.z);
-          node.rotation.setFromQuaternion(hitState.rotation);
+          node.position.set(position.x, position.y, position.z)
+          node.rotation.setFromQuaternion(hitState.rotation)
 
           placementNodes.push({
             anchor,
             anchoredNode: node,
-          });
-          node.visible = true;
+          })
+          node.visible = true
 
           if (node.visible) {
-            scene.add(node);
+            scene.add(node)
           }
-        });
+        })
       }
     },
     []
-  );
+  )
 
   const { loadResults } = useLoader<GLTFLoader>(
     GLTFLoader,
     '/models/bingdundun.glb' // BingdundunExpressive
-  );
+  )
 
   const { loadResults: flowerLoadResults } = useLoader<GLTFLoader>(
     GLTFLoader,
     '/models/sunflower/sunflower.gltf'
-  );
+  )
 
   useEffect(() => {
     if (loadResults) {
       loadResults.forEach((loadResult) => {
-        placementBingdundunRef.current.add(loadResult.scene.clone());
+        placementBingdundunRef.current.add(loadResult.scene.clone())
 
         loadResults.forEach((loadResult) => {
-          const object = loadResult.scene;
+          const object = loadResult.scene
           object.traverse((child) => {
             if (child instanceof Mesh) {
-              child.castShadow = true;
-              child.receiveShadow = true;
+              child.castShadow = true
+              child.receiveShadow = true
               child.material = transformARMaterial(
                 child.material,
                 depthRawTexture
-              );
+              )
             }
-          });
-        });
-      });
+          })
+        })
+      })
     }
-  }, [loadResults]);
+  }, [loadResults])
 
   useEffect(() => {
     if (flowerLoadResults) {
       flowerLoadResults.forEach((flowerLoadResult) => {
-        placementNodeRef.current.add(flowerLoadResult.scene.clone());
+        placementNodeRef.current.add(flowerLoadResult.scene.clone())
         flowerLoadResult.scene.traverse((child) => {
           if (child instanceof Mesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
+            child.castShadow = true
+            child.receiveShadow = true
             child.material = transformARMaterial(
               child.material,
               depthRawTexture
-            );
+            )
           }
-        });
-      });
+        })
+      })
     }
-  }, [flowerLoadResults]);
+  }, [flowerLoadResults])
 
   useLayoutEffect(() => {
-    uiObserver.on('sunflower', () => onSelect('sunflower'));
-    uiObserver.on('cylinder', () => onSelect('cylinder'));
-    uiObserver.on('earth', () => onSelect('earth'));
-    uiObserver.on('bingdundun', () => onSelect('bingdundun'));
-    uiObserver.on('sphere', () => onSelect('sphere'));
+    uiObserver.on('sunflower', () => onSelect('sunflower'))
+    uiObserver.on('cylinder', () => onSelect('cylinder'))
+    uiObserver.on('earth', () => onSelect('earth'))
+    uiObserver.on('bingdundun', () => onSelect('bingdundun'))
+    uiObserver.on('sphere', () => onSelect('sphere'))
 
     // scene.overrideMaterial = dMaterial;
 
     onAfterHitTest.set(0, (hit: HitState) => {
       if (reticleRef.current && hit.position) {
-        reticleRef.current.visible = hit.visible;
+        reticleRef.current.visible = hit.visible
 
         reticleRef.current.position.set(
           hit.position.x,
           hit.position.y,
           hit.position.z
-        );
-        reticleRef.current.rotation.setFromQuaternion(hit.rotation);
+        )
+        reticleRef.current.rotation.setFromQuaternion(hit.rotation)
       }
-    });
+    })
 
     return () => {
-      uiObserver.off('sunflower');
-      uiObserver.off('cylinder');
-      uiObserver.off('earth');
-      uiObserver.off('bingdundun');
-      uiObserver.off('sphere');
+      uiObserver.off('sunflower')
+      uiObserver.off('cylinder')
+      uiObserver.off('earth')
+      uiObserver.off('bingdundun')
+      uiObserver.off('sphere')
 
-      onAfterHitTest.delete(0);
+      onAfterHitTest.delete(0)
       placementNodes.forEach((anchorObj) =>
         anchorObj.anchoredNode.removeFromParent()
-      );
-    };
-  }, []);
+      )
+    }
+  }, [])
 
   useFrame((t?: number, frame?: XRFrame) => {
     if (!frame) {
-      return;
+      return
     }
     for (const { anchor, anchoredNode } of placementNodes) {
       if (!frame.trackedAnchors?.has(anchor)) {
-        console.log('没有该追踪目标');
-        console.log(frame.trackedAnchors, '\n', anchor);
-        continue;
+        console.log('没有该追踪目标')
+        console.log(frame.trackedAnchors, '\n', anchor)
+        continue
       }
-      const refSpace = glRenderer.xr.getReferenceSpace();
+      const refSpace = glRenderer.xr.getReferenceSpace()
       if (refSpace) {
-        const anchorPose = frame.getPose(anchor.anchorSpace, refSpace);
+        const anchorPose = frame.getPose(anchor.anchorSpace, refSpace)
         if (anchorPose) {
           const position = new Vector3(0, 0, 0).applyMatrix4(
             new Matrix4().fromArray(anchorPose.transform.matrix)
-          );
-          anchoredNode.position.set(position.x, position.y, position.z);
+          )
+          anchoredNode.position.set(position.x, position.y, position.z)
         }
       }
     }
-  });
+  })
 
   return (
     <group>
@@ -247,5 +247,5 @@ export const ARHitTest: FC = ({ children }) => {
         // scale={{ x: 1.2, y: 1.2, z: 1.2 }}
       ></group>
     </group>
-  );
-};
+  )
+}

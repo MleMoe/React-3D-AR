@@ -1,6 +1,6 @@
-import { ARHitTest } from '../../packages/webar/components/ARHitTest';
-import { ARScene } from '../../packages/webar/ARScene';
-import { DepthScreen } from '../../packages/webar/components/DepthScreen';
+import { ARHitTest } from '../../packages/coil-ar/components/ARHitTest'
+import { ARScene } from '../../packages/coil-ar/ARScene'
+import { DepthScreen } from '../../packages/coil-ar/components/DepthScreen'
 
 function App() {
   return (
@@ -8,7 +8,7 @@ function App() {
       {/* <DepthScreen /> */}
       <ARHitTest />
     </ARScene>
-  );
+  )
 }
 
-export default App;
+export default App

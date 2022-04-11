@@ -1,18 +1,18 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react'
 
-import { ARHitTest } from '../../packages/webar/components/ARHitTest';
-import { ARScene } from '../../packages/webar/ARScene';
-import { Landing } from './landing';
-import { Observer } from '../../packages/three-react/observer';
-import { EmitButton } from '../../packages/webar/components/EmitButton';
-import './index.scss';
-import { DepthScreen } from '../../packages/webar/components/DepthScreen';
-import { Model } from '../../components/ARContent/model';
+import { ARHitTest } from '../../packages/coil-ar/components/ARHitTest'
+import { ARScene } from '../../packages/coil-ar/ARScene'
+import { Landing } from './landing'
+import { Observer } from '../../packages/react-3d/observer'
+import { EmitButton } from '../../packages/coil-ar/components/EmitButton'
+import './index.scss'
+import { DepthScreen } from '../../packages/coil-ar/components/DepthScreen'
+import { Model } from '../../components/ARContent/model'
 import {
   MeshPhongMaterial,
   MeshStandardMaterial,
   SphereBufferGeometry,
-} from 'three';
+} from 'three'
 
 const btnList = [
   {
@@ -269,10 +269,10 @@ const btnList = [
       </svg>
     ),
   },
-];
+]
 
 function ARGO() {
-  const uiObserver = useMemo(() => new Observer(), []);
+  const uiObserver = useMemo(() => new Observer(), [])
 
   return (
     <ARScene
@@ -289,7 +289,7 @@ function ARGO() {
                   type={type}
                   svgNode={svgNode}
                 />
-              );
+              )
             })}
           </div>
         </>
@@ -300,6 +300,7 @@ function ARGO() {
         </>
       }
     >
+      <ambientLight paras={[0xffffff]} />
       <ARHitTest />
       {/* <DepthScreen /> */}
       <group>
@@ -320,11 +321,11 @@ function ARGO() {
                 z: -9,
               }}
             ></mesh>
-          );
+          )
         })}
       </group>
     </ARScene>
-  );
+  )
 }
 
-export { ARGO };
+export { ARGO }

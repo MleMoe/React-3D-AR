@@ -1,8 +1,8 @@
 import { FC, useState, useRef, useMemo, useEffect, ReactNode } from 'react'
-import { Scene, SceneProps } from '../../three-react/Scene'
+import { Scene, SceneProps } from '../../react-3d/Scene'
 import './index.scss'
 import { ARManager } from '../manager'
-import { Observer } from '../../three-react/observer'
+import { Observer } from '../../react-3d/observer'
 
 type ARSceneProps = { dashboard?: ReactNode; landing?: ReactNode } & SceneProps
 
