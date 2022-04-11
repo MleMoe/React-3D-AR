@@ -1,51 +1,51 @@
-import * as THREE from 'three';
-import { createContext } from 'react';
+import * as THREE from 'three'
+import { createContext } from 'react'
 
-import { InteractionManager } from './events';
-import { Observer } from './observer';
-import { FrameCallback } from './loop';
-import { getUuid } from './utils';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { WebGLRenderer } from 'three';
+import { InteractionManager } from './events'
+import { Observer } from './observer'
+import { FrameCallback } from './loop'
+import { getUuid } from './utils'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { WebGLRenderer } from 'three'
 
-export type Camera = THREE.PerspectiveCamera;
+export type Camera = THREE.PerspectiveCamera | THREE.OrthographicCamera
 export type Raycaster = THREE.Raycaster & {
-  enabled: boolean;
-};
+  enabled: boolean
+}
 
-export type Size = { width: number; height: number };
-export type Viewport = Size;
+export type Size = { width: number; height: number }
+export type Viewport = Size
 
 export type RootState = {
-  glRenderer: THREE.WebGLRenderer;
-  scene: THREE.Scene;
-  camera: Camera;
+  glRenderer: THREE.WebGLRenderer
+  scene: THREE.Scene
+  camera: Camera
 
-  onBeforeRender: Map<number, FrameCallback>;
-  onAfterRender: Map<number, FrameCallback>;
+  onBeforeRender: Map<number, FrameCallback>
+  onAfterRender: Map<number, FrameCallback>
 
   // 每帧执行
-  frameCallbacks: Map<string, FrameCallback>;
+  frameCallbacks: Map<string, FrameCallback>
   // 三维物体事件绑定
-  interactionManager: InteractionManager;
+  interactionManager: InteractionManager
   // three.js orbit 控制器
-  orbitControl?: OrbitControls;
+  orbitControl?: OrbitControls
   // 外部控件事件绑定
-  uiObserver: Observer;
+  uiObserver: Observer
 
-  ar: any;
-};
+  ar: any
+}
 
 export type StoreProps = {
-  canvas: HTMLCanvasElement;
-  camera?: Camera;
-  renderer?: WebGLRenderer;
-  ar?: any;
-  control?: boolean;
-  uiObserver?: Observer;
-};
+  canvas: HTMLCanvasElement
+  camera?: Camera
+  renderer?: WebGLRenderer
+  ar?: any
+  control?: boolean
+  uiObserver?: Observer
+}
 
-const context = createContext<RootState>(null!);
+const context = createContext<RootState>(null!)
 
 const createStore = (props: StoreProps): RootState => {
   const {
@@ -55,7 +55,7 @@ const createStore = (props: StoreProps): RootState => {
     renderer,
     ar,
     uiObserver,
-  } = props;
+  } = props
 
   const glRenderer =
     renderer ??
@@ -70,38 +70,38 @@ const createStore = (props: StoreProps): RootState => {
       premultipliedAlpha: true,
       logarithmicDepthBuffer: false,
       stencil: true,
-    });
-  glRenderer.domElement = glRenderer.domElement ?? canvas;
-  glRenderer.setSize(canvas.width, canvas.height);
-  glRenderer.toneMapping = THREE.NoToneMapping;
-  glRenderer.outputEncoding = THREE.sRGBEncoding;
+    })
+  glRenderer.domElement = glRenderer.domElement ?? canvas
+  glRenderer.setSize(canvas.width, canvas.height)
+  glRenderer.toneMapping = THREE.NoToneMapping
+  glRenderer.outputEncoding = THREE.sRGBEncoding
 
   let camera: Camera =
     cameraProps ??
-    new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 0.1, 10);
-  camera.aspect = canvas.width / canvas.height;
-  camera.updateProjectionMatrix();
+    new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 0.1, 10)
+  // camera.aspect = canvas.width / canvas.height
+  camera.updateProjectionMatrix()
 
-  const interactionManager = new InteractionManager(canvas, camera);
+  const interactionManager = new InteractionManager(canvas, camera)
 
-  const scene = new THREE.Scene();
+  const scene = new THREE.Scene()
 
-  const onBeforeRender = new Map<number, FrameCallback>();
-  const onAfterRender = new Map<number, FrameCallback>();
+  const onBeforeRender = new Map<number, FrameCallback>()
+  const onAfterRender = new Map<number, FrameCallback>()
 
   const render = (time?: number, frame?: THREE.XRFrame) => {
-    onBeforeRender.forEach((callbackfn) => callbackfn(time, frame));
-    glRenderer.render(scene, camera);
-    onAfterRender.forEach((callbackfn) => callbackfn(time, frame));
-  };
+    onBeforeRender.forEach((callbackfn) => callbackfn(time, frame))
+    glRenderer.render(scene, camera)
+    onAfterRender.forEach((callbackfn) => callbackfn(time, frame))
+  }
 
   const arRender = (time?: number, frame?: THREE.XRFrame) => {
     // ar 处理
-    ar?.render(time, frame);
-  };
-  const frameCallbacks = new Map<string, FrameCallback>();
-  frameCallbacks.set('0-arRender', arRender);
-  frameCallbacks.set('0-render', render);
+    ar?.render(time, frame)
+  }
+  const frameCallbacks = new Map<string, FrameCallback>()
+  frameCallbacks.set('0-arRender', arRender)
+  frameCallbacks.set('0-render', render)
 
   const rootState = {
     glRenderer,
@@ -114,11 +114,11 @@ const createStore = (props: StoreProps): RootState => {
     ...(control ? { orbitControl: new OrbitControls(camera, canvas) } : {}),
     uiObserver: uiObserver ?? new Observer(),
     ar: ar ?? {},
-  };
+  }
 
-  interactionManager.setContainer(rootState);
+  interactionManager.setContainer(rootState)
 
-  return rootState;
-};
+  return rootState
+}
 
-export { createStore, context };
+export { createStore, context }
